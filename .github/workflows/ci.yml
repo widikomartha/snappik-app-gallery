@@ -57,3 +57,4 @@ jobs:
       - run: npm run test:browser:progress
       - run: npm run test:browser:delivery
       - run: npm run test:browser:archives
+      - run: npm run test:browser:vouchers

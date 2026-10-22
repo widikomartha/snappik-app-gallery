@@ -1,6 +1,6 @@
 # SnapPik Architecture
 
-**System phase:** TASK-001 foundation, TASK-003 authentication/access policy, TASK-002 local/test provider prototype, TASK-004 project/catalogue, TASK-005 client selection/preview, TASK-006 progress/history/export, TASK-007 finished-photo delivery and TASK-008 complete product ZIP implementation exist. The configured 384-photo single-ZIP build, independent readback and cleanup passed. A real resource-key fixture remains pending, so TASK-002 and dependent TASK-004–TASK-008 acceptance remain open. Billing workflows remain planned. [Package state](../index.md). [PRD](../product/PRD.md) owns product behavior and commercial rules.
+**System phase:** TASK-001 foundation, TASK-003 authentication/access policy, TASK-002 local/test provider prototype, TASK-004 project/catalogue, TASK-005 client selection/preview, TASK-006 progress/history/export, TASK-007 finished-photo delivery, TASK-008 complete product ZIP and TASK-009 owner voucher management implementations exist. The configured 384-photo single-ZIP build, independent readback and cleanup passed. A real resource-key fixture remains pending, so TASK-002 and dependent TASK-004–TASK-008 acceptance remain open. Checkout/payment workflows remain planned. [Package state](../index.md). [PRD](../product/PRD.md) owns product behavior and commercial rules.
 
 ## Approved boundaries and technology
 
@@ -197,6 +197,16 @@ The authenticated `/projects/{project}/results`, `/results/data` and `/results/e
 `DrivePreviewSource` obtains fresh `thumbnailLink` metadata from the official adapter and proxies only HTTPS `lh3`–`lh6.googleusercontent.com` image responses, without redirect following or forwarding API/resource credentials. Unsupported hosts/responses show retryable preview failure. No short-lived URL is persisted or sent to the browser. Enlarged previews use the existing verified original stream; both paths recheck module gates before provider work, stream in 64-KiB reads, close streams and remain private/no-store. The UI retains uncertain operation IDs only in mounted memory for explicit retry; it has no offline queue. [TASK-005 evidence](../planning/TASK-005_EVIDENCE.md) distinguishes synthetic preview verification from real-provider/release gates.
 
 ## Checkout, vouchers and payment processing
+
+### Implemented TASK-009 voucher administration
+
+`ManageVoucher` locks the persisted admin user and then the voucher root, rechecks owner access and the submitted version number, appends immutable terms, advances the current pointer and inserts an audit event atomically. Codes are trimmed/uppercased at creation and cannot be renamed, deleted or reused. PostgreSQL enforces unique normalized roots, version/root identities, valid term ranges, immutable version/redemption history and reservation identity uniqueness. Each edit, deactivation or reactivation creates a version; it does not mutate an earlier order's terms. WITA inputs are converted to UTC before persistence to preserve their exact instants.
+
+`VoucherUsage` counts held reservations and successful redemption records across the root's entire history. An edit rejects a total limit below occupied capacity, or a per-user limit below the largest occupied count of any account. Released reservations do not occupy capacity. All future reservation/payment writers must take the same root lock, following the account/order/root lock order below. Owner reports paginate versions, reservations, redemptions and audited reasons. Photographers have no administration/report access. Form validation returns to an explicit form route because the no-referrer policy and Inertia navigation cannot rely on Laravel's previous-URL session value.
+
+`VoucherQuote` is an immutable integer-IDR result containing voucher/version identity, base, discount and payable amounts. It checks the chosen version's enabled state and start-inclusive/end-exclusive interval, uses overflow-safe integer percentage arithmetic, and rejects nonpositive/below-configured-minimum totals. It evaluates terms only: it does not accept an order, reserve usage or verify payment. Merchant/channel configuration, order snapshots, checkout and payment Actions remain TASK-010/TASK-011. Positive form integers are bounded by the JavaScript safe-integer representation; omitting use limits represents unlimited use.
+
+The reservation/redemption schema exists for usage reporting, with stable unique order UUIDs and one immutable redemption per reservation. TASK-010 must add the order foreign key when the order table exists; TASK-010/TASK-011 must own atomic ledger writes. There is no production ledger-writing or manual grant endpoint in TASK-009. Synthetic tests populate those rows directly only in the guarded test database. An existing quoted pending order remains governed by its original snapshot; deactivation/date changes must not cause settlement to recompute eligibility using the current version.
 
 ### Money and configuration
 

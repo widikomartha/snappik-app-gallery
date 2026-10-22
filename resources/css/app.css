@@ -2,7 +2,7 @@
 
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--color-bg); color: var(--color-text); font-family: 'DM Sans', system-ui, sans-serif; font-size: 1rem; line-height: 1.5; }
-button, input { font: inherit; }
+button, input, select { font: inherit; }
 a { color: inherit; text-underline-offset: 0.25em; }
 a, button, input { -webkit-tap-highlight-color: transparent; }
 :focus-visible { outline: 2px solid var(--color-focus); outline-offset: 4px; }
@@ -44,7 +44,7 @@ fieldset { min-width: 0; border: 0; padding: 0; margin: 0; }
 .field { display: grid; gap: 0.5rem; max-width: 36rem; }
 .field label { font-weight: 500; }
 .field p { margin: 0; font-size: 0.9375rem; }
-.field input { width: 100%; min-height: 44px; border: 1px solid var(--color-control-border); border-radius: 4px; background: var(--color-surface); color: var(--color-text); padding: 0.75rem; }
+.field input, .field select { width: 100%; min-height: 44px; border: 1px solid var(--color-control-border); border-radius: 4px; background: var(--color-surface); color: var(--color-text); padding: 0.75rem; }
 .field input[aria-invalid="true"] { border-color: var(--color-error); }
 .field-error { color: var(--color-error); }
 .status { padding: 1rem 1.5rem; border-radius: 4px; background: var(--color-surface-subtle); color: var(--color-text); }
@@ -72,3 +72,4 @@ dialog .photo-preview img { height: auto; max-height: 60vh; }
 .result-records { padding-left: 1.5rem; }
 .result-records li { padding: 0.75rem 0; border-bottom: 1px solid var(--color-border); }
 textarea:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
+.voucher-record { padding: 1.5rem 0; border-bottom: 1px solid var(--color-border); }

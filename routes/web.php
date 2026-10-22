@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\VoucherController;
 use App\Http\Controllers\Auth\AccountController;
 use App\Http\Controllers\Client\ArchiveController;
 use App\Http\Controllers\Client\DeliveryController;
@@ -46,6 +47,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard/data', [ProgressController::class, 'index'])->name('dashboard.data');
     Route::get('/admin', fn () => Inertia::render('admin/dashboard'))
         ->middleware('can:access-admin')->name('admin.dashboard');
+    Route::middleware('can:access-admin')->prefix('admin/vouchers')->name('admin.vouchers.')->group(function () {
+        Route::get('/', [VoucherController::class, 'index'])->name('index');
+        Route::get('/create', [VoucherController::class, 'create'])->name('create');
+        Route::post('/', [VoucherController::class, 'store'])->name('store');
+        Route::get('/{voucher}', [VoucherController::class, 'show'])->whereNumber('voucher')->name('show');
+        Route::put('/{voucher}', [VoucherController::class, 'update'])->whereNumber('voucher')->name('update');
+    });
 });
 
 Route::get('/g/{capability}', [GalleryController::class, 'show'])->name('client.gallery');

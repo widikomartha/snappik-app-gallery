@@ -1,6 +1,6 @@
 # SnapPik MVP Backlog
 
-**TASK-001 and TASK-003: COMPLETE. TASK-002: FULL-CATALOGUE ZIP VERIFIED / REAL RESOURCE-KEY FIXTURE PENDING. TASK-004–TASK-008: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING. TASK-009–TASK-015: NOT STARTED.** Product authority: [PRD](../product/PRD.md). Technical contracts: [Architecture](../engineering/ARCHITECTURE.md). [Package approval state](../index.md).
+**TASK-001, TASK-003 and TASK-009: COMPLETE. TASK-002: FULL-CATALOGUE ZIP VERIFIED / REAL RESOURCE-KEY FIXTURE PENDING. TASK-004–TASK-008: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING. TASK-010–TASK-015: NOT STARTED.** Product authority: [PRD](../product/PRD.md). Technical contracts: [Architecture](../engineering/ARCHITECTURE.md). [Package approval state](../index.md).
 
 These are implementation tasks, not claims that the application exists. Dependencies are hard prerequisites for declaring a task complete; a task may contain a bounded exploratory prototype without advertising it as a finished feature. Technical feasibility proofs precede broad UI work. Production publication remains a separately authorized action.
 
@@ -96,13 +96,14 @@ These are implementation tasks, not claims that the application exists. Dependen
 
 ## TASK-009 — Deliver owner voucher management
 
-- Status: NOT STARTED
+- Status: COMPLETE (explicitly requested and verified on October 23, 2026)
 - Requirements: REQ-002, REQ-013, REQ-016, REQ-019
 - Dependencies: TASK-003
 - Scope: voucher/version schema, owner admin creation/edit/deactivation, normalized unique codes, date/use limits, immutable quote rules and reservation/redemption reporting.
 - Acceptance: invalid percentage/fixed/limit/date values are rejected; code normalization cannot create duplicates; limits span versions of the same code; a limit cannot be reduced below held plus used capacity. Old versions remain identifiable and changes are audited. No photographer can administer codes or inspect others' usage.
 - Out of scope: stacking, cashback, referrals, zero-pay vouchers, per-user manual entitlement grants.
 - Completion evidence: admin browser flow, validation/versioning/tenant tests and integer-discount example results.
+- Verification record: [TASK-009 evidence](TASK-009_EVIDENCE.md). Owner-only create/edit/deactivate/reactivate screens, normalized permanent code identities, immutable terms, audited versions, stale-form protection, cross-version held/successful capacity checks and paginated usage reports are implemented. PostgreSQL feature/process-race checks and four narrow/wide light/dark browser flows verify the task. Integer quotes preserve exact IDR amounts and reject invalid payable totals. Reservation/redemption tables support reporting; their production writers and the order foreign key remain TASK-010/TASK-011. No manual grant, checkout or payment integration is claimed.
 
 ## TASK-010 — Deliver server-priced checkout and voucher reservations
 

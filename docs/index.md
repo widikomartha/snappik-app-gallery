@@ -6,7 +6,7 @@
 
 **Final document approval: pending.**
 
-**Implementation phase: TASK-001 and TASK-003 complete; TASK-002 full-catalogue ZIP verified, real resource-key fixture pending; TASK-004–TASK-008 implemented with local/synthetic verification, prerequisite acceptance pending; TASK-009–TASK-015 not started.**
+**Implementation phase: TASK-001, TASK-003 and TASK-009 complete; TASK-002 full-catalogue ZIP verified, real resource-key fixture pending; TASK-004–TASK-008 implemented with local/synthetic verification, prerequisite acceptance pending; TASK-010–TASK-015 not started.**
 
 This file owns package status and approval tracking. Baseline approval authorized creation of this English documentation package in `D:\Website\snappik-app-gallery`. It did not approve unseen final documents, authorize deployment, or establish that future software is correct. Change package state to **APPROVED / IMPLEMENTATION READY** only after the owner explicitly approves the final documents and documentation checks pass.
 
@@ -33,6 +33,8 @@ On October 22, 2026, the owner explicitly requested TASK-006, authorizing the ph
 On October 22, 2026, the owner explicitly requested TASK-007, authorizing finished-gallery browsing, protected individual original downloads, local dependencies and checks. [TASK-007 evidence](planning/TASK-007_EVIDENCE.md) records implementation and verification. TASK-004/TASK-005 acceptance remains dependent on TASK-002's authorized real resource-key fixture, so TASK-007 is not declared complete. This request does not approve the entire documentation package or authorize production publication, real messages or additional live-provider transfers. Final document approval remains pending.
 
 On October 23, 2026, the owner explicitly requested TASK-008, authorizing complete delivery ZIP manifests/jobs, private streaming output/downloads, recovery/cleanup, client status UI, local migrations and checks. [TASK-008 evidence](planning/TASK-008_EVIDENCE.md) records implementation and verification. TASK-002's real resource-key fixture and TASK-007 prerequisite acceptance remain open, so TASK-008 is not declared complete. This request does not approve the entire document package or authorize additional live-provider transfers, real messages or production publication. Final document approval remains pending.
+
+On October 23, 2026, the owner explicitly requested TASK-009, authorizing owner voucher management, immutable versions, usage reporting, integer quote rules, local migrations and checks. [TASK-009 evidence](planning/TASK-009_EVIDENCE.md) records implementation and verification. TASK-009 depends on completed TASK-003 and is complete independently of the gallery prerequisite gates. Checkout reservations and verified payment processing remain TASK-010/TASK-011. This request does not approve the entire document package or authorize real messages, live payments or production publication. Final document approval remains pending.
 
 ## Sources of truth
 

@@ -1,12 +1,12 @@
 # SnapPik
 
-SnapPik is a subscription application for photographer photo selection and finished-photo delivery. TASK-001 establishes the application foundation; TASK-003 adds authentication, one trial, roles and shared access policy. TASK-004 implements project configuration, separate module gates, capability management and background catalogue revision publication. TASK-005 adds client photo browsing, gated previews, shared autosave, review, confirmation and photographer reopening. TASK-006 adds progress/history/export; TASK-007 adds finished-gallery browsing and protected individual original downloads. TASK-008 adds complete background ZIP jobs, protected downloads and recovery/cleanup. TASK-002's Drive-to-R2 prototype verified one complete 384-photo ZIP with independent CRC/MD5 checks and cleanup; a real resource-key fixture remains pending, so TASK-004–TASK-008 acceptance also remains open. Billing workflows remain in later [backlog tasks](docs/planning/BACKLOG.md).
+SnapPik is a subscription application for photographer photo selection and finished-photo delivery. TASK-001 establishes the application foundation; TASK-003 adds authentication, one trial, roles and shared access policy. TASK-004 implements project configuration, separate module gates, capability management and background catalogue revision publication. TASK-005 adds client photo browsing, gated previews, shared autosave, review, confirmation and photographer reopening. TASK-006 adds progress/history/export; TASK-007 adds finished-gallery browsing and protected individual original downloads. TASK-008 adds complete background ZIP jobs, protected downloads and recovery/cleanup. TASK-009 adds owner voucher management, immutable terms, usage reports and integer quote rules. TASK-002's Drive-to-R2 prototype verified one complete 384-photo ZIP with independent CRC/MD5 checks and cleanup; a real resource-key fixture remains pending, so TASK-004–TASK-008 acceptance also remains open. Checkout/payment workflows remain in later [backlog tasks](docs/planning/BACKLOG.md).
 
 ## Current state
 
 Laravel 13, PHP 8.4+, React 19, TypeScript, Inertia 3, Vite 8, Motion 14 and PostgreSQL are configured at the repository root. Both package managers have real lockfiles. The skeleton was generated from official `laravel/laravel` v13.11.0, with the official Inertia adapter added separately to keep authentication workflows in TASK-003.
 
-The owner requested TASK-001–TASK-007 on October 22, 2026, and configured and authorized the recorded TASK-002 provider smoke testing. TASK-004–TASK-008 acceptance remains dependent on TASK-002's real resource-key fixture. The owner requested TASK-008 on October 23, 2026. Final approval of the entire documentation package remains pending in the [index](docs/index.md). Provider test access does not imply production deployment or complete real-provider product acceptance.
+The owner requested TASK-001–TASK-007 on October 22, 2026, and configured and authorized the recorded TASK-002 provider smoke testing. TASK-004–TASK-008 acceptance remains dependent on TASK-002's real resource-key fixture. The owner requested TASK-008 and TASK-009 on October 23, 2026. Final approval of the entire documentation package remains pending in the [index](docs/index.md). Provider test access does not imply production deployment or complete real-provider product acceptance.
 
 ## Prerequisites
 
@@ -44,7 +44,7 @@ npm run build
 php artisan serve --host=127.0.0.1 --port=8000
 ```
 
-Open [local SnapPik](http://127.0.0.1:8000). For frontend hot reload, run `npm run dev` in a second terminal while Artisan serves PHP. Keep the Vite development server local. Migrations include database queue/cache/session, isolated TASK-002 proof staging, account/access, project/catalogue, selection history, mutation receipts and delivery archives. No user is seeded automatically. The catalogue worker command is below; the ZIP worker and maintenance schedule are described below.
+Open [local SnapPik](http://127.0.0.1:8000). For frontend hot reload, run `npm run dev` in a second terminal while Artisan serves PHP. Keep the Vite development server local. Migrations include database queue/cache/session, isolated TASK-002 proof staging, account/access, project/catalogue, selection history, mutation receipts, delivery archives and voucher versions/accounting. No user is seeded automatically. The catalogue worker command is below; the ZIP worker and maintenance schedule are described below.
 
 ## Checks
 
@@ -63,6 +63,7 @@ npm run test:browser:selection
 npm run test:browser:progress
 npm run test:browser:delivery
 npm run test:browser:archives
+npm run test:browser:vouchers
 ```
 
 Playwright starts a local Artisan server when needed. It uses the development `.env` database and synthetic preview pages, without creating accounts. Do not run it against a production server. Screenshots are generated under ignored `test-results/`. CI installs locked dependencies, uses an isolated PostgreSQL 18 service with synthetic credentials, and runs the same checks without deployment or external-service secrets.
@@ -192,7 +193,7 @@ R2 verification reads the same object in contiguous ranges of at most 8 MiB, pin
 - The web middleware retains Laravel's cookie encryption, session authentication, CSRF and request-forgery protection. Session cookies are HttpOnly/SameSite=Lax, database session payloads are encrypted, and production forces Secure cookies and disables debug. Configure HTTPS and trusted proxies explicitly before release; no wildcard proxy trust is enabled.
 - Built assets use a nonce-based script CSP, frame denial, no-referrer, nosniff, and private/no-store responses. The before-paint theme initializer shares its controller with React. Vite hot reload uses its development CSP exception. No SSR service is enabled.
 - `AUTH_MAILER=array` keeps verification/reset messages in memory during local development and tests. Account mail rejects log/composite failover transports and does not log transport exceptions or raw links. Configure an authorized SMTP sender with `AUTH_MAILER=smtp` and the existing `MAIL_*` SMTP settings when real delivery is authorized. `APP_URL` must be the canonical reachable origin, because account links are pinned to it. Real SMTP delivery has not been verified.
-- `AccountPolicy`, `TenantResourcePolicy`, `GalleryGate` and persisted selection/delivery resolution own account/ownership/module decisions. Expiry preserves own metadata/results/billing and eligible client reads/downloads while blocking new choices/confirmation/reopening; suspension allows status/billing only and closes client access/checkout. Project/configuration/import, capability-status, selection/preview and delivery/media routes apply these decisions. Future order/ZIP routes must also apply them. Local proof importer/build/verifier reject suspended owners before provider work. Midtrans and product ZIP remain later work.
+- `AccountPolicy`, `TenantResourcePolicy`, `GalleryGate` and persisted selection/delivery resolution own account/ownership/module decisions. Expiry preserves own metadata/results/billing and eligible client reads/downloads while blocking new choices/confirmation/reopening; suspension allows status/billing only and closes client access/checkout. Project/configuration/import, capability-status, selection/preview, delivery/media and ZIP routes apply these decisions. Voucher management/reporting requires current verified, unsuspended owner-admin access. Future order routes must also apply account/ownership decisions. Local proof importer/build/verifier reject suspended owners before provider work. Midtrans checkout/payments remain later work.
 - Self-hosted DM Sans and Raleway assets come from locked Fontsource packages under SIL OFL 1.1; licenses ship in `public/licenses/`. Photo pixels have no theme filter. Motion respects reduced-motion preferences at the root and on custom interactions.
 
 Do not publish this bootstrap as a working product. Publication, production configuration and live transactions require the separate release gate and owner authorization.
@@ -206,6 +207,14 @@ php artisan snappik:provision-admin owner@example.test
 ```
 
 The command requires an existing verified, unsuspended account, accepts no password, revokes its database sessions and records an idempotent provisioning audit. Sign in again to use `/admin`. No actual owner account was provisioned during implementation. Suspension/reactivation has an audited admin-only application action; its operator screens arrive in TASK-012. This is not a manual payment/entitlement grant path. See [TASK-003 evidence](docs/planning/TASK-003_EVIDENCE.md) for verification and remaining boundaries.
+
+## Owner vouchers
+
+Apply the additive migration with `php artisan migrate --no-interaction`. A provisioned owner signs in at `/admin`, opens **Kelola voucher**, and creates a normalized unique code with a whole percentage (1–99) or positive fixed-IDR discount, required start/end instants, optional total/per-account use limits, enabled state and audit reason. Date controls are explicitly WITA (UTC+08:00); persistence/comparison uses UTC. Empty use limits mean unlimited voucher uses.
+
+Each save publishes an immutable version. The code itself cannot be renamed, deleted or reused. The detail page shows prior terms, audited changes, held/released reservations and successful usage across all versions. Limits cannot fall below held plus successful usage, including the most-used account. Disable the enabled checkbox and save a reason to stop new orders while retaining earlier pending-order contracts. A stale form must load the latest version before resubmitting; validation failures retain entered values.
+
+`npm run test:browser:vouchers` uses a fresh loopback server on port 18769, guarded `snappik_test` and CLI-only synthetic owner/accounting fixtures. Run it after PHPUnit/test-schema migration and sequentially with other database-writing browser suites. [TASK-009 evidence](docs/planning/TASK-009_EVIDENCE.md) records verification. The production reservation/redemption writers, order foreign key and Midtrans integration remain TASK-010/TASK-011; this screen cannot grant access or mark a payment successful. No real owner was provisioned or payment made for these checks.
 
 ## Documentation
 
