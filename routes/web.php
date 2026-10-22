@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AccountController;
+use App\Http\Controllers\Client\DeliveryController;
 use App\Http\Controllers\Client\GalleryController;
 use App\Http\Controllers\Client\SelectionController;
 use App\Http\Controllers\Photographer\ProgressController;
@@ -47,6 +48,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::get('/g/{capability}', [GalleryController::class, 'show'])->name('client.gallery');
+Route::get('/g/{capability}/delivery', [DeliveryController::class, 'show']);
+Route::get('/g/{capability}/delivery/data', [DeliveryController::class, 'data']);
+Route::get('/g/{capability}/delivery/media/{entry}', [DeliveryController::class, 'media'])->whereNumber('entry');
 Route::get('/g/{capability}/selection', [SelectionController::class, 'show']);
 Route::get('/g/{capability}/selection/data', [SelectionController::class, 'data']);
 Route::post('/g/{capability}/selection/choices', [SelectionController::class, 'mutate']);

@@ -1,6 +1,6 @@
 # SnapPik MVP Backlog
 
-**TASK-001 and TASK-003: COMPLETE. TASK-002: FULL-CATALOGUE ZIP VERIFIED / REAL RESOURCE-KEY FIXTURE PENDING. TASK-004–TASK-006: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING. TASK-007–TASK-015: NOT STARTED.** Product authority: [PRD](../product/PRD.md). Technical contracts: [Architecture](../engineering/ARCHITECTURE.md). [Package approval state](../index.md).
+**TASK-001 and TASK-003: COMPLETE. TASK-002: FULL-CATALOGUE ZIP VERIFIED / REAL RESOURCE-KEY FIXTURE PENDING. TASK-004–TASK-007: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING. TASK-008–TASK-015: NOT STARTED.** Product authority: [PRD](../product/PRD.md). Technical contracts: [Architecture](../engineering/ARCHITECTURE.md). [Package approval state](../index.md).
 
 These are implementation tasks, not claims that the application exists. Dependencies are hard prerequisites for declaring a task complete; a task may contain a bounded exploratory prototype without advertising it as a finished feature. Technical feasibility proofs precede broad UI work. Production publication remains a separately authorized action.
 
@@ -74,13 +74,14 @@ These are implementation tasks, not claims that the application exists. Dependen
 
 ## TASK-007 — Deliver finished galleries and individual downloads
 
-- Status: NOT STARTED
+- Status: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING (explicitly requested October 22, 2026; TASK-004/TASK-005 acceptance remains open)
 - Requirements: REQ-002, REQ-006, REQ-010, REQ-015, REQ-019
 - Dependencies: TASK-004, TASK-005
 - Scope: finished-photo publication/viewing and protected original-byte delivery with safe filenames and range handling.
 - Acceptance: separate selection/delivery passwords and deadlines remain independent; original-byte fixture matches the downloaded file; revoked source/download permission is visible and never produces a misleading JPEG/HTML response. Another project's file ID and denied new Range requests are blocked. Account expiry alone does not block valid delivery.
 - Out of scope: permanent originals cache, upload allocation, link redirect to a Drive folder.
 - Completion evidence: downloaded-byte comparison, media authorization/range tests and a client browser download demonstration.
+- Verification record: [TASK-007 evidence](TASK-007_EVIDENCE.md). Finished-gallery folder/grid/enlargement and protected original attachments are implemented using the existing independent delivery publication/password/deadline boundary. Synthetic PostgreSQL/provider/browser checks cover original-byte comparison, Range/If-Range, cross-project/revision denial, revoked rights, safe filenames, subscription expiry and late stream failure. TASK-004/TASK-005's prerequisite acceptance remains a hard completion gate; no new live-provider transfer or production publication is claimed.
 
 ## TASK-008 — Productize complete single-ZIP jobs
 

@@ -3,6 +3,7 @@
 namespace Tests\Integration;
 
 use App\Integrations\GoogleDrive\PublicDriveSource;
+use App\Services\Drive\ByteRange;
 use App\Services\Drive\DriveItem;
 use App\Services\Drive\DriveReference;
 use App\Services\ProviderFailure;
@@ -226,6 +227,70 @@ class PublicDriveSourceTest extends TestCase
     {
         $this->expectExceptionMessage('drive_credentials_missing');
         (new PublicDriveSource(new Client, ''))->metadata(new DriveReference('root'));
+    }
+
+    public function test_partial_original_validates_identity_headers_length_and_eof_metadata(): void
+    {
+        $photo = [...F::photo(), 'resourceKey' => 'synthetic-range-key'];
+        $source = $this->source([F::json($photo), new Response(206, ['Content-Type' => 'image/jpeg',
+            'Content-Length' => '4', 'Content-Range' => 'bytes 2-5/12'], 'igin'), F::json($photo)]);
+        $stream = $source->originalRange(DriveItem::fromArray($photo), new ByteRange(2, 5));
+        try {
+            $this->assertSame('igin', $stream->getContents());
+        } finally {
+            $stream->close();
+        }
+        $request = $this->history[1]['request'];
+        $this->assertSame('/download/drive/v3/files/photo1', $request->getUri()->getPath());
+        $this->assertSame('bytes=2-5', $request->getHeaderLine('Range'));
+        $this->assertSame('identity', $request->getHeaderLine('Accept-Encoding'));
+        $this->assertSame('photo1/synthetic-range-key', $request->getHeaderLine('X-Goog-Drive-Resource-Keys'));
+        $this->assertFalse($this->history[1]['options']['decode_content']);
+        $this->assertCount(3, $this->history);
+    }
+
+    public static function badRanges(): array
+    {
+        return [
+            'ignored range' => [200, 'bytes 2-5/12', '4', 'igin', 'image/jpeg'],
+            'wrong position' => [206, 'bytes 3-6/12', '4', 'igin', 'image/jpeg'],
+            'wrong total' => [206, 'bytes 2-5/13', '4', 'igin', 'image/jpeg'],
+            'missing boundary' => [206, '', '4', 'igin', 'image/jpeg'],
+            'wrong length header' => [206, 'bytes 2-5/12', '8', 'igin', 'image/jpeg'],
+            'truncated body' => [206, 'bytes 2-5/12', '4', 'ig', 'image/jpeg'],
+            'surplus body' => [206, 'bytes 2-5/12', '4', 'iginx', 'image/jpeg'],
+            'html type' => [206, 'bytes 2-5/12', '4', 'html', 'text/html'],
+        ];
+    }
+
+    #[DataProvider('badRanges')]
+    public function test_bad_partial_originals_fail(int $status, string $boundary, string $length, string $bytes, string $type): void
+    {
+        $photo = F::photo();
+        $source = $this->source([F::json($photo), new Response($status, ['Content-Type' => $type,
+            'Content-Range' => $boundary, 'Content-Length' => $length], $bytes), F::json($photo)]);
+        $stream = null;
+        $this->expectException(ProviderFailure::class);
+        try {
+            $stream = $source->originalRange(DriveItem::fromArray($photo), new ByteRange(2, 5));
+            $stream->getContents();
+        } finally {
+            $stream?->close();
+        }
+    }
+
+    public function test_revoked_permission_during_partial_transfer_fails_at_eof(): void
+    {
+        $photo = F::photo();
+        $source = $this->source([F::json($photo), new Response(206, ['Content-Type' => 'image/jpeg', 'Content-Range' => 'bytes 2-5/12'], 'igin'),
+            F::json([...$photo, 'capabilities' => ['canDownload' => false]])]);
+        $stream = $source->originalRange(DriveItem::fromArray($photo), new ByteRange(2, 5));
+        $this->expectExceptionMessage('drive_download_restricted');
+        try {
+            $stream->getContents();
+        } finally {
+            $stream->close();
+        }
     }
 
     public function test_stream_get_contents_cannot_bypass_integrity_verification(): void

@@ -1,6 +1,6 @@
 # SnapPik Project Structure
 
-**Classification:** TASK-001 foundation, TASK-003 authentication/access policy, TASK-002 local/test provider prototype, TASK-004 project/catalogue, TASK-005 client selection/preview and TASK-006 progress/history/export implementation exist. TASK-004–TASK-006 acceptance awaits TASK-002's real resource-key fixture. Finished-photo downloads, product ZIP and billing workflows remain planned. [Package state](../index.md).
+**Classification:** TASK-001 foundation, TASK-003 authentication/access policy, TASK-002 local/test provider prototype, TASK-004 project/catalogue, TASK-005 client selection/preview, TASK-006 progress/history/export and TASK-007 finished-gallery/individual-download implementation exist. TASK-004–TASK-007 acceptance awaits TASK-002's real resource-key fixture. Product ZIP and billing workflows remain planned. [Package state](../index.md).
 
 ## Existing documentation
 
@@ -96,6 +96,8 @@ docs/               # Existing authoritative documentation
 ```
 
 TASK-006 adds `Services/Selections/ProjectProgress.php`, `Http/Controllers/Photographer/ProgressController.php`, the additive acknowledgement-time migration, `pages/photographer/results.tsx`, `components/project-progress.tsx`, `hooks/use-progress.ts` and `lib/progress.ts`. Existing dashboard/project-list pages compose the shared progress view. `tests/Feature/PhotographerProgressTest.php`, `tests/Support/progress-browser-fixture.php`, `tests/Browser/progress.spec.ts` and `playwright.progress.config.ts` provide isolated state-transition/export/browser verification. Filename export uses private temporary text storage and existing selection snapshots; no provider integration or unused domain model is introduced.
+
+TASK-007 adds `Http/Controllers/Client/DeliveryController.php`, `Services/Access/DeliveryAccess.php`, `Services/Drive/{DeliveryMedia,ByteRange}.php`, `Contracts/DriveRangeSource.php` and `pages/client/delivery.tsx`. `PublicDriveSource` implements partial original requests through the existing provider boundary; `VerifiedOriginalStream` also verifies partial lengths and post-transfer metadata. `tests/Feature/ClientDeliveryTest.php`, `tests/Support/DeliveryFixture.php`, `tests/Support/delivery-browser-{fixture,router}.php`, `tests/Browser/delivery.spec.ts` and `playwright.delivery.config.ts` provide isolated verification. The dedicated CLI-server test router binds a synthetic HTTP transport behind the real adapter and is never included by application routes or the public front controller. No schema, permanent-original storage or product ZIP path is added.
 
 ## Ownership and dependencies
 

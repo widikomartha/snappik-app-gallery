@@ -3,7 +3,9 @@
 namespace App\Integrations\GoogleDrive;
 
 use App\Contracts\DrivePreviewSource;
+use App\Contracts\DriveRangeSource;
 use App\Contracts\DriveSource;
+use App\Services\Drive\ByteRange;
 use App\Services\Drive\DriveItem;
 use App\Services\Drive\DrivePage;
 use App\Services\Drive\DriveReference;
@@ -14,7 +16,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 
-final class PublicDriveSource implements DrivePreviewSource, DriveSource
+final class PublicDriveSource implements DrivePreviewSource, DriveRangeSource, DriveSource
 {
     private const FIELDS = 'id,name,mimeType,size,version,md5Checksum,modifiedTime,resourceKey,trashed,capabilities(canDownload)';
 
@@ -49,6 +51,20 @@ final class PublicDriveSource implements DrivePreviewSource, DriveSource
 
     public function original(DriveItem $expected): StreamInterface
     {
+        return $this->download($expected);
+    }
+
+    public function originalRange(DriveItem $expected, ByteRange $range): StreamInterface
+    {
+        if ($range->start < 0 || $range->end < $range->start || $range->end >= $expected->size) {
+            throw new ProviderFailure('drive_invalid_range');
+        }
+
+        return $this->download($expected, $range);
+    }
+
+    private function assertCurrent(DriveItem $expected): void
+    {
         $current = $this->metadata($expected->reference);
         if (! $current->isPhoto() || ! $current->canDownload) {
             throw new ProviderFailure('drive_download_restricted');
@@ -57,23 +73,27 @@ final class PublicDriveSource implements DrivePreviewSource, DriveSource
             || $current->mimeType !== $expected->mimeType || $current->modifiedTime !== $expected->modifiedTime) {
             throw new ProviderFailure('drive_source_changed');
         }
-        $response = $this->request($expected->reference, 'files/'.$expected->reference->id, ['alt' => 'media'], true);
+    }
+
+    private function download(DriveItem $expected, ?ByteRange $range = null): StreamInterface
+    {
+        $this->assertCurrent($expected);
+        $response = $this->request($expected->reference, 'files/'.$expected->reference->id, ['alt' => 'media'], true, $range);
         $stream = $response->getBody();
         $type = strtolower(trim(explode(';', $response->getHeaderLine('Content-Type'))[0]));
         $length = $response->getHeaderLine('Content-Length');
         if (! in_array($type, [$expected->mimeType, 'application/octet-stream'], true)
-            || ($length !== '' && $length !== (string) $expected->size)) {
+            || ($length !== '' && $length !== (string) ($range?->length() ?? $expected->size))
+            || ($response->getHeaderLine('Content-Encoding') !== '' && $response->getHeaderLine('Content-Encoding') !== 'identity')
+            || ($range !== null && $response->getHeaderLine('Content-Range') !== "bytes {$range->start}-{$range->end}/{$expected->size}")) {
             $stream->close();
             throw new ProviderFailure('drive_invalid_media_response');
         }
 
         return new VerifiedOriginalStream($stream, $expected, function () use ($expected): void {
             // Detect a metadata change while the original was in flight.
-            $after = $this->metadata($expected->reference);
-            if ($after->version !== $expected->version || $after->size !== $expected->size || $after->md5 !== $expected->md5) {
-                throw new ProviderFailure('drive_source_changed');
-            }
-        });
+            $this->assertCurrent($expected);
+        }, $range);
     }
 
     public function thumbnail(DriveItem $expected): PreviewImage
@@ -128,7 +148,7 @@ final class PublicDriveSource implements DrivePreviewSource, DriveSource
         return $data;
     }
 
-    private function request(DriveReference $reference, string $path, array $query, bool $stream = false): ResponseInterface
+    private function request(DriveReference $reference, string $path, array $query, bool $stream = false, ?ByteRange $range = null): ResponseInterface
     {
         if ($this->apiKey === '') {
             throw new ProviderFailure('drive_credentials_missing');
@@ -144,12 +164,15 @@ final class PublicDriveSource implements DrivePreviewSource, DriveSource
                 $this->beforeRequest?->__invoke();
                 $response = $this->http->request('GET', $base.$path, [
                     'query' => $query, 'headers' => array_filter(['X-Goog-Api-Key' => $this->apiKey,
-                        'X-Goog-Drive-Resource-Keys' => $reference->resourceKey === null ? null : $reference->id.'/'.$reference->resourceKey]),
+                        'X-Goog-Drive-Resource-Keys' => $reference->resourceKey === null ? null : $reference->id.'/'.$reference->resourceKey,
+                        'Accept-Encoding' => 'identity',
+                        'Range' => $range === null ? null : "bytes={$range->start}-{$range->end}"]),
                     'stream' => $stream, 'http_errors' => false, 'allow_redirects' => false,
+                    'decode_content' => false,
                     'connect_timeout' => 10, 'timeout' => $stream ? 0 : 60, 'read_timeout' => 60,
                 ]);
                 $status = $response->getStatusCode();
-                if ($status === 200) {
+                if ($status === ($range === null ? 200 : 206)) {
                     return $response;
                 }
                 $reason = null;

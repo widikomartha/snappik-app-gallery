@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Contracts\ArchiveStorage;
 use App\Contracts\DrivePreviewSource;
+use App\Contracts\DriveRangeSource;
 use App\Contracts\DriveSource;
 use App\Integrations\ArchiveStorage\R2ArchiveStorage;
 use App\Integrations\GoogleDrive\PublicDriveSource;
@@ -35,6 +36,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(DriveSource::class, fn ($app) => new PublicDriveSource(new Client, (string) config('drive_proof.api_key'),
             beforeRequest: fn () => $app->make(DriveRequestPacer::class)->wait()));
         $this->app->singleton(DrivePreviewSource::class, fn ($app) => $app->make(DriveSource::class));
+        $this->app->singleton(DriveRangeSource::class, fn ($app) => $app->make(DriveSource::class));
         $this->app->singleton(S3Client::class, function () {
             $options = config('drive_proof.r2');
             foreach ($options as $value) {
