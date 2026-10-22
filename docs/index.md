@@ -6,7 +6,7 @@
 
 **Final document approval: pending.**
 
-**Implementation phase: TASK-001 implemented and verified; TASK-002 prototype implemented with provider integration blocked; TASK-003–TASK-015 not started.**
+**Implementation phase: TASK-001 implemented and verified; TASK-002 provider smoke partially verified, complete ZIP blocked by Drive HTTP 403; TASK-003–TASK-015 not started.**
 
 This file owns package status and approval tracking. Baseline approval authorized creation of this English documentation package in `D:\Website\snappik-app-gallery`. It did not approve unseen final documents, authorize deployment, or establish that future software is correct. Change package state to **APPROVED / IMPLEMENTATION READY** only after the owner explicitly approves the final documents and documentation checks pass.
 
@@ -15,6 +15,8 @@ On October 22, 2026, the owner approved incorporating the ZenGrid direction, Mot
 Later on October 22, 2026, the owner explicitly requested implementation of TASK-001. That request authorizes the bootstrap and its dependencies/checks; it is not recorded as final approval of the entire documentation package or authorization for deployment.
 
 The owner subsequently explicitly requested TASK-002, authorizing its provider contracts, local/test prototype, dependencies and checks. The owner confirmed that an authorized Drive test source and private R2 credentials are not configured and requested documenting that blocker. Synthetic adapter and large-ZIP checks are recorded in [TASK-002 evidence](planning/TASK-002_EVIDENCE.md). The real-provider acceptance gate remains open; this request does not approve the complete document package or authorize publication.
+
+Later on October 22, 2026, the owner configured Drive/R2 and explicitly approved transferring all 384 configured source photos into one private test ZIP, verifying it, and deleting it. Actual import/pagination and sampled original-byte checks passed. The queued full build stopped after 16 photos because the official Drive media endpoint returned HTTP 403 HTML containing the fixed phrase “automated queries”; its R2 output and multipart upload were removed. Separate generated-data R2 completion/CRC/MD5 and failed-input cleanup checks passed. The blocker is now complete-source media access, not missing credentials. TASK-002 remains incomplete; [updated evidence](planning/TASK-002_EVIDENCE.md#authorized-provider-smoke-follow-up) records the precise scope and remaining gates.
 
 ## Sources of truth
 

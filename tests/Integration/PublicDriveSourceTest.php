@@ -187,4 +187,52 @@ class PublicDriveSourceTest extends TestCase
         $this->expectExceptionMessage('drive_incomplete_listing');
         $this->source([F::json(['files' => [], 'incompleteSearch' => true])])->children(new DriveReference('root'));
     }
+
+    public function test_automated_query_block_is_sanitized_and_not_retried_or_served_as_media(): void
+    {
+        $photo = F::photo();
+        $source = $this->source([F::json($photo), new Response(403, ['Content-Type' => 'text/html; charset=UTF-8'],
+            '<html>Your computer or network may be sending automated queries. synthetic-private-marker</html>')]);
+        try {
+            $source->original(DriveItem::fromArray($photo));
+            $this->fail('Expected automated request block');
+        } catch (ProviderFailure $error) {
+            $this->assertSame('drive_automated_requests_blocked', $error->reason);
+            $this->assertSame(403, $error->providerStatus);
+            $this->assertFalse($error->retryable);
+            $this->assertNull($error->getPrevious());
+            $this->assertStringNotContainsString('synthetic-private-marker', $error->getMessage());
+            $this->assertCount(2, $this->history);
+        }
+    }
+
+    public function test_streamed_media_quota_response_has_a_precise_terminal_failure(): void
+    {
+        $photo = F::photo();
+        $source = $this->source([F::json($photo), F::json(['error' => ['errors' => [['reason' => 'downloadQuotaExceeded']]]], 403)]);
+        try {
+            $source->original(DriveItem::fromArray($photo));
+            $this->fail('Expected download quota failure');
+        } catch (ProviderFailure $error) {
+            $this->assertSame('drive_download_quota_exceeded', $error->reason);
+            $this->assertFalse($error->retryable);
+            $this->assertCount(2, $this->history);
+        }
+    }
+
+    public function test_streamed_media_rate_limit_retries_within_the_existing_budget(): void
+    {
+        $photo = F::photo();
+        $delays = [];
+        $source = $this->source([F::json($photo), F::json(['error' => ['errors' => [['reason' => 'rateLimitExceeded']]]], 403),
+            new Response(200, ['Content-Type' => 'image/jpeg'], 'original-one'), F::json($photo)], $delays);
+        $body = $source->original(DriveItem::fromArray($photo));
+        try {
+            $this->assertSame('original-one', $body->getContents());
+            $this->assertCount(1, $delays);
+            $this->assertCount(4, $this->history);
+        } finally {
+            $body->close();
+        }
+    }
 }

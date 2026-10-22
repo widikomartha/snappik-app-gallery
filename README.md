@@ -1,12 +1,12 @@
 # SnapPik
 
-SnapPik is a subscription application for photographer photo selection and finished-photo delivery. TASK-001 establishes the application foundation. TASK-002 adds a local/test-only Drive-to-R2 ZIP prototype; real-provider verification is blocked by missing configuration. Product workflows remain in later [backlog tasks](docs/planning/BACKLOG.md).
+SnapPik is a subscription application for photographer photo selection and finished-photo delivery. TASK-001 establishes the application foundation. TASK-002 adds a local/test-only Drive-to-R2 ZIP prototype; actual provider smoke is partially verified, with the complete source ZIP blocked by Drive HTTP 403. Product workflows remain in later [backlog tasks](docs/planning/BACKLOG.md).
 
 ## Current state
 
 Laravel 13, PHP 8.4+, React 19, TypeScript, Inertia 3, Vite 8, Motion 14 and PostgreSQL are configured at the repository root. Both package managers have real lockfiles. The skeleton was generated from official `laravel/laravel` v13.11.0, with the official Inertia adapter added separately to keep authentication workflows in TASK-003.
 
-The owner requested TASK-001 and TASK-002 on October 22, 2026. Final approval of the entire documentation package remains pending in the [index](docs/index.md). No connected provider account, production deployment, or finished gallery is implied.
+The owner requested TASK-001 and TASK-002 on October 22, 2026, and subsequently configured and authorized provider smoke testing. Final approval of the entire documentation package remains pending in the [index](docs/index.md). Provider test access does not imply production deployment or a finished gallery.
 
 ## Prerequisites
 
@@ -64,7 +64,7 @@ The initial Windows verification used portable PHP, Composer, PostgreSQL, and Ch
 
 ## TASK-002 Drive/ZIP proof
 
-The code and synthetic checks exist; the authorized real Drive/R2 smoke test is **blocked**. See [TASK-002 evidence](docs/planning/TASK-002_EVIDENCE.md). The owner confirmed that test-source/provider configuration is unavailable. No scraping, photographer OAuth, service purchase or production bucket is substituted.
+The code and synthetic checks exist, and actual provider smoke testing is **partially verified**. See [TASK-002 evidence](docs/planning/TASK-002_EVIDENCE.md#authorized-provider-smoke-follow-up). The configured public Drive folder imported 384 photos with real pagination and sampled original-byte checks passing. The queued complete ZIP stopped after 16 photos when the official Drive media API returned HTTP 403 HTML indicating “automated queries”; its entire R2 attempt was aborted/deleted. Actual R2 completion, independent CRC/MD5 readback and cleanup passed separately using generated data. No complete photo ZIP is claimed. Do not repeatedly retry this provider block, change credentials/access models, rotate networks or scrape Drive pages to bypass it; investigate the supported provider access path before another full attempt.
 
 The standard PHP suite includes synthetic adapter/SDK transport contracts and real PostgreSQL staging tests. The large proof is opt-in because it temporarily writes and extracts over 4 GiB. It runs separately in CI without provider credentials:
 
@@ -76,9 +76,9 @@ Remove-Item Env:SNAPPIK_LARGE_PROOF
 
 This uses generated streams and a local HTTP transport fixture behind the real AWS SDK. It verifies every entry's length, CRC and original MD5, a second entry beyond the ZIP32 offset boundary, and ZIP64 records. It deletes the temporary object and writes ignored metrics to `storage/logs/large-zip-proof.json`. Allow at least 6 GiB of free temporary disk. This proves byte streaming, not real provider access or arbitrary catalogue-count memory.
 
-When an authorized test folder and private R2 sandbox bucket become available, configure the empty `GOOGLE_DRIVE_API_KEY`, `DRIVE_PROOF_FOLDER_URL`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` and `R2_ARCHIVE_BUCKET` variables in the ignored `.env`. Restrict the server API key to Drive API and the server's allowed access; use only a bucket-scoped R2 test token. Keep the bucket private with public development/custom-domain access disabled. No endpoint override or public object URL is supported. Never put the source capability or credentials in command arguments, source, screenshots or evidence.
+For another local environment, configure `GOOGLE_DRIVE_API_KEY`, `DRIVE_PROOF_FOLDER_URL`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` and `R2_ARCHIVE_BUCKET` in the ignored `.env`. Restrict the server API key to Drive API and the server's allowed access; use only a bucket-scoped R2 test token. Keep the bucket private with public development/custom-domain access disabled. No endpoint override or public object URL is supported. Never put the source capability or credentials in command arguments, source, screenshots or evidence.
 
-Use `APP_ENV=local` and an existing **synthetic local test user's numeric ID** as `$proofOwnerId`. No user is seeded automatically. The following is the smoke-test procedure to execute after configuration, not a record of a completed provider run:
+Use `APP_ENV=local` and an existing **synthetic local test user's numeric ID** as `$proofOwnerId`. No user is seeded automatically. The following is the supported smoke-test procedure; the evidence distinguishes the stages actually completed from the blocked full-source transfer:
 
 ```powershell
 php artisan config:clear
@@ -109,7 +109,7 @@ The installed Windows libzip strict `CHECKCONS` checker rejects the large zero-h
 - `/_foundation/{public|auth|photographer|admin|client}` provides local/testing-only synthetic component previews. Production always returns 404, including when routes are cached. These are preview surfaces, not an authentication bypass to data.
 - The web middleware retains Laravel's cookie encryption, session authentication, CSRF and request-forgery protection. Session cookies are HttpOnly/SameSite=Lax, database session payloads are encrypted, and production forces Secure cookies and disables debug. Configure HTTPS and trusted proxies explicitly before release; no wildcard proxy trust is enabled.
 - Built assets use a nonce-based script CSP, frame denial, no-referrer, nosniff, and private/no-store responses. The before-paint theme initializer shares its controller with React. Vite hot reload uses its development CSP exception. No SSR service is enabled.
-- Mail defaults to the in-memory array transport; no messages or password links are sent or logged. Local storage is private and has no automatic file-serving route. Drive/R2 have a local/test-only prototype; real accounts are not connected. Midtrans, product tenant policies, suspension, entitlement enforcement and login throttles remain later work.
+- Mail defaults to the in-memory array transport; no messages or password links are sent or logged. Local storage is private and has no automatic file-serving route. Drive/R2 have a local/test-only prototype with actual authorized provider smoke evidence and a blocked complete-source build. Midtrans, product tenant policies, suspension, entitlement enforcement and login throttles remain later work.
 - Self-hosted DM Sans and Raleway assets come from locked Fontsource packages under SIL OFL 1.1; licenses ship in `public/licenses/`. Photo pixels have no theme filter. Motion respects reduced-motion preferences at the root and on custom interactions.
 
 Do not publish this bootstrap as a working product. Publication, production configuration and live transactions require the separate release gate and owner authorization.

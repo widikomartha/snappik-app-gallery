@@ -108,13 +108,27 @@ final class PublicDriveSource implements DriveSource
                     return $response;
                 }
                 $reason = null;
-                if (! $stream && str_contains($response->getHeaderLine('Content-Type'), 'json')) {
-                    $payload = json_decode((string) $response->getBody(), true);
-                    $reason = $payload['error']['errors'][0]['reason'] ?? null;
+                $automatedRequestsBlocked = false;
+                $contentType = strtolower($response->getHeaderLine('Content-Type'));
+                try {
+                    // Error responses may themselves be streamed. Inspect only a bounded
+                    // diagnostic prefix; never log it or use HTML as a media fallback.
+                    $errorBody = $response->getBody()->read(16384);
+                    if (str_contains($contentType, 'json')) {
+                        $payload = json_decode($errorBody, true);
+                        $reason = $payload['error']['errors'][0]['reason'] ?? null;
+                    }
+                    $automatedRequestsBlocked = $status === 403 && str_contains($contentType, 'text/html')
+                        && str_contains(strtolower($errorBody), 'automated queries');
+                } catch (\Throwable) {
+                    // Preserve the native status when the diagnostic body cannot be read.
+                } finally {
+                    $response->getBody()->close();
                 }
-                $response->getBody()->close();
                 $retryable = $status === 429 || $status >= 500 || ($status === 403 && in_array($reason, ['rateLimitExceeded', 'userRateLimitExceeded'], true));
                 $failure = new ProviderFailure(match (true) {
+                    $automatedRequestsBlocked => 'drive_automated_requests_blocked',
+                    $status === 403 && $reason === 'downloadQuotaExceeded' => 'drive_download_quota_exceeded',
                     $retryable => 'drive_temporarily_unavailable',
                     $status === 403 => 'drive_access_denied',
                     $status === 404 => 'drive_not_found_or_resource_key_required',
