@@ -73,4 +73,76 @@ class R2ArchiveStorageTest extends TestCase
             $this->assertSame([], $fixture->operations);
         }
     }
+
+    public function test_large_object_read_joins_bounded_ranges_of_the_same_etag(): void
+    {
+        $bytes = str_repeat('a', 8 * 1024 ** 2).'synthetic-tail';
+        file_put_contents($this->path, $bytes);
+        $fixture = new R2HttpFixture($this->path);
+        $stream = (new R2ArchiveStorage($fixture->client(), 'synthetic-private-bucket'))->read(self::KEY);
+        $this->assertSame(strlen($bytes), $stream->getSize());
+        $this->assertSame($bytes, $stream->getContents());
+        $stream->close();
+        $this->assertSame(['head', 'get', 'get'], $fixture->operations);
+        $this->assertSame(['bytes=0-8388607', 'bytes=8388608-'.(strlen($bytes) - 1)], array_column($fixture->readRequests, 'range'));
+        foreach ($fixture->readRequests as $request) {
+            $this->assertSame('"synthetic-complete"', $request['if_match']);
+            $this->assertFalse($request['stream']);
+            $this->assertSame(300, $request['timeout']);
+            $this->assertSame(60, $request['read_timeout']);
+        }
+    }
+
+    public static function invalidRanges(): array
+    {
+        return [['status'], ['etag'], ['range'], ['truncated'], ['surplus']];
+    }
+
+    public function test_interrupted_range_is_retried_without_duplicating_bytes(): void
+    {
+        file_put_contents($this->path, 'synthetic-range');
+        $fixture = new R2HttpFixture($this->path);
+        $fixture->interruptedReads = 1;
+        $stream = (new R2ArchiveStorage($fixture->client(), 'synthetic-private-bucket'))->read(self::KEY);
+        $this->assertSame('synthetic-range', $stream->getContents());
+        $this->assertSame(['bytes=0-14', 'bytes=0-14'], array_column($fixture->readRequests, 'range'));
+        $stream->close();
+    }
+
+    public function test_repeated_read_interruptions_have_a_bounded_sanitized_failure(): void
+    {
+        file_put_contents($this->path, 'synthetic-range');
+        $fixture = new R2HttpFixture($this->path);
+        $fixture->interruptedReads = 3;
+        $stream = (new R2ArchiveStorage($fixture->client(), 'synthetic-private-bucket'))->read(self::KEY);
+        try {
+            $stream->getContents();
+            $this->fail('Expected unavailable read');
+        } catch (ProviderFailure $error) {
+            $this->assertSame('r2_read_failed', $error->reason);
+            $this->assertTrue($error->retryable);
+            $this->assertNull($error->getPrevious());
+            $this->assertCount(3, $fixture->readRequests);
+        } finally {
+            $stream->close();
+        }
+    }
+
+    #[DataProvider('invalidRanges')]
+    public function test_changed_or_invalid_range_never_returns_unverified_bytes(string $failure): void
+    {
+        file_put_contents($this->path, 'synthetic-range');
+        $fixture = new R2HttpFixture($this->path);
+        $fixture->badRange = $failure;
+        $stream = (new R2ArchiveStorage($fixture->client(), 'synthetic-private-bucket'))->read(self::KEY);
+        try {
+            $stream->read(1);
+            $this->fail('Expected invalid range failure');
+        } catch (ProviderFailure $error) {
+            $this->assertSame('r2_read_invalid_response', $error->reason);
+            $this->assertNull($error->getPrevious());
+        } finally {
+            $stream->close();
+        }
+    }
 }

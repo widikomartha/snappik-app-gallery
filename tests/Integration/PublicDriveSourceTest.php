@@ -55,6 +55,7 @@ class PublicDriveSourceTest extends TestCase
     public function test_official_pagination_headers_and_original_bytes(): void
     {
         $photo = F::photo();
+        $photo['resourceKey'] = 'synthetic-photo-key';
         $source = $this->source([F::json(['files' => [$photo], 'nextPageToken' => 'page2']), F::json(['files' => []]),
             F::json($photo), new Response(200, ['Content-Type' => 'image/jpeg', 'Content-Length' => '12'], 'original-one'), F::json($photo)]);
         $root = new DriveReference('root', 'synthetic-resource-key');
@@ -75,6 +76,14 @@ class PublicDriveSourceTest extends TestCase
         $this->assertStringNotContainsString('synthetic-api-key', (string) $request->getUri());
         $this->assertFalse($this->history[0]['options']['allow_redirects']);
         $this->assertTrue($this->history[3]['options']['stream']);
+        $this->assertSame('/drive/v3/files/photo1', $this->history[2]['request']->getUri()->getPath());
+        $mediaRequest = $this->history[3]['request'];
+        $this->assertSame('/download/drive/v3/files/photo1', $mediaRequest->getUri()->getPath());
+        $this->assertSame('synthetic-api-key', $mediaRequest->getHeaderLine('X-Goog-Api-Key'));
+        $this->assertSame('photo1/synthetic-photo-key', $mediaRequest->getHeaderLine('X-Goog-Drive-Resource-Keys'));
+        $this->assertStringNotContainsString('synthetic-api-key', (string) $mediaRequest->getUri());
+        $this->assertFalse($this->history[3]['options']['allow_redirects']);
+        $this->assertSame('/drive/v3/files/photo1', $this->history[4]['request']->getUri()->getPath());
         $this->assertStringContainsString('pageToken=page2', (string) $this->history[1]['request']->getUri());
     }
 
@@ -233,6 +242,27 @@ class PublicDriveSourceTest extends TestCase
             $this->assertCount(4, $this->history);
         } finally {
             $body->close();
+        }
+    }
+
+    public function test_pacing_runs_before_every_request_including_retries_and_eof_metadata_check(): void
+    {
+        $photo = F::photo();
+        $requests = [];
+        $stack = HandlerStack::create(new MockHandler([F::json($photo), new Response(429),
+            new Response(200, ['Content-Type' => 'image/jpeg'], 'original-one'), F::json($photo)]));
+        $stack->push(Middleware::history($requests));
+        $pacedBefore = [];
+        $source = new PublicDriveSource(new Client(['handler' => $stack]), 'synthetic-key', sleep: fn () => null,
+            beforeRequest: function () use (&$pacedBefore, &$requests): void {
+                $pacedBefore[] = count($requests);
+            });
+        $stream = $source->original(DriveItem::fromArray($photo));
+        try {
+            $this->assertSame('original-one', $stream->getContents());
+            $this->assertSame([0, 1, 2, 3], $pacedBefore);
+        } finally {
+            $stream->close();
         }
     }
 }

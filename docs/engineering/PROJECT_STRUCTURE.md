@@ -27,6 +27,8 @@ Real `composer.json`/`composer.lock`, `package.json`/`package-lock.json`, enviro
 
 TASK-002 adds `app/Contracts/{DriveSource,ArchiveStorage,ArchiveUpload}.php`, `app/Integrations/{GoogleDrive,ArchiveStorage}/`, `app/Services/{Drive,Archives}/`, sanitized `ProviderFailure`, `app/Jobs/BuildDriveProofArchive.php`, `app/Models/DriveProof{Run,Node}.php`, their isolated PostgreSQL migration, `config/drive_proof.php` and `app/Console/Commands/DriveProof.php`. Dependency bindings live in `AppServiceProvider`. Provider snapshots remain inside adapters/encrypted prototype metadata; no provider code is imported by React. The command and prototype orchestration are local/test-only; these paths do not imply real-provider verification or finished gallery jobs.
 
+`app/Services/Drive/DriveRequestPacer.php` now coordinates provider request starts through the shared cache/lock. `AppServiceProvider` injects its callback into the Drive adapter, keeping timing state out of controllers, models and UI code. Its operational interval lives in `config/drive_proof.php` and `.env.example`; tests cover independent instances, safe failure and pacing on retries/EOF metadata checks.
+
 ## Target application layout
 
 The application uses Laravel at the workspace root with React/TypeScript through Inertia. Framework-owned files were generated from the official Laravel skeleton. The following remains a placement contract for the complete MVP; compare with the existing-foundation section before assuming a domain path exists. Do not create unused directories or implementations merely to match this tree.

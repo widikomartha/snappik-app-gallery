@@ -6,7 +6,10 @@ use Aws\S3\S3Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Promise\Create;
 use GuzzleHttp\Promise\PromiseInterface;
+use GuzzleHttp\Psr7\FnStream;
+use GuzzleHttp\Psr7\LimitStream;
 use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Psr7\Utils;
 use Psr\Http\Message\RequestInterface;
 
 /** Local HTTP transport fixture for the real AWS SDK; never calls Cloudflare. */
@@ -23,6 +26,12 @@ final class R2HttpFixture
     public bool $failCleanup = false;
 
     public bool $failComplete = false;
+
+    public array $readRequests = [];
+
+    public ?string $badRange = null;
+
+    public int $interruptedReads = 0;
 
     public function __construct(public string $path) {}
 
@@ -81,10 +90,45 @@ final class R2HttpFixture
             $this->operations[] = 'head';
             clearstatcache(true, $this->path);
 
-            return Create::promiseFor(new Response(200, ['Content-Length' => (string) (filesize($this->path) + ($this->wrongHead ? 1 : 0)), 'Content-Type' => 'application/zip']));
+            return Create::promiseFor(new Response(200, ['Content-Length' => (string) (filesize($this->path) + ($this->wrongHead ? 1 : 0)), 'Content-Type' => 'application/zip', 'ETag' => '"synthetic-complete"']));
         }
         if ($method === 'GET') {
             $this->operations[] = 'get';
+            $this->readRequests[] = ['range' => $request->getHeaderLine('Range'), 'if_match' => $request->getHeaderLine('If-Match'), 'stream' => $options['stream'] ?? null, 'timeout' => $options['timeout'] ?? null, 'read_timeout' => $options['read_timeout'] ?? null];
+            if (preg_match('/\Abytes=(\d+)-(\d+)\z/', $request->getHeaderLine('Range'), $range)) {
+                $start = (int) $range[1];
+                $length = (int) $range[2] - $start + 1;
+                $body = new LimitStream(Utils::streamFor(fopen($this->path, 'rb')), $length, $start);
+                if ($this->interruptedReads > 0) {
+                    $this->interruptedReads--;
+                    $original = $body;
+                    $first = true;
+                    $body = FnStream::decorate($original, ['read' => function (int $length) use ($original, &$first): string {
+                        if (! $first) {
+                            throw new \RuntimeException('synthetic-private-read-error');
+                        }
+                        $first = false;
+
+                        return $original->read(min($length, 1));
+                    }]);
+                }
+                $headers = ['Content-Type' => 'application/zip', 'Content-Length' => (string) $length,
+                    'Content-Range' => 'bytes '.$start.'-'.$range[2].'/'.filesize($this->path), 'ETag' => '"synthetic-complete"'];
+                if ($this->badRange === 'etag') {
+                    $headers['ETag'] = '"synthetic-changed"';
+                }
+                if ($this->badRange === 'range') {
+                    $headers['Content-Range'] = 'bytes 0-0/1';
+                }
+                if ($this->badRange === 'truncated') {
+                    $body = 'x';
+                }
+                if ($this->badRange === 'surplus') {
+                    $body = str_repeat('x', $length + 1);
+                }
+
+                return Create::promiseFor(new Response($this->badRange === 'status' ? 200 : 206, $headers, $body));
+            }
 
             return Create::promiseFor(new Response(200, ['Content-Type' => 'application/zip'], fopen($this->path, 'rb')));
         }

@@ -7,6 +7,7 @@ use App\Contracts\DriveSource;
 use App\Integrations\ArchiveStorage\R2ArchiveStorage;
 use App\Integrations\GoogleDrive\PublicDriveSource;
 use App\Models\User;
+use App\Services\Drive\DriveRequestPacer;
 use App\Services\ProviderFailure;
 use Aws\S3\S3Client;
 use GuzzleHttp\Client;
@@ -20,7 +21,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton(DriveSource::class, fn () => new PublicDriveSource(new Client, (string) config('drive_proof.api_key')));
+        $this->app->singleton(DriveRequestPacer::class, fn () => new DriveRequestPacer((string) config('drive_proof.api_key'), (int) config('drive_proof.request_interval_ms')));
+        $this->app->singleton(DriveSource::class, fn ($app) => new PublicDriveSource(new Client, (string) config('drive_proof.api_key'),
+            beforeRequest: fn () => $app->make(DriveRequestPacer::class)->wait()));
         $this->app->singleton(S3Client::class, function () {
             $options = config('drive_proof.r2');
             foreach ($options as $value) {

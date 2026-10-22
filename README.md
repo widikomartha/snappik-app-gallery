@@ -1,6 +1,6 @@
 # SnapPik
 
-SnapPik is a subscription application for photographer photo selection and finished-photo delivery. TASK-001 establishes the application foundation. TASK-002 adds a local/test-only Drive-to-R2 ZIP prototype; actual provider smoke is partially verified, with the complete source ZIP blocked by Drive HTTP 403. Product workflows remain in later [backlog tasks](docs/planning/BACKLOG.md).
+SnapPik is a subscription application for photographer photo selection and finished-photo delivery. TASK-001 establishes the application foundation. TASK-002 adds a local/test-only Drive-to-R2 ZIP prototype; a complete 384-photo ZIP, independent CRC/MD5 verification and cleanup have passed against the configured providers. A real resource-key fixture remains pending. Product workflows remain in later [backlog tasks](docs/planning/BACKLOG.md).
 
 ## Current state
 
@@ -64,7 +64,7 @@ The initial Windows verification used portable PHP, Composer, PostgreSQL, and Ch
 
 ## TASK-002 Drive/ZIP proof
 
-The code and synthetic checks exist, and actual provider smoke testing is **partially verified**. See [TASK-002 evidence](docs/planning/TASK-002_EVIDENCE.md#authorized-provider-smoke-follow-up). The configured public Drive folder imported 384 photos with real pagination and sampled original-byte checks passing. The queued complete ZIP stopped after 16 photos when the official Drive media API returned HTTP 403 HTML indicating “automated queries”; its entire R2 attempt was aborted/deleted. Actual R2 completion, independent CRC/MD5 readback and cleanup passed separately using generated data. No complete photo ZIP is claimed. Do not repeatedly retry this provider block, change credentials/access models, rotate networks or scrape Drive pages to bypass it; investigate the supported provider access path before another full attempt.
+The configured public Drive catalogue imported **384 photos / 1,130,185,579 source bytes** and produced **one 1,130,302,773-byte R2 ZIP**. Independent readback/extraction matched every entry's size, CRC and original MD5. The test object was then deleted; authenticated HEAD confirmed absence and no multipart uploads remained. See [TASK-002 evidence](docs/planning/TASK-002_EVIDENCE.md#complete-canonical-route-build-and-r2-readback-follow-up) for measured results, earlier native failures and remaining gates. TASK-002 remains incomplete because an authorized real resource-key fixture has not been exercised; the configured tree supplied none.
 
 The standard PHP suite includes synthetic adapter/SDK transport contracts and real PostgreSQL staging tests. The large proof is opt-in because it temporarily writes and extracts over 4 GiB. It runs separately in CI without provider credentials:
 
@@ -78,7 +78,7 @@ This uses generated streams and a local HTTP transport fixture behind the real A
 
 For another local environment, configure `GOOGLE_DRIVE_API_KEY`, `DRIVE_PROOF_FOLDER_URL`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` and `R2_ARCHIVE_BUCKET` in the ignored `.env`. Restrict the server API key to Drive API and the server's allowed access; use only a bucket-scoped R2 test token. Keep the bucket private with public development/custom-domain access disabled. No endpoint override or public object URL is supported. Never put the source capability or credentials in command arguments, source, screenshots or evidence.
 
-Use `APP_ENV=local` and an existing **synthetic local test user's numeric ID** as `$proofOwnerId`. No user is seeded automatically. The following is the supported smoke-test procedure; the evidence distinguishes the stages actually completed from the blocked full-source transfer:
+Use `APP_ENV=local` and an existing **synthetic local test user's numeric ID** as `$proofOwnerId`. No user is seeded automatically. The following is the supported smoke-test procedure; the evidence distinguishes the completed catalogue proof from remaining fixture and compatibility checks:
 
 ```powershell
 php artisan config:clear
@@ -87,6 +87,10 @@ php artisan snappik:drive-proof --owner=$proofOwnerId
 ```
 
 The command imports all descendants, reports supported/unsupported/shortcut counts, builds one private ZIP, then downloads the completed object to temporary diagnostic disk and independently extracts every identity with CRC/original-byte checks. It prints a run UUID and sanitized counts/timing/memory. Duplicate names gain deterministic identity suffixes. Original source files are never changed or retained as a library.
+
+Drive requests now share a credential-scoped pacing clock through Laravel's configured cache and lock. `GOOGLE_DRIVE_REQUEST_INTERVAL_MS` defaults to **1000 ms** between request starts, including metadata checks, media requests and retries. The operational setting accepts 100–10000 ms; it does not limit the number or size of photos/projects. Keep `CACHE_STORE=database` for cross-worker coordination. A cache/lock failure stops the request instead of sending it without pacing. This reduces request bursts; it cannot override a provider refusal. Automated-query HTML blocks remain terminal, while documented JSON rate-limit responses retain bounded backoff. API keys remain in headers; no credential, network or provider-endpoint rotation is implemented.
+
+Original-media URLs now use Google's documented `/download/drive/v3/` route (`useMediaDownloadService=true`); metadata/listing retain `/drive/v3/`. A direct comparison reproduced old-route 403 while the corrected route matched the same original's full bytes/MD5, followed by the complete catalogue proof above. The owner chose to retain API keys; no service account or other credential model was enabled. Earlier failed attempts, the limits of pacing alone and R2 readback recovery are recorded in the evidence. Automated-query blocks remain terminal; no HTML fallback or network rotation is supported.
 
 For an interrupted import or retryable failed ZIP, reuse that run UUID. Queueing and subsequent verification are also available:
 
@@ -101,6 +105,8 @@ These commands refuse production execution and scope runs to the specified persi
 
 The installed Windows libzip strict `CHECKCONS` checker rejects the large zero-header ZIP64 layout; normal libzip extraction with complete CRC/MD5 validation and Python's independent CRC reader passed. Compatibility across actual client extractors remains a gate for delivery productization; do not disable ZIP64 or split the archive to hide it.
 
+R2 verification reads the same object in contiguous ranges of at most 8 MiB, pinned by `If-Match` to the HEAD ETag. Response status, Content-Range, length and ETag must match before bytes are accepted. Each bounded response completes through the SDK's normal transport. Transient range failures have a three-attempt budget; malformed or changed-object responses stop verification. Each request has a 300-second deadline, without imposing a total-object transfer deadline. These internal requests do not create multiple ZIP files.
+
 ## Boundaries and security
 
 - `/` and `/login` render public/authentication shells. Login/registration/reset/verification actions are deliberately absent until TASK-003; the UI explains their availability.
@@ -109,7 +115,7 @@ The installed Windows libzip strict `CHECKCONS` checker rejects the large zero-h
 - `/_foundation/{public|auth|photographer|admin|client}` provides local/testing-only synthetic component previews. Production always returns 404, including when routes are cached. These are preview surfaces, not an authentication bypass to data.
 - The web middleware retains Laravel's cookie encryption, session authentication, CSRF and request-forgery protection. Session cookies are HttpOnly/SameSite=Lax, database session payloads are encrypted, and production forces Secure cookies and disables debug. Configure HTTPS and trusted proxies explicitly before release; no wildcard proxy trust is enabled.
 - Built assets use a nonce-based script CSP, frame denial, no-referrer, nosniff, and private/no-store responses. The before-paint theme initializer shares its controller with React. Vite hot reload uses its development CSP exception. No SSR service is enabled.
-- Mail defaults to the in-memory array transport; no messages or password links are sent or logged. Local storage is private and has no automatic file-serving route. Drive/R2 have a local/test-only prototype with actual authorized provider smoke evidence and a blocked complete-source build. Midtrans, product tenant policies, suspension, entitlement enforcement and login throttles remain later work.
+- Mail defaults to the in-memory array transport; no messages or password links are sent or logged. Local storage is private and has no automatic file-serving route. Drive/R2 have a local/test-only prototype with a verified complete-source ZIP and explicit remaining fixture/compatibility gates. Midtrans, product tenant policies, suspension, entitlement enforcement and login throttles remain later work.
 - Self-hosted DM Sans and Raleway assets come from locked Fontsource packages under SIL OFL 1.1; licenses ship in `public/licenses/`. Photo pixels have no theme filter. Motion respects reduced-motion preferences at the root and on custom interactions.
 
 Do not publish this bootstrap as a working product. Publication, production configuration and live transactions require the separate release gate and owner authorization.

@@ -16,7 +16,7 @@ final class PublicDriveSource implements DriveSource
 {
     private const FIELDS = 'id,name,mimeType,size,version,md5Checksum,modifiedTime,resourceKey,trashed,capabilities(canDownload)';
 
-    public function __construct(private ClientInterface $http, #[\SensitiveParameter] private string $apiKey, private int $attempts = 3, private ?\Closure $sleep = null) {}
+    public function __construct(private ClientInterface $http, #[\SensitiveParameter] private string $apiKey, private int $attempts = 3, private ?\Closure $sleep = null, private ?\Closure $beforeRequest = null) {}
 
     public function metadata(DriveReference $reference): DriveItem
     {
@@ -95,9 +95,16 @@ final class PublicDriveSource implements DriveSource
         if ($this->apiKey === '') {
             throw new ProviderFailure('drive_credentials_missing');
         }
+        // Drive files.get advertises useMediaDownloadService=true. Google's
+        // Discovery contract requires /download before servicePath for media;
+        // metadata/listing stay on the normal API path and redirects stay off.
+        $base = ($query['alt'] ?? null) === 'media'
+            ? 'https://www.googleapis.com/download/drive/v3/'
+            : 'https://www.googleapis.com/drive/v3/';
         for ($attempt = 1; $attempt <= $this->attempts; $attempt++) {
             try {
-                $response = $this->http->request('GET', 'https://www.googleapis.com/drive/v3/'.$path, [
+                $this->beforeRequest?->__invoke();
+                $response = $this->http->request('GET', $base.$path, [
                     'query' => $query, 'headers' => array_filter(['X-Goog-Api-Key' => $this->apiKey,
                         'X-Goog-Drive-Resource-Keys' => $reference->resourceKey === null ? null : $reference->id.'/'.$reference->resourceKey]),
                     'stream' => $stream, 'http_errors' => false, 'allow_redirects' => false,
