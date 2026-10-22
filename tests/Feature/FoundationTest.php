@@ -22,7 +22,7 @@ class FoundationTest extends TestCase
         $response->assertHeader('X-Content-Type-Options', 'nosniff');
         $this->assertStringContainsString("script-src 'self' 'nonce-", $response->headers->get('Content-Security-Policy'));
         $this->get('/login')->assertOk()->assertInertia(fn (Assert $page) => $page->component('auth/login'));
-        $this->post('/login', ['email' => 'synthetic@example.test', 'password' => 'synthetic'])->assertStatus(405);
+        $this->post('/login', ['email' => 'synthetic@example.test', 'password' => 'synthetic'])->assertSessionHasErrors('email');
     }
 
     public function test_protected_shells_require_a_verified_session(): void

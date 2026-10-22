@@ -29,7 +29,7 @@ class BuildDriveProofArchive implements ShouldQueue
         abort_unless(app()->environment('local', 'testing'), 403);
         $run = DB::transaction(function () {
             $run = DriveProofRun::whereKey($this->runId)->lockForUpdate()->firstOrFail();
-            abort_unless(User::whereKey($run->user_id)->exists(), 403);
+            abort_unless(User::whereKey($run->user_id)->whereNull('suspended_at')->exists(), 403);
             if (! in_array($run->state, ['imported', 'zip_failed'], true)) {
                 throw new ProviderFailure('archive_attempt_not_claimable');
             }

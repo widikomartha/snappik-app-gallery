@@ -1,6 +1,6 @@
 # SnapPik MVP Backlog
 
-**TASK-001: COMPLETE. TASK-002: FULL-CATALOGUE ZIP VERIFIED / REAL RESOURCE-KEY FIXTURE PENDING. TASK-003–TASK-015: NOT STARTED.** Product authority: [PRD](../product/PRD.md). Technical contracts: [Architecture](../engineering/ARCHITECTURE.md). [Package approval state](../index.md).
+**TASK-001 and TASK-003: COMPLETE. TASK-002: FULL-CATALOGUE ZIP VERIFIED / REAL RESOURCE-KEY FIXTURE PENDING. TASK-004–TASK-015: NOT STARTED.** Product authority: [PRD](../product/PRD.md). Technical contracts: [Architecture](../engineering/ARCHITECTURE.md). [Package approval state](../index.md).
 
 These are implementation tasks, not claims that the application exists. Dependencies are hard prerequisites for declaring a task complete; a task may contain a bounded exploratory prototype without advertising it as a finished feature. Technical feasibility proofs precede broad UI work. Production publication remains a separately authorized action.
 
@@ -30,13 +30,14 @@ These are implementation tasks, not claims that the application exists. Dependen
 
 ## TASK-003 — Implement authentication, roles and access policy
 
-- Status: NOT STARTED
+- Status: COMPLETE (explicitly requested and verified on October 22, 2026)
 - Requirements: REQ-001, REQ-002, REQ-003, REQ-015, REQ-019
 - Dependencies: TASK-001
 - Scope: email/password authentication, verification/reset mail, one trial record, secure sessions, owner-admin provisioning boundary, tenant policies, central access decisions and suspension states.
 - Acceptance: repeated verification/reset events cannot restart trial; public registration cannot obtain admin role; expired versus suspended accounts receive their distinct documented access. Cross-tenant ID substitution is denied for read/write/job/media/billing paths. An owner can provision the admin without committing its credential.
 - Out of scope: Google login, studio teams, impersonation, a free-order grant path.
 - Completion evidence: auth/role feature tests, real PostgreSQL entitlement-boundary tests and sandbox email-flow demonstration.
+- Verification record: [TASK-003 evidence](TASK-003_EVIDENCE.md). Email/password registration/login/logout, signed verification, one locked seven-day trial, one-use resets, session revocation, throttles, owner-admin provisioning, audited suspension/reactivation and shared tenant/gallery/account decisions exist. The final backend suite passed **90 tests / 501 assertions** with the opt-in large-ZIP test skipped; frontend tests/build passed. Browser regressions passed **16 tests** (one isolated-write test intentionally skipped), and the dedicated test-database account suite passed **6 tests**. Separate PostgreSQL processes proved concurrent verification and reset consumption. Real rendered verification/reset messages were exercised through the array transport without external delivery. Product project/media/order endpoints must apply these policies as they are implemented in subsequent tasks; their integration is not claimed by the test-only policy probes. No real administrator was provisioned or real mail sent.
 
 ## TASK-004 — Deliver project configuration and catalogue publication
 

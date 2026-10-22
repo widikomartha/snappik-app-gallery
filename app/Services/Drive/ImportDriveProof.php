@@ -16,6 +16,7 @@ final class ImportDriveProof
     public function start(User $owner, DriveReference $reference): DriveProofRun
     {
         abort_unless(app()->environment('local', 'testing'), 403);
+        abort_unless(User::whereKey($owner->id)->whereNull('suspended_at')->exists(), 403);
         $root = $this->drive->metadata($reference);
         if ($root->mimeType !== DriveItem::FOLDER) {
             throw new ProviderFailure('drive_source_is_not_folder');
@@ -34,7 +35,8 @@ final class ImportDriveProof
 
     public function resume(DriveProofRun $run, int $ownerId): void
     {
-        abort_unless(app()->environment('local', 'testing') && (int) $run->user_id === $ownerId && User::whereKey($ownerId)->exists(), 403);
+        $run = $run->fresh();
+        abort_unless(app()->environment('local', 'testing') && $run && (int) $run->user_id === $ownerId && User::whereKey($ownerId)->whereNull('suspended_at')->exists(), 403);
         $connection = DB::connection();
         $lock = 'drive-proof:'.$run->id;
         if (! $connection->selectOne('SELECT pg_try_advisory_lock(hashtextextended(?, 0)) AS acquired', [$lock])->acquired) {

@@ -1,6 +1,6 @@
 # SnapPik Architecture
 
-**System phase:** TASK-001 foundation and TASK-002 local/test provider prototype implemented; the configured 384-photo single-ZIP build, independent readback and cleanup passed. A real resource-key fixture remains pending, so TASK-002 is not complete. Product workflows remain planned. [Package state](../index.md). [PRD](../product/PRD.md) owns product behavior and commercial rules.
+**System phase:** TASK-001 foundation, TASK-003 authentication/access policy and TASK-002 local/test provider prototype implemented; the configured 384-photo single-ZIP build, independent readback and cleanup passed. A real resource-key fixture remains pending, so TASK-002 is not complete. Project/gallery/billing workflows remain planned. [Package state](../index.md). [PRD](../product/PRD.md) owns product behavior and commercial rules.
 
 ## Approved boundaries and technology
 
@@ -16,7 +16,7 @@
 | Email | Framework mail boundary with an operator-configured transactional SMTP service for verification/recovery. No marketing or client-message automation. |
 | Hosting | A Linux web host capable of running PHP web processes, persistent workers, scheduler, PostgreSQL and outbound HTTPS. Vendor/domain/sizing are deployment inputs; no service has been purchased. |
 
-The foundation uses Laravel 13 / PHP 8.4+, React 19, Inertia 3, TypeScript, Vite 8, Motion 14 and PostgreSQL, with real dependency lockfiles. It was generated from the official Laravel skeleton with Inertia installed separately, leaving authentication flows to TASK-003. [README](../../README.md) records actual setup commands; Backlog links verification evidence. Node is needed for frontend build tooling, not a second application backend. The contracts below describe the complete MVP; the bounded TASK-002 implementation is distinguished from planned product behavior below.
+The foundation uses Laravel 13 / PHP 8.4+, React 19, Inertia 3, TypeScript, Vite 8, Motion 14 and PostgreSQL, with real dependency lockfiles. It was generated from the official Laravel skeleton with Inertia installed separately; TASK-003 now supplies authentication flows. [README](../../README.md) records actual setup commands; Backlog links verification evidence. Node is needed for frontend build tooling, not a second application backend. The contracts below describe the complete MVP; the bounded TASK-002 implementation is distinguished from planned product behavior below.
 
 ### Implemented TASK-002 prototype boundary
 
@@ -100,6 +100,24 @@ Use UTC instants for persistence/comparison, whole integer IDR for money, and 64
 All tenant-owned records have a direct or enforced relational path to the photographer. A job cannot be redirected into another tenant by changing an input project ID. Financial records and historic selections are retained even when a project is archived. Deletes must not cascade through payment/selection history.
 
 ## Access policy
+
+### Implemented TASK-003 account boundary
+
+`AccountController` handles normalized email/password registration/login/logout, signed expiring email verification and broker-based recovery/reset. Public registration validates only name/email/password; role, verification, suspension and access periods are excluded from mass assignment. PostgreSQL enforces case-insensitive email uniqueness and the two allowed roles. Login rotates the session; logout invalidates it. Login and account-mail requests have shared-cache IP/identity throttles. Recovery responses do not disclose account existence or delivery failure. Account links use the configured `APP_URL` origin; login resumes an intended verification URL only on that origin. Framework trusted-host checks use the configured host outside local/unit-test environments.
+
+`VerifyAccount` locks the user before marking verification and creating/locking the unique `account_access` row. The trial starts at verification and lasts exactly 168 hours. Repeated verification, login, password recovery/reset and reactivation cannot change an existing trial. Access timestamps use UTC; equality with `access_ends_at` is expired. Paid fields are a projection for the future verified-payment action, not a public grant API. There is no quota column or manual/free entitlement command. Existing pre-authentication synthetic verified users are not retroactively awarded a trial by migration.
+
+`ResetAccountPassword` serializes token validation/consumption on the user row, revokes database sessions, rotates the remember token and emits the framework reset event after commit. Reset tokens expire after 60 minutes and are hashed in storage; secret arguments are marked sensitive. The session-authentication middleware also rejects an old session password hash on its next request. Auth mutations retain framework CSRF protection. Secret reset fields are excluded from validation flash input.
+
+`AccountMail`/`AccountLink` retain framework signed verification and reset messages. `AUTH_MAILER=array` is the safe local default; only array, SMTP and sendmail transports are accepted. Log and composite failover transports are rejected for account links. Mail exceptions are not logged; verification offers resend, and recovery keeps the same generic response with the broker's one-minute retry window. Real sender configuration and delivery remain release checks.
+
+`AccountPolicy` and `AccountAction` centralize verified photographer read/billing, mutation, checkout, client read/write, download and admin decisions using fresh persisted state. Expiry blocks writes while preserving read/billing/checkout and valid delivery; suspension preserves only account-status/billing access. The dashboard renders the account state without listing suspended project metadata. `TenantResourcePolicy` resolves persisted ownership through `PhotographerOwned`, denies substitution generically and gives admin no photographer-resource bypass. It is registered for the existing proof model. The local/test proof importer, queued build and verifier also check persisted ownership/suspension before provider work; operator cleanup remains possible.
+
+`GalleryGate` composes account decisions with capability/publication/archive/deadline/password-generation/selection-lock checks. It is an internal policy primitive, not a capability resolver or public route. TASK-004/005/007 must derive those inputs from persisted module/capability/session records and apply it on every new request, including media ranges. Project/order schemas and their routes remain with subsequent tasks. Test-only read/write/job/media/billing probes exercise the shared tenant policy against persisted proof ownership and do not advertise those product paths as implemented.
+
+`snappik:provision-admin` promotes an existing verified, unsuspended dedicated owner account from a server operator console. It accepts no password, invalidates that account's database sessions and writes one audit event on promotion; repeating it is idempotent. `SetAccountSuspension` requires a current admin and transactionally audits photographer suspension/reactivation without changing access periods. No public provisioning route, impersonation or mark-paid path exists. Admin screens/versioned forms remain TASK-012. [TASK-003 evidence](../planning/TASK-003_EVIDENCE.md) records actual verification.
+
+### Complete MVP policy contract
 
 Centralize the product permission matrix in one service/policy layer with distinct decisions:
 

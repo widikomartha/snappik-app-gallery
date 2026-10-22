@@ -1,12 +1,12 @@
 # SnapPik
 
-SnapPik is a subscription application for photographer photo selection and finished-photo delivery. TASK-001 establishes the application foundation. TASK-002 adds a local/test-only Drive-to-R2 ZIP prototype; a complete 384-photo ZIP, independent CRC/MD5 verification and cleanup have passed against the configured providers. A real resource-key fixture remains pending. Product workflows remain in later [backlog tasks](docs/planning/BACKLOG.md).
+SnapPik is a subscription application for photographer photo selection and finished-photo delivery. TASK-001 establishes the application foundation; TASK-003 adds account authentication, one trial, roles and shared access policy. TASK-002 adds a local/test-only Drive-to-R2 ZIP prototype; a complete 384-photo ZIP, independent CRC/MD5 verification and cleanup have passed against the configured providers. A real resource-key fixture remains pending. Project/gallery/billing workflows remain in later [backlog tasks](docs/planning/BACKLOG.md).
 
 ## Current state
 
 Laravel 13, PHP 8.4+, React 19, TypeScript, Inertia 3, Vite 8, Motion 14 and PostgreSQL are configured at the repository root. Both package managers have real lockfiles. The skeleton was generated from official `laravel/laravel` v13.11.0, with the official Inertia adapter added separately to keep authentication workflows in TASK-003.
 
-The owner requested TASK-001 and TASK-002 on October 22, 2026, and subsequently configured and authorized provider smoke testing. Final approval of the entire documentation package remains pending in the [index](docs/index.md). Provider test access does not imply production deployment or a finished gallery.
+The owner requested TASK-001, TASK-002 and TASK-003 on October 22, 2026, and configured and authorized the recorded provider smoke testing. Final approval of the entire documentation package remains pending in the [index](docs/index.md). Provider test access does not imply production deployment or a finished gallery.
 
 ## Prerequisites
 
@@ -56,9 +56,13 @@ npm run build
 npm test
 npx playwright install chromium
 npm run test:browser
+php artisan migrate --env=testing
+npm run test:browser:auth
 ```
 
 Playwright starts a local Artisan server when needed. It uses the development `.env` database and synthetic preview pages, without creating accounts. Do not run it against a production server. Screenshots are generated under ignored `test-results/`. CI installs locked dependencies, uses an isolated PostgreSQL 18 service with synthetic credentials, and runs the same checks without deployment or external-service secrets.
+
+The separate `test:browser:auth` command starts a fresh loopback server on port 18763 using `.env.testing`, forces `DB_DATABASE=snappik_test`, database sessions/cache and in-memory mail, and exercises synthetic registration/resend/logout/login. Run it after PHPUnit, not concurrently with database-refreshing tests. It leaves synthetic test accounts in that disposable database until the next test refresh. No existing server is reused. The ordinary browser suite skips that write scenario; it still checks account form layout and invalid-login/recovery feedback. PostgreSQL verification/reset races use separate PHP processes in the backend suite.
 
 The initial Windows verification used portable PHP, Composer, PostgreSQL, and Chromium under ignored `.local-tools/`; these are machine-local tools, not shipped dependencies. See [TASK-001 evidence](docs/planning/TASK-001_EVIDENCE.md) for exact runtime versions, commands, outcomes and limits.
 
@@ -109,16 +113,27 @@ R2 verification reads the same object in contiguous ranges of at most 8 MiB, pin
 
 ## Boundaries and security
 
-- `/` and `/login` render public/authentication shells. Login/registration/reset/verification actions are deliberately absent until TASK-003; the UI explains their availability.
-- `/dashboard` requires a verified session; `/admin` additionally checks the persisted admin role through a server-side Gate. Role is excluded from user mass assignment. No default admin, provisioning command, or credentials exist.
+- `/` renders the public shell. `/login`, `/register`, `/forgot-password`, `/reset-password/{token}` and `/email/verify` provide functional account flows. Login/mail requests are throttled; recovery responses are generic. The trial starts once, for exactly 168 hours, on successful signed email verification. Password reset tokens expire in 60 minutes and can be consumed once, including concurrent requests.
+- `/dashboard` requires a verified photographer session and shows active/expired/suspended status; `/admin` additionally checks the current persisted admin role. Registration cannot assign privilege, verification, suspension or entitlement fields. No default admin or credentials are shipped.
 - `/g/{capability}` fails closed with 404 until scoped capability authorization is implemented. It exposes no gallery data.
 - `/_foundation/{public|auth|photographer|admin|client}` provides local/testing-only synthetic component previews. Production always returns 404, including when routes are cached. These are preview surfaces, not an authentication bypass to data.
 - The web middleware retains Laravel's cookie encryption, session authentication, CSRF and request-forgery protection. Session cookies are HttpOnly/SameSite=Lax, database session payloads are encrypted, and production forces Secure cookies and disables debug. Configure HTTPS and trusted proxies explicitly before release; no wildcard proxy trust is enabled.
 - Built assets use a nonce-based script CSP, frame denial, no-referrer, nosniff, and private/no-store responses. The before-paint theme initializer shares its controller with React. Vite hot reload uses its development CSP exception. No SSR service is enabled.
-- Mail defaults to the in-memory array transport; no messages or password links are sent or logged. Local storage is private and has no automatic file-serving route. Drive/R2 have a local/test-only prototype with a verified complete-source ZIP and explicit remaining fixture/compatibility gates. Midtrans, product tenant policies, suspension, entitlement enforcement and login throttles remain later work.
+- `AUTH_MAILER=array` keeps verification/reset messages in memory during local development and tests. Account mail rejects log/composite failover transports and does not log transport exceptions or raw links. Configure an authorized SMTP sender with `AUTH_MAILER=smtp` and the existing `MAIL_*` SMTP settings when real delivery is authorized. `APP_URL` must be the canonical reachable origin, because account links are pinned to it. Real SMTP delivery has not been verified.
+- `AccountPolicy`, `TenantResourcePolicy` and `GalleryGate` own central account/ownership/module decisions. Expiry preserves own metadata/results/billing and valid client delivery while blocking writes; suspension allows status/billing only and closes client access/checkout. Future project/media/order endpoints must apply these boundaries when implemented. The existing local proof importer/build/verifier now reject suspended owners before provider work. Midtrans and full project/gallery/billing workflows remain later work.
 - Self-hosted DM Sans and Raleway assets come from locked Fontsource packages under SIL OFL 1.1; licenses ship in `public/licenses/`. Photo pixels have no theme filter. Motion respects reduced-motion preferences at the root and on custom interactions.
 
 Do not publish this bootstrap as a working product. Publication, production configuration and live transactions require the separate release gate and owner authorization.
+
+## Owner administration
+
+Register and verify a dedicated owner account, then run the following only from the trusted server operator console, replacing the synthetic example address:
+
+```powershell
+php artisan snappik:provision-admin owner@example.test
+```
+
+The command requires an existing verified, unsuspended account, accepts no password, revokes its database sessions and records an idempotent provisioning audit. Sign in again to use `/admin`. No actual owner account was provisioned during implementation. Suspension/reactivation has an audited admin-only application action; its operator screens arrive in TASK-012. This is not a manual payment/entitlement grant path. See [TASK-003 evidence](docs/planning/TASK-003_EVIDENCE.md) for verification and remaining boundaries.
 
 ## Documentation
 

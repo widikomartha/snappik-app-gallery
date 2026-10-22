@@ -12,6 +12,7 @@ h2 { font-size: 1.75rem; line-height: 1.25; font-weight: 300; margin: 0 0 1rem; 
 p { margin: 0 0 1.5rem; }
 .shell { max-width: 90rem; margin: auto; padding: 0 1rem; }
 .shell--public { max-width: 80rem; }
+.auth-content { max-width: 36rem; margin: auto; }
 .site-header, .site-footer { display: flex; gap: 1rem; align-items: center; justify-content: space-between; padding: 1.5rem 0; }
 .site-header { border-bottom: 1px solid var(--color-border); flex-wrap: wrap; }
 .brand { font-size: 1.5rem; font-weight: 500; text-decoration: none; letter-spacing: -0.05em; }

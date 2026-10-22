@@ -10,7 +10,8 @@
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:browser": "playwright test"
+    "test:browser": "playwright test",
+    "test:browser:auth": "playwright test --config playwright.auth.config.ts"
   },
   "dependencies": {
     "@fontsource/dm-sans": "^5.2.0",

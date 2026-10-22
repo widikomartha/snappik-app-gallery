@@ -5,6 +5,7 @@ namespace App\Services\Archives;
 use App\Contracts\ArchiveStorage;
 use App\Contracts\DriveSource;
 use App\Models\DriveProofRun;
+use App\Models\User;
 use App\Services\Drive\DriveItem;
 use App\Services\ProviderFailure;
 use ZipArchive;
@@ -17,7 +18,8 @@ final class VerifyDriveProof
     // completed R2 object, not the worker's buffers or a second generated ZIP.
     public function verify(DriveProofRun $run, int $ownerId): array
     {
-        abort_unless(app()->environment('local', 'testing') && (int) $run->user_id === $ownerId, 403);
+        $run = $run->fresh();
+        abort_unless(app()->environment('local', 'testing') && $run && (int) $run->user_id === $ownerId && User::whereKey($ownerId)->whereNull('suspended_at')->exists(), 403);
         if ($run->state !== 'ready' || $run->expires_at === null || $run->expires_at->isPast()) {
             throw new ProviderFailure('archive_not_ready_or_expired');
         }

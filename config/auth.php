@@ -4,6 +4,9 @@ use App\Models\User;
 
 return [
 
+    // Only array, SMTP and sendmail transports are accepted for secret account links.
+    'mailer' => env('AUTH_MAILER', 'array'),
+
     /*
     |--------------------------------------------------------------------------
     | Authentication Defaults

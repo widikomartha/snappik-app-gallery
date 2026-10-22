@@ -6,6 +6,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Session\Middleware\AuthenticateSession;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -14,13 +15,17 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->trustHosts(at: fn () => ['^'.preg_quote((string) parse_url(config('app.url'), PHP_URL_HOST), '/').'$'], subdomains: false);
         $middleware->web(append: [
+            AuthenticateSession::class,
             SecurityHeaders::class,
             HandleInertiaRequests::class,
         ]);
         $middleware->redirectGuestsTo('/login');
+        $middleware->redirectUsersTo(fn (Request $request) => $request->user()?->role === 'admin' ? '/admin' : '/dashboard');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->dontFlash(['token']);
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );

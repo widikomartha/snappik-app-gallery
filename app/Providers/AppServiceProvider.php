@@ -6,12 +6,20 @@ use App\Contracts\ArchiveStorage;
 use App\Contracts\DriveSource;
 use App\Integrations\ArchiveStorage\R2ArchiveStorage;
 use App\Integrations\GoogleDrive\PublicDriveSource;
+use App\Models\DriveProofRun;
 use App\Models\User;
+use App\Policies\TenantResourcePolicy;
+use App\Services\Access\AccountAction;
+use App\Services\Access\AccountPolicy;
 use App\Services\Drive\DriveRequestPacer;
 use App\Services\ProviderFailure;
 use Aws\S3\S3Client;
 use GuzzleHttp\Client;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -52,7 +60,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Gate::define('access-admin', fn (User $user): bool => $user->role === 'admin');
+        // Verification/recovery links use the configured origin, never the request Host.
+        URL::forceRootUrl(config('app.url'));
+        Gate::define('access-admin', fn (User $user): bool => app(AccountPolicy::class)->allows($user, AccountAction::Admin));
+        Gate::policy(DriveProofRun::class, TenantResourcePolicy::class);
+        RateLimiter::for('login', fn (Request $request) => [
+            Limit::perMinute(5)->by('login:'.hash('sha256', mb_strtolower(trim(is_string($request->input('email')) ? $request->input('email') : '')).'|'.$request->ip())),
+            Limit::perMinute(30)->by('login-ip:'.$request->ip()),
+        ]);
+        RateLimiter::for('account-mail', fn (Request $request) => [
+            Limit::perMinute(5)->by('mail-ip:'.$request->ip()),
+            Limit::perMinute(3)->by('mail:'.hash('sha256', $request->user()?->email ?? mb_strtolower(trim(is_string($request->input('email')) ? $request->input('email') : '')))),
+        ]);
 
         if ($this->app->isProduction()) {
             config(['session.secure' => true, 'app.debug' => false]);

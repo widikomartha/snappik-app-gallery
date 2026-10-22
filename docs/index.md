@@ -6,7 +6,7 @@
 
 **Final document approval: pending.**
 
-**Implementation phase: TASK-001 implemented and verified; TASK-002 full-catalogue ZIP verified, real resource-key fixture pending; TASK-003–TASK-015 not started.**
+**Implementation phase: TASK-001 and TASK-003 implemented and verified; TASK-002 full-catalogue ZIP verified, real resource-key fixture pending; TASK-004–TASK-015 not started.**
 
 This file owns package status and approval tracking. Baseline approval authorized creation of this English documentation package in `D:\Website\snappik-app-gallery`. It did not approve unseen final documents, authorize deployment, or establish that future software is correct. Change package state to **APPROVED / IMPLEMENTATION READY** only after the owner explicitly approves the final documents and documentation checks pass.
 
@@ -21,6 +21,8 @@ Later on October 22, 2026, the owner configured Drive/R2 and explicitly approved
 The owner then requested a fix. Shared request pacing was implemented and verified by 60 tests plus an actual cross-process cache check. A full paced retry still failed after 23 photos with `drive_automated_requests_blocked`; cleanup again left no completed object or multipart upload. Both documented API-key transports reproduced the new failure. No credential or network changes were made. The owner declined the optional service-account probe; the existing public-source credential contract remains in force.
 
 The owner explicitly chose to retain API keys. Further investigation identified and corrected a mismatch with Drive's documented media-download path: originals now use `/download/drive/v3/`, while metadata/listing retain `/drive/v3/`, on the same Google API origin. A direct same-input comparison reproduced the old-route 403 and validated all original bytes/MD5 on the canonical route. The subsequent worker produced one ZIP containing all **384 photos / 1,130,185,579 original bytes**. After bounded R2 readback improvements, independent extraction verified every entry's size, CRC and MD5. The object was deleted and no multipart uploads remained. The final backend suite passed **68 tests / 236 assertions**. [Complete evidence](planning/TASK-002_EVIDENCE.md#complete-canonical-route-build-and-r2-readback-follow-up) preserves measurements and failed attempts. No service-account flow was installed or enabled. TASK-002 remains incomplete pending an authorized real resource-key fixture; target-extractor and deployment privacy checks remain explicit delivery gates.
+
+On October 22, 2026, the owner explicitly requested TASK-003, authorizing authentication, trial persistence, roles, central access policy, local dependencies and checks. The implementation and sandbox mail/browser evidence are recorded in [TASK-003 evidence](planning/TASK-003_EVIDENCE.md). This request does not approve the complete documentation package, authorize real messages, provision a real administrator, or authorize deployment. Final document approval remains pending.
 
 ## Sources of truth
 
