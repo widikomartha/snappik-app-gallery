@@ -1,6 +1,6 @@
 # SnapPik Project Structure
 
-**Classification:** documentation paths below exist; application paths are planned and do not exist yet. [Package state](../index.md).
+**Classification:** the TASK-001 foundation exists; remaining domain paths are planned. [Package state](../index.md).
 
 ## Existing documentation
 
@@ -17,9 +17,17 @@ docs/
   research/FASTPIK_ANALYSIS.md
 ```
 
-## Planned application layout
+## Existing application foundation
 
-Use a Laravel application at the workspace root with the React/TypeScript Inertia frontend. Preserve the documentation during bootstrap. Generate framework-owned files with the chosen supported starter kit; the following is a placement contract, not an exhaustive list of scaffolding to create.
+The root now contains generated `artisan`, `app/Models/User.php`, `app/Providers/AppServiceProvider.php`, `bootstrap/`, Laravel `config/`, `public/`, `storage/`, and the default users/cache/jobs migrations, factory and empty seeder. `app/Http/Middleware/` contains the Inertia and security-header middleware. `routes/web.php` defines public/authenticated/admin boundaries and a closed client route; `routes/console.php` has no domain schedules yet.
+
+`resources/views/app.blade.php` owns the before-paint theme initializer and Inertia entry document. `resources/js/app.tsx`, `lib/appearance-init.js`, `lib/appearance.ts`, `lib/motion.ts`, `layouts/shell.tsx`, `components/ui/`, and `pages/{public,auth,photographer,admin,client}/` establish the shared presentation foundation. `resources/css/{tokens,app}.css` holds the theme tokens and styles. Self-hosted font licenses are in `public/licenses/`.
+
+Real `composer.json`/`composer.lock`, `package.json`/`package-lock.json`, environment examples, TypeScript/Vite/Vitest/Playwright configuration and `.github/workflows/ci.yml` exist. Tests currently live in `tests/Feature/`, `tests/Browser/` and frontend `*.test.ts(x)` files. No domain Actions, provider Contracts/Integrations, Jobs, Policies, Integration suite or completed authentication workflows exist yet. Local downloaded runtimes and generated screenshots are ignored, not source deliverables.
+
+## Target application layout
+
+The application uses Laravel at the workspace root with React/TypeScript through Inertia. Framework-owned files were generated from the official Laravel skeleton. The following remains a placement contract for the complete MVP; compare with the existing-foundation section before assuming a domain path exists. Do not create unused directories or implementations merely to match this tree.
 
 ```text
 app/
@@ -98,4 +106,4 @@ MVP gallery ZIP code belongs to archive services/jobs. Future photo-upload code 
 
 ## Bootstrap boundary
 
-No package manager lockfile, application manifests, environment example, runtime, or CI workflow is verified in this repository yet. TASK-001 establishes them. Update README with actual supported commands after bootstrap, and keep this document's planned/verified classification accurate.
+TASK-001 establishes package lockfiles, manifests, environment examples, local setup and safe CI. [README](../../README.md) owns supported commands; Backlog and its linked evidence own actual verification results. Domain integration, concurrency, gallery and release evidence remain future work.

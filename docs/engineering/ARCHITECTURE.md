@@ -1,13 +1,13 @@
 # SnapPik Architecture
 
-**System phase:** planned; no application or provider integration is implemented. [Package state](../index.md). [PRD](../product/PRD.md) owns product behavior and commercial rules.
+**System phase:** TASK-001 application foundation implemented; domain behavior and provider integrations remain planned. [Package state](../index.md). [PRD](../product/PRD.md) owns product behavior and commercial rules.
 
 ## Approved boundaries and technology
 
 | Component | Planned choice and purpose |
 | --- | --- |
 | Application | Laravel with React/TypeScript through Inertia: one session-based web application for public, photographer, client and owner-admin views. |
-| UI presentation | ZenGrid-derived shared design system, semantic light/dark CSS tokens and Motion for React through `motion/react`; planned frontend dependencies, not installed software. |
+| UI presentation | ZenGrid-derived shared foundation, semantic light/dark CSS tokens and Motion for React through `motion/react`; installed versions are recorded in the lockfile. Complete product journeys remain planned. |
 | Persistence | PostgreSQL for ownership, catalogue revisions, selection state, billing, vouchers, jobs and audit history. |
 | Source media | Google Drive API, reading publicly shared photographer folders; no photographer OAuth or hosted photo upload in MVP. |
 | Payments | Midtrans Snap checkout, QRIS required at launch; server-verified callbacks and reconciliation. |
@@ -16,7 +16,7 @@
 | Email | Framework mail boundary with an operator-configured transactional SMTP service for verification/recovery. No marketing or client-message automation. |
 | Hosting | A Linux web host capable of running PHP web processes, persistent workers, scheduler, PostgreSQL and outbound HTTPS. Vendor/domain/sizing are deployment inputs; no service has been purchased. |
 
-Use maintained, mutually compatible framework/runtime releases at bootstrap and commit real lockfiles. The research used the [Laravel 13 starter-kit documentation](https://laravel.com/docs/13.x/starter-kits) and [queue documentation](https://laravel.com/docs/13.x/queues); that does not establish installed dependencies or working repository commands. Node is needed for frontend build tooling, not a second application backend.
+The foundation uses Laravel 13 / PHP 8.4+, React 19, Inertia 3, TypeScript, Vite 8, Motion 14 and PostgreSQL, with real dependency lockfiles. It was generated from the official Laravel skeleton with Inertia installed separately, leaving authentication flows to TASK-003. [README](../../README.md) records actual setup commands; Backlog links verification evidence. Node is needed for frontend build tooling, not a second application backend. The remaining contracts below describe the complete MVP and do not claim implemented provider/domain behavior.
 
 ## Browser appearance and motion
 
@@ -201,7 +201,7 @@ Create encrypted off-host PostgreSQL backups on a scheduled basis and verify res
 
 ## Verification strategy
 
-All checks below are planned; no application test command exists yet. Backlog owns execution sequencing and evidence.
+TASK-001 establishes the foundation feature/component/browser checks and actual commands in README. The domain checks below remain planned. Backlog owns execution sequencing and evidence.
 
 - Unit tests: integer discount/rounding and minimums, UTC interval comparisons, allowance decisions, path sanitization and provider state mapping.
 - Database feature tests with real PostgreSQL transactions: tenant isolation, last trial slot, last choice slot, edit-versus-confirm, duplicate callback, simultaneous extensions, last voucher reservation and safe release. Do not replace these races solely with mocked repository tests.

@@ -1,12 +1,12 @@
 # SnapPik MVP Backlog
 
-**All tasks: NOT STARTED.** Product authority: [PRD](../product/PRD.md). Technical contracts: [Architecture](../engineering/ARCHITECTURE.md). [Package approval state](../index.md).
+**TASK-001: COMPLETE. TASK-002–TASK-015: NOT STARTED.** Product authority: [PRD](../product/PRD.md). Technical contracts: [Architecture](../engineering/ARCHITECTURE.md). [Package approval state](../index.md).
 
 These are implementation tasks, not claims that the application exists. Dependencies are hard prerequisites for declaring a task complete; a task may contain a bounded exploratory prototype without advertising it as a finished feature. Technical feasibility proofs precede broad UI work. Production publication remains a separately authorized action.
 
 ## TASK-001 — Bootstrap the documented application
 
-- Status: NOT STARTED
+- Status: COMPLETE (explicitly requested and verified on October 22, 2026)
 - Requirements: REQ-001, REQ-002, REQ-018, REQ-019, REQ-022
 - Dependencies: None
 - Scope: bootstrap Laravel/React/TypeScript/Inertia and PostgreSQL at the existing workspace root, preserving docs; choose compatible maintained versions, real lockfiles, local environment example, test infrastructure and safe CI. Add the shared public/authenticated/admin/client page boundaries without implementing deferred features.
@@ -14,6 +14,7 @@ These are implementation tasks, not claims that the application exists. Dependen
 - Acceptance: a fresh checkout can follow actual README setup/build/test commands; framework authentication/security configuration is explicit; no secrets/reference credentials are committed; a real PostgreSQL test database is supported. Application paths are reclassified from planned only after they exist.
 - Out of scope: hosting purchases, production credentials, live deployment, hosted photo upload, extra storage tiers.
 - Completion evidence: committed manifests/lockfiles and the exact successful fresh-setup/build/test commands with results.
+- Verification record: [TASK-001 evidence](TASK-001_EVIDENCE.md). Fresh locked setup/build passed; 8 PostgreSQL feature tests (67 assertions), 5 frontend tests and 11 Chromium tests passed. Synthetic shells cover both themes, both widths and normal/reduced motion. Hosted CI and domain/provider workflows are not claimed.
 
 ## TASK-002 — Prove public Drive and one large ZIP end to end
 

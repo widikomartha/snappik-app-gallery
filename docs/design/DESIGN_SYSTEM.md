@@ -1,6 +1,6 @@
 # SnapPik Design System
 
-**Status: READY FOR REVIEW.** The owner approved documenting the ZenGrid direction, Motion animation and light/dark appearance on October 22, 2026. This is a planned UI specification, not implemented components or final package sign-off. [Package state](../index.md).
+**Status: READY FOR REVIEW; TASK-001 foundation implemented.** The owner approved documenting the ZenGrid direction, Motion animation and light/dark appearance on October 22, 2026 and subsequently requested TASK-001 implementation. Tokens, shared controls/shells, appearance initialization and root Motion policy now exist. Complete product components/journeys remain planned; this does not record final package sign-off. [Package state](../index.md).
 
 ## Authority and reference
 
@@ -87,7 +87,7 @@ Photo pixels remain unchanged: no theme filter, inversion, dimming or recoloring
 
 ## Motion system
 
-Use the `motion` package's React entry point, `motion/react`, for shared animation primitives as documented by [Motion for React](https://motion.dev/docs/react). This is a planned dependency, not an installation performed by this documentation change. Simple color/focus transitions may use CSS; share durations and respect the same accessibility policy. Core interactions require no premium Motion UI package or second animation engine.
+Use the `motion` package's React entry point, `motion/react`, for shared animation primitives as documented by [Motion for React](https://motion.dev/docs/react). TASK-001 installs the actual dependency in the manifest/lockfile and configures the root reduced-motion policy. Simple color/focus transitions may use CSS; share durations and respect the same accessibility policy. Core interactions require no premium Motion UI package or second animation engine.
 
 | Recipe | Default timing and movement | Reduced-motion behavior |
 | --- | --- | --- |
@@ -114,7 +114,7 @@ Apply `MotionConfig reducedMotion="user"` globally and use `useReducedMotion` fo
 
 ## Implementation review evidence
 
-Delivery is covered by [TASK-001 and TASK-013](../planning/BACKLOG.md). Component code, tokens, motion recipes and the appearance controller are planned in [Project structure](../engineering/PROJECT_STRUCTURE.md); no component catalogue tool is required as a separate service.
+Delivery is covered by [TASK-001 and TASK-013](../planning/BACKLOG.md). [Project structure](../engineering/PROJECT_STRUCTURE.md) distinguishes the existing foundation from future product components; no component catalogue tool is required as a separate service. TASK-001 verifies synthetic component states and shells. Real selections, jobs, photos, large-gallery performance and integrated product-flow checks below remain TASK-013 evidence.
 
 Before task completion, inspect public/auth, photographer, client and admin layouts at 360px and 1440px in both themes. Include pending, selected, locked, frozen, empty, error, success and disabled states; keyboard/lightbox focus; stored/system/blocked-storage appearance; and reduced-motion sessions. Measure rendered text/control contrast, verify no theme flash, and demonstrate a theme switch during an unsaved form, selection save and ZIP job without losing state.
 

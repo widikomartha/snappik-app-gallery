@@ -6,11 +6,13 @@
 
 **Final document approval: pending.**
 
-**Implementation phase: not started.**
+**Implementation phase: TASK-001 implemented and verified; TASK-002–TASK-015 not started.**
 
 This file owns package status and approval tracking. Baseline approval authorized creation of this English documentation package in `D:\Website\snappik-app-gallery`. It did not approve unseen final documents, authorize deployment, or establish that future software is correct. Change package state to **APPROVED / IMPLEMENTATION READY** only after the owner explicitly approves the final documents and documentation checks pass.
 
 On October 22, 2026, the owner approved incorporating the ZenGrid direction, Motion animation and light/dark appearance into the design documentation. [REQ-021 and REQ-022](product/PRD.md#req-021--light-and-dark-appearance) define the behavior; the [Design System](design/DESIGN_SYSTEM.md) defines the visual contract. This approval authorizes the documentation change, not application implementation or dependency installation. Final package approval is still pending.
+
+Later on October 22, 2026, the owner explicitly requested implementation of TASK-001. That request authorizes the bootstrap and its dependencies/checks; it is not recorded as final approval of the entire documentation package or authorization for deployment.
 
 ## Sources of truth
 
@@ -54,4 +56,4 @@ The implementation must prove the public Drive integration and large single-ZIP 
 
 Validated on October 22, 2026 with the project-docs-architect documentation checker: **0 errors, 0 warnings; mechanical checks passed**, including the design-system update. Semantic review covered language, scope, authoritative links, requirement/task coverage, payment/voucher races, gallery access, complete ZIP behavior, tenant boundaries, design/motion ownership and evidence claims. Initial opaque color-pair contrast calculations passed the documented thresholds; rendered UI, animation and accessibility checks remain future implementation evidence.
 
-The package contains 22 product requirements and 15 implementation tasks. Documentation validation does not prove provider integration or application correctness. Application tests have not run because there is no application; the backlog defines the required future evidence.
+The package contains 22 product requirements and 15 implementation tasks. Documentation validation does not prove provider integration or application correctness. The backlog records implementation status and links actual application verification evidence separately.
