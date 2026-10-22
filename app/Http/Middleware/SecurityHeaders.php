@@ -17,6 +17,9 @@ class SecurityHeaders
         $response->headers->set('Referrer-Policy', 'no-referrer');
         $response->headers->set('X-Frame-Options', 'DENY');
         $response->headers->set('Cache-Control', 'no-store, private');
+        if ($request->is('g/*')) {
+            $response->headers->set('X-Robots-Tag', 'noindex, nofollow, noarchive');
+        }
         if (! Vite::isRunningHot()) {
             $nonce = Vite::cspNonce();
             $response->headers->set('Content-Security-Policy',

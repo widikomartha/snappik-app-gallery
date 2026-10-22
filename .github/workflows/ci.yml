@@ -52,3 +52,6 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run test:browser
       - run: npm run test:browser:auth
+      - run: npm run test:browser:projects
+      - run: npm run test:browser:selection
+      - run: npm run test:browser:progress

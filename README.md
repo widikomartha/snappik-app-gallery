@@ -1,12 +1,12 @@
 # SnapPik
 
-SnapPik is a subscription application for photographer photo selection and finished-photo delivery. TASK-001 establishes the application foundation; TASK-003 adds account authentication, one trial, roles and shared access policy. TASK-002 adds a local/test-only Drive-to-R2 ZIP prototype; a complete 384-photo ZIP, independent CRC/MD5 verification and cleanup have passed against the configured providers. A real resource-key fixture remains pending. Project/gallery/billing workflows remain in later [backlog tasks](docs/planning/BACKLOG.md).
+SnapPik is a subscription application for photographer photo selection and finished-photo delivery. TASK-001 establishes the application foundation; TASK-003 adds authentication, one trial, roles and shared access policy. TASK-004 implements project configuration, separate module gates, capability management and background catalogue revision publication. TASK-005 adds client photo browsing, gated previews, shared autosave, review, confirmation and photographer reopening. TASK-002's Drive-to-R2 prototype verified one complete 384-photo ZIP with independent CRC/MD5 checks and cleanup; a real resource-key fixture remains pending, so TASK-004/005 acceptance also remains open. Finished-photo downloads, product ZIP and billing workflows remain in later [backlog tasks](docs/planning/BACKLOG.md).
 
 ## Current state
 
 Laravel 13, PHP 8.4+, React 19, TypeScript, Inertia 3, Vite 8, Motion 14 and PostgreSQL are configured at the repository root. Both package managers have real lockfiles. The skeleton was generated from official `laravel/laravel` v13.11.0, with the official Inertia adapter added separately to keep authentication workflows in TASK-003.
 
-The owner requested TASK-001, TASK-002 and TASK-003 on October 22, 2026, and configured and authorized the recorded provider smoke testing. Final approval of the entire documentation package remains pending in the [index](docs/index.md). Provider test access does not imply production deployment or a finished gallery.
+The owner requested TASK-001–TASK-006 on October 22, 2026, and configured and authorized the recorded TASK-002 provider smoke testing. TASK-006 adds photographer progress, current/historical results and full filename copying. TASK-004–TASK-006 acceptance remains dependent on TASK-002's real resource-key fixture. Final approval of the entire documentation package remains pending in the [index](docs/index.md). Provider test access does not imply production deployment or a finished delivery gallery.
 
 ## Prerequisites
 
@@ -44,7 +44,7 @@ npm run build
 php artisan serve --host=127.0.0.1 --port=8000
 ```
 
-Open [local SnapPik](http://127.0.0.1:8000). For frontend hot reload, run `npm run dev` in a second terminal while Artisan serves PHP. Keep the Vite development server local. The default database queue/cache/session tables are migrated. The TASK-002 migration adds isolated proof staging tables; product workers and schedules arrive with their owning tasks. No user is seeded automatically.
+Open [local SnapPik](http://127.0.0.1:8000). For frontend hot reload, run `npm run dev` in a second terminal while Artisan serves PHP. Keep the Vite development server local. Migrations include database queue/cache/session, isolated TASK-002 proof staging, account/access, project/catalogue, selection history and mutation receipts. No user is seeded automatically. The catalogue worker command is below; other product workers/schedules arrive with their owning tasks.
 
 ## Checks
 
@@ -58,6 +58,9 @@ npx playwright install chromium
 npm run test:browser
 php artisan migrate --env=testing
 npm run test:browser:auth
+npm run test:browser:projects
+npm run test:browser:selection
+npm run test:browser:progress
 ```
 
 Playwright starts a local Artisan server when needed. It uses the development `.env` database and synthetic preview pages, without creating accounts. Do not run it against a production server. Screenshots are generated under ignored `test-results/`. CI installs locked dependencies, uses an isolated PostgreSQL 18 service with synthetic credentials, and runs the same checks without deployment or external-service secrets.
@@ -65,6 +68,45 @@ Playwright starts a local Artisan server when needed. It uses the development `.
 The separate `test:browser:auth` command starts a fresh loopback server on port 18763 using `.env.testing`, forces `DB_DATABASE=snappik_test`, database sessions/cache and in-memory mail, and exercises synthetic registration/resend/logout/login. Run it after PHPUnit, not concurrently with database-refreshing tests. It leaves synthetic test accounts in that disposable database until the next test refresh. No existing server is reused. The ordinary browser suite skips that write scenario; it still checks account form layout and invalid-login/recovery feedback. PostgreSQL verification/reset races use separate PHP processes in the backend suite.
 
 The initial Windows verification used portable PHP, Composer, PostgreSQL, and Chromium under ignored `.local-tools/`; these are machine-local tools, not shipped dependencies. See [TASK-001 evidence](docs/planning/TASK-001_EVIDENCE.md) for exact runtime versions, commands, outcomes and limits.
+
+## Project configuration and catalogue imports
+
+Sign in with a verified photographer account, open **Kelola proyek**, and create a project with its name, positive client choice allowance and public selection Drive folder. WhatsApp contact, passwords and module deadlines are optional. The delivery folder can be added later and must use a separate source tree. A trial permits three unarchived projects including drafts; Pro adds no project/photo/byte quota. The UI explains public Drive source privacy independently of SnapPik passwords.
+
+Apply migrations and run the product metadata worker in a separate local terminal:
+
+```powershell
+php artisan migrate --no-interaction
+php artisan queue:work catalogues --queue=catalogues --timeout=0 --tries=0
+```
+
+This worker uses the existing restricted `GOOGLE_DRIVE_API_KEY` and paced official Drive adapter. Its named connection deliberately shares the domain PostgreSQL database. It stores metadata only, traverses all descendant pages and retains encrypted checkpoints across queue redelivery. Provider errors become visible failed imports; **Segarkan** requests a fresh attempt. It never downloads originals, writes to Drive or uses R2. New module publication requires a complete catalogue; a successful refresh swaps an already published module's revision atomically. A failed refresh retains its old catalogue and choices with stale status. Excluded files/shortcuts and missing choices have complete paginated diagnostics. The project page polls persisted import status without resetting unsaved form fields.
+
+Each module has separate publication/password/deadline settings. Archive closes links while preserving all records; restore rechecks access/trial slots. Capability rotation closes the old link. `/g/{capability}` provides gated module status/counts and password entry, with a link into the selection gallery. Finished-photo downloads and ZIP UI remain subsequent tasks. [TASK-004 evidence](docs/planning/TASK-004_EVIDENCE.md) records its synthetic checks; final acceptance is pending TASK-002's real resource-key fixture.
+
+`npm run test:browser:projects` starts a separate loopback server on port 18764, forces `snappik_test`, uses database sessions and synthetic accounts, and consumes real database queue jobs with a test-only synthetic Drive binding. Run it after PHPUnit and separately from the auth suite; never run either while another test refreshes the database. It leaves synthetic records until the next PHPUnit refresh. No external provider requests or real messages are made by these browser fixtures. Review screenshots mask source/share fields.
+
+## Client selection
+
+Apply the additive migration with `php artisan migrate --no-interaction`. Open a published selection module from its client page, enter its optional password, then choose photos across folders. The grid and review paginate at 36 photos; the folder navigator paginates at 20 records. These are page sizes, not content quotas. Revisions imported before TASK-005 retain all-photo browsing; the photographer must explicitly refresh the catalogue once to populate stable folder-parent identities for folder navigation.
+
+Thumbnail requests obtain fresh official Drive metadata and proxy supported Google image hosts without exposing provider links. Enlargement streams the verified original through the same project/module gate. Provider failures offer explicit retry. These previews do not implement the later finished-photo attachment/range download feature. No permanent photo library is created.
+
+Choices belong to one shared project set. The UI distinguishes saving, acknowledged, failed/uncertain and conflicting writes. A lost acknowledgement retains its operation ID for explicit retry; no offline queue sends changes automatically. Reload or **Periksa pilihan di server** reads canonical choices. Review can confirm one through the configured allowance and locks an immutable snapshot. Stale reviews must reload before confirming. Expired accounts retain read-only choices; module deadlines, archive, password changes, suspension and rotated capabilities deny new requests.
+
+The photographer project page shows saved draft/locked counts and the first 20 choice records. **Buka kembali pemilihan** requires current entitlement, expected selection version/epoch and a still-valid deadline. It retains choices and earlier confirmation history while creating a new editing epoch. Complete progress/history/export screens are described below.
+
+`npm run test:browser:selection` starts a fresh loopback server on port 18765 using `snappik_test`, synthetic accounts/queue imports and intercepted synthetic browser images. Backend tests separately verify preview proxy bytes, URL restrictions and gate failures with synthetic provider transports. Run this suite after PHPUnit and separately from the auth/project browser suites; all use the same disposable database. [TASK-005 evidence](docs/planning/TASK-005_EVIDENCE.md) records checks and remaining prerequisites. No real-provider preview smoke transfer was performed for TASK-005.
+
+## Photographer progress and filename copying
+
+Apply the additive acknowledgement-time migration with `php artisan migrate --no-interaction`. The photographer dashboard and project list now show selection counts/status, separate publication/closure/expiry context and the last recorded selection update in WITA. **Lihat hasil dan salin nama berkas** opens the full paginated draft/current result and immutable confirmation history. A reopened selection is no longer currently confirmed; earlier snapshots and unavailable original records remain readable. Expired accounts can view/copy their own results without gaining edit/reopen rights.
+
+Progress refreshes every 15 seconds while the page is visible, or with **Periksa progres / Periksa hasil terbaru**. A failed request retains the last acknowledged data with a stale warning. Failed catalogue imports have a separate warning because availability comes from published metadata, rather than a live source check.
+
+**Siapkan daftar nama berkas** loads the complete saved list across all pages; **Salin nama berkas** then copies it. Duplicate names use folder paths, with file IDs when paths also repeat. Backslashes and CR/LF are escaped to retain one entry per line. Clipboard denial leaves the labeled textarea selected for manual copying. Copy never confirms or changes a selection. Current exports check the displayed version/revision; if choices changed, refresh before preparing again. Older reopen/deleted-choice times were not recorded, so migration backfill uses only known choice/confirmation times.
+
+`npm run test:browser:progress` uses a fresh loopback server on port 18766, the guarded `snappik_test` database and CLI-only synthetic fixtures. Run it after PHPUnit and separately from the other database-writing browser suites. It makes no provider requests or real messages. [TASK-006 evidence](docs/planning/TASK-006_EVIDENCE.md) records checks and the open prerequisite gate.
 
 ## TASK-002 Drive/ZIP proof
 
@@ -115,12 +157,12 @@ R2 verification reads the same object in contiguous ranges of at most 8 MiB, pin
 
 - `/` renders the public shell. `/login`, `/register`, `/forgot-password`, `/reset-password/{token}` and `/email/verify` provide functional account flows. Login/mail requests are throttled; recovery responses are generic. The trial starts once, for exactly 168 hours, on successful signed email verification. Password reset tokens expire in 60 minutes and can be consumed once, including concurrent requests.
 - `/dashboard` requires a verified photographer session and shows active/expired/suspended status; `/admin` additionally checks the current persisted admin role. Registration cannot assign privilege, verification, suspension or entitlement fields. No default admin or credentials are shipped.
-- `/g/{capability}` fails closed with 404 until scoped capability authorization is implemented. It exposes no gallery data.
+- `/projects` and its configuration/diagnostic/command/reopen routes require verified photographer ownership and current access decisions. `/g/{capability}` resolves an encrypted capability by its digest and exposes only published, unarchived, unsuspended, unexpired modules; separate password generations gate status, selection data, mutations, confirmation and previews. New media requests recheck gates even if a previous URL was cached.
 - `/_foundation/{public|auth|photographer|admin|client}` provides local/testing-only synthetic component previews. Production always returns 404, including when routes are cached. These are preview surfaces, not an authentication bypass to data.
 - The web middleware retains Laravel's cookie encryption, session authentication, CSRF and request-forgery protection. Session cookies are HttpOnly/SameSite=Lax, database session payloads are encrypted, and production forces Secure cookies and disables debug. Configure HTTPS and trusted proxies explicitly before release; no wildcard proxy trust is enabled.
 - Built assets use a nonce-based script CSP, frame denial, no-referrer, nosniff, and private/no-store responses. The before-paint theme initializer shares its controller with React. Vite hot reload uses its development CSP exception. No SSR service is enabled.
 - `AUTH_MAILER=array` keeps verification/reset messages in memory during local development and tests. Account mail rejects log/composite failover transports and does not log transport exceptions or raw links. Configure an authorized SMTP sender with `AUTH_MAILER=smtp` and the existing `MAIL_*` SMTP settings when real delivery is authorized. `APP_URL` must be the canonical reachable origin, because account links are pinned to it. Real SMTP delivery has not been verified.
-- `AccountPolicy`, `TenantResourcePolicy` and `GalleryGate` own central account/ownership/module decisions. Expiry preserves own metadata/results/billing and valid client delivery while blocking writes; suspension allows status/billing only and closes client access/checkout. Future project/media/order endpoints must apply these boundaries when implemented. The existing local proof importer/build/verifier now reject suspended owners before provider work. Midtrans and full project/gallery/billing workflows remain later work.
+- `AccountPolicy`, `TenantResourcePolicy`, `GalleryGate` and persisted selection resolution own account/ownership/module decisions. Expiry preserves own metadata/results/billing and eligible client reads while blocking new choices/confirmation/reopening; suspension allows status/billing only and closes client access/checkout. Project/configuration/import, capability-status and selection/preview routes apply these decisions. Future finished-photo/order routes must also apply them. Local proof importer/build/verifier reject suspended owners before provider work. Midtrans and finished-photo delivery remain later work.
 - Self-hosted DM Sans and Raleway assets come from locked Fontsource packages under SIL OFL 1.1; licenses ship in `public/licenses/`. Photo pixels have no theme filter. Motion respects reduced-motion preferences at the root and on custom interactions.
 
 Do not publish this bootstrap as a working product. Publication, production configuration and live transactions require the separate release gate and owner authorization.

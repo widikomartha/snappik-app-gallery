@@ -6,7 +6,7 @@
 
 **Final document approval: pending.**
 
-**Implementation phase: TASK-001 and TASK-003 implemented and verified; TASK-002 full-catalogue ZIP verified, real resource-key fixture pending; TASK-004–TASK-015 not started.**
+**Implementation phase: TASK-001 and TASK-003 complete; TASK-002 full-catalogue ZIP verified, real resource-key fixture pending; TASK-004–TASK-006 implemented with local/synthetic verification, prerequisite acceptance pending; TASK-007–TASK-015 not started.**
 
 This file owns package status and approval tracking. Baseline approval authorized creation of this English documentation package in `D:\Website\snappik-app-gallery`. It did not approve unseen final documents, authorize deployment, or establish that future software is correct. Change package state to **APPROVED / IMPLEMENTATION READY** only after the owner explicitly approves the final documents and documentation checks pass.
 
@@ -23,6 +23,12 @@ The owner then requested a fix. Shared request pacing was implemented and verifi
 The owner explicitly chose to retain API keys. Further investigation identified and corrected a mismatch with Drive's documented media-download path: originals now use `/download/drive/v3/`, while metadata/listing retain `/drive/v3/`, on the same Google API origin. A direct same-input comparison reproduced the old-route 403 and validated all original bytes/MD5 on the canonical route. The subsequent worker produced one ZIP containing all **384 photos / 1,130,185,579 original bytes**. After bounded R2 readback improvements, independent extraction verified every entry's size, CRC and MD5. The object was deleted and no multipart uploads remained. The final backend suite passed **68 tests / 236 assertions**. [Complete evidence](planning/TASK-002_EVIDENCE.md#complete-canonical-route-build-and-r2-readback-follow-up) preserves measurements and failed attempts. No service-account flow was installed or enabled. TASK-002 remains incomplete pending an authorized real resource-key fixture; target-extractor and deployment privacy checks remain explicit delivery gates.
 
 On October 22, 2026, the owner explicitly requested TASK-003, authorizing authentication, trial persistence, roles, central access policy, local dependencies and checks. The implementation and sandbox mail/browser evidence are recorded in [TASK-003 evidence](planning/TASK-003_EVIDENCE.md). This request does not approve the complete documentation package, authorize real messages, provision a real administrator, or authorize deployment. Final document approval remains pending.
+
+On October 22, 2026, the owner explicitly requested TASK-004, authorizing project configuration, catalogue publication, capability management, local dependencies and checks. Its implementation and verification are recorded in [TASK-004 evidence](planning/TASK-004_EVIDENCE.md). TASK-002's authorized real resource-key fixture remains unverified, so TASK-004 is not declared complete. This request does not approve the entire document package, authorize real messages/provider transfers, or authorize publication. Final package approval remains pending.
+
+On October 22, 2026, the owner explicitly requested TASK-005, authorizing client selection, gated previews, autosave, confirmation/reopening, local dependencies and checks. [TASK-005 evidence](planning/TASK-005_EVIDENCE.md) records its implementation and verification. TASK-004 acceptance remains dependent on TASK-002's authorized real resource-key fixture, so TASK-005 is not declared complete. This request does not approve the entire document package, authorize real messages/provider smoke transfers, or authorize production publication. Final package approval remains pending.
+
+On October 22, 2026, the owner explicitly requested TASK-006, authorizing the photographer progress overview, current/historical results, filename export, local migration and checks. [TASK-006 evidence](planning/TASK-006_EVIDENCE.md) records implementation and verification. TASK-005's prerequisite acceptance remains open through TASK-004/TASK-002, so TASK-006 is not declared complete. This request does not approve the entire documentation package or authorize production publication, real messages or new provider transfers. Final document approval remains pending.
 
 ## Sources of truth
 

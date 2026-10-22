@@ -2,17 +2,19 @@
 
 namespace App\Integrations\GoogleDrive;
 
+use App\Contracts\DrivePreviewSource;
 use App\Contracts\DriveSource;
 use App\Services\Drive\DriveItem;
 use App\Services\Drive\DrivePage;
 use App\Services\Drive\DriveReference;
+use App\Services\Drive\PreviewImage;
 use App\Services\ProviderFailure;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 
-final class PublicDriveSource implements DriveSource
+final class PublicDriveSource implements DrivePreviewSource, DriveSource
 {
     private const FIELDS = 'id,name,mimeType,size,version,md5Checksum,modifiedTime,resourceKey,trashed,capabilities(canDownload)';
 
@@ -72,6 +74,42 @@ final class PublicDriveSource implements DriveSource
                 throw new ProviderFailure('drive_source_changed');
             }
         });
+    }
+
+    public function thumbnail(DriveItem $expected): PreviewImage
+    {
+        // Short-lived links are requested fresh and never persisted or exposed to browsers.
+        $data = $this->json($this->request($expected->reference, 'files/'.$expected->reference->id,
+            ['fields' => self::FIELDS.',thumbnailLink']));
+        $current = DriveItem::fromArray($data);
+        if ($current->reference->id !== $expected->reference->id || ! $current->isPhoto()
+            || $current->version !== $expected->version || $current->size !== $expected->size || $current->md5 !== $expected->md5) {
+            throw new ProviderFailure('drive_source_changed');
+        }
+        $url = $data['thumbnailLink'] ?? null;
+        $parts = is_string($url) ? parse_url($url) : false;
+        if (! $parts || ! filter_var($url, FILTER_VALIDATE_URL) || ($parts['scheme'] ?? '') !== 'https'
+            || ! preg_match('/\Alh[3-6]\.googleusercontent\.com\z/', $parts['host'] ?? '')
+            || isset($parts['user']) || isset($parts['pass']) || isset($parts['port']) || isset($parts['fragment'])) {
+            throw new ProviderFailure('drive_thumbnail_unavailable');
+        }
+        try {
+            $this->beforeRequest?->__invoke();
+            // Do not forward API keys, resource keys, cookies, or referrers to this host.
+            $response = $this->http->request('GET', $url, ['stream' => true, 'http_errors' => false,
+                'allow_redirects' => false, 'connect_timeout' => 10, 'timeout' => 60, 'read_timeout' => 60]);
+        } catch (GuzzleException) {
+            throw new ProviderFailure('drive_thumbnail_unavailable');
+        }
+        $type = strtolower(trim(explode(';', $response->getHeaderLine('Content-Type'))[0]));
+        $length = $response->getHeaderLine('Content-Length');
+        $size = $length === '' ? null : filter_var($length, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        if ($response->getStatusCode() !== 200 || ! in_array($type, ['image/jpeg', 'image/png', 'image/webp'], true) || $size === false) {
+            $response->getBody()->close();
+            throw new ProviderFailure('drive_thumbnail_unavailable');
+        }
+
+        return new PreviewImage($response->getBody(), $type, $size);
     }
 
     private function json(ResponseInterface $response): array

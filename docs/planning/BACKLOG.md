@@ -1,6 +1,6 @@
 # SnapPik MVP Backlog
 
-**TASK-001 and TASK-003: COMPLETE. TASK-002: FULL-CATALOGUE ZIP VERIFIED / REAL RESOURCE-KEY FIXTURE PENDING. TASK-004–TASK-015: NOT STARTED.** Product authority: [PRD](../product/PRD.md). Technical contracts: [Architecture](../engineering/ARCHITECTURE.md). [Package approval state](../index.md).
+**TASK-001 and TASK-003: COMPLETE. TASK-002: FULL-CATALOGUE ZIP VERIFIED / REAL RESOURCE-KEY FIXTURE PENDING. TASK-004–TASK-006: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING. TASK-007–TASK-015: NOT STARTED.** Product authority: [PRD](../product/PRD.md). Technical contracts: [Architecture](../engineering/ARCHITECTURE.md). [Package approval state](../index.md).
 
 These are implementation tasks, not claims that the application exists. Dependencies are hard prerequisites for declaring a task complete; a task may contain a bounded exploratory prototype without advertising it as a finished feature. Technical feasibility proofs precede broad UI work. Production publication remains a separately authorized action.
 
@@ -41,33 +41,36 @@ These are implementation tasks, not claims that the application exists. Dependen
 
 ## TASK-004 — Deliver project configuration and catalogue publication
 
-- Status: NOT STARTED
+- Status: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING (explicitly requested October 22, 2026; TASK-002 remains incomplete)
 - Requirements: REQ-003, REQ-004, REQ-005, REQ-006, REQ-019
 - Dependencies: TASK-002, TASK-003
 - Scope: photographer project creation/edit/archive/unarchive, independent module sources/gates, optional contacts, async import/refresh, complete catalogue revisions and client capability management.
 - Acceptance: a root containing only subfolders imports; selection and delivery use separate non-overlapping source sets; failed refresh retains the previous revision; unsupported files and missing choices are visible. Two concurrent attempts cannot exceed the trial cap. Paid projects/metadata exceed the rejected count/byte thresholds without a package validation failure. Archive closes links without deleting original bytes or results.
 - Out of scope: organizational folders, batch import, extra/cetakan modes, hosted upload.
 - Completion evidence: photographer browser flow plus pagination, revision-publication, overlap, archive and concurrent trial-slot tests.
+- Verification record: [TASK-004 evidence](TASK-004_EVIDENCE.md). Photographer project create/edit/archive/restore, separate module sources/passwords/deadlines/publication, encrypted capabilities and rotation, PostgreSQL checkpointed import jobs, atomic complete-revision replacement and paginated excluded-file/missing-choice diagnostics are implemented. Synthetic PostgreSQL/browser checks include real queue consumption, nested pagination, failed-refresh retention, source overlap, stale forms, checkpoint resumption, transaction rollback, paid metadata beyond rejected thresholds and separate-process create/restore races for the last trial slot. TASK-002's authorized real resource-key fixture remains a hard prerequisite to declaring this task complete. Client photo browsing/choice/confirmation/media actions remain in TASK-005/007; the capability page exposes only gated module status/counts at this stage.
 
 ## TASK-005 — Deliver client selection, autosave and confirmation
 
-- Status: NOT STARTED
+- Status: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING (explicitly requested October 22, 2026; TASK-004 acceptance remains open)
 - Requirements: REQ-002, REQ-006, REQ-007, REQ-008, REQ-015
 - Dependencies: TASK-004
 - Scope: client gallery grid/folders/enlargement, password sessions, deadlines, per-photo idempotent selection, canonical save states, review, atomic confirmation and photographer reopening.
 - Acceptance: choices survive reload and appear before confirmation; two clients racing the final slot cannot exceed allowance; stale review cannot confirm unseen changes; edit/confirm races preserve one immutable snapshot. One of an allowance of two can confirm, zero cannot. Reopen keeps choices/history under a new epoch. Expiry across an open session blocks later writes without deleting acknowledged choices.
 - Out of scope: separate per-person selections, offline replay, photo notes, extra/print selection.
 - Completion evidence: browser demonstration and real-database race tests including replayed operation IDs, stale versions, module deadline and account expiry.
+- Verification record: [TASK-005 evidence](TASK-005_EVIDENCE.md). Bounded gallery/folder/review pages, gated thumbnail/original previews, shared autosave, operation receipts, stale-version/revision conflicts, atomic immutable confirmations and photographer reopening are implemented. Synthetic HTTP/browser checks and separate-process PostgreSQL races exercise final-slot contention, replay, confirmation/edit serialization and gates changing while requests wait. TASK-004's open prerequisite acceptance remains a hard completion gate; no real-provider preview smoke transfer or production publication is claimed.
 
 ## TASK-006 — Deliver progress dashboard and filename export
 
-- Status: NOT STARTED
+- Status: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING (explicitly requested October 22, 2026; TASK-005 acceptance remains open)
 - Requirements: REQ-004, REQ-009, REQ-015, REQ-018
 - Dependencies: TASK-005
 - Scope: photographer project/progress overview, counts/current versus historical confirmations, stale-state handling, read-only expired account results and copyable filenames with fallback.
 - Acceptance: draft choices are visible before confirmation; reopened selection is no longer shown as currently confirmed; unavailable original records remain in history; duplicate filenames are disambiguated. Clipboard denial shows selectable output; expired account can view/copy without gaining mutation rights.
 - Out of scope: analytics suite, Telegram, automatic WhatsApp, freelancer messaging.
 - Completion evidence: state-transition and export-format tests plus narrow/wide viewport demonstration.
+- Verification record: [TASK-006 evidence](TASK-006_EVIDENCE.md). Tenant-scoped project/progress overviews, paginated current choices and immutable confirmation history, acknowledgement times, independent frozen/closed context, stale-refresh handling and full filename export with selectable clipboard fallback are implemented. Local PostgreSQL and browser checks cover state transitions, unavailable historical originals, duplicate names across export chunks, expiry without mutation access and narrow/wide light/dark views. TASK-005's prerequisite acceptance remains a hard completion gate; no new live-provider transfer or production publication is claimed.
 
 ## TASK-007 — Deliver finished galleries and individual downloads
 

@@ -2,9 +2,12 @@
 
 use App\Actions\Auth\ResetAccountPassword;
 use App\Actions\Auth\VerifyAccount;
+use App\Actions\Projects\ManageProject;
+use App\Models\Project;
 use App\Models\User;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Validation\ValidationException;
 
 // Invoked only by the PostgreSQL concurrency test. Secrets arrive on stdin,
 // never process arguments or stdout. This does not expose an application route.
@@ -23,10 +26,19 @@ try {
         $user = User::findOrFail($input['user_id']);
         $app->make(VerifyAccount::class)->handle($user);
         echo "verified\n";
+    } elseif ($input['action'] === 'project-create') {
+        $app->make(ManageProject::class)->create(User::findOrFail($input['user_id']), $input['data']);
+        echo "created\n";
+    } elseif ($input['action'] === 'project-restore') {
+        $project = Project::findOrFail($input['project_ids'][$input['worker']]);
+        $app->make(ManageProject::class)->command(User::findOrFail($input['user_id']), $project->id, $project->version, 'restore');
+        echo "restored\n";
     } else {
         $result = $app->make(ResetAccountPassword::class)->handle($input['credentials']);
         echo $result === Password::PASSWORD_RESET ? "reset\n" : "rejected\n";
     }
+} catch (ValidationException) {
+    echo "rejected\n";
 } catch (Throwable) {
     echo "failed\n";
     exit(1);

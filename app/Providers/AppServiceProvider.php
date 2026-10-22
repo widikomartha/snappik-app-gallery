@@ -3,10 +3,12 @@
 namespace App\Providers;
 
 use App\Contracts\ArchiveStorage;
+use App\Contracts\DrivePreviewSource;
 use App\Contracts\DriveSource;
 use App\Integrations\ArchiveStorage\R2ArchiveStorage;
 use App\Integrations\GoogleDrive\PublicDriveSource;
 use App\Models\DriveProofRun;
+use App\Models\Project;
 use App\Models\User;
 use App\Policies\TenantResourcePolicy;
 use App\Services\Access\AccountAction;
@@ -32,6 +34,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(DriveRequestPacer::class, fn () => new DriveRequestPacer((string) config('drive_proof.api_key'), (int) config('drive_proof.request_interval_ms')));
         $this->app->singleton(DriveSource::class, fn ($app) => new PublicDriveSource(new Client, (string) config('drive_proof.api_key'),
             beforeRequest: fn () => $app->make(DriveRequestPacer::class)->wait()));
+        $this->app->singleton(DrivePreviewSource::class, fn ($app) => $app->make(DriveSource::class));
         $this->app->singleton(S3Client::class, function () {
             $options = config('drive_proof.r2');
             foreach ($options as $value) {
@@ -64,6 +67,11 @@ class AppServiceProvider extends ServiceProvider
         URL::forceRootUrl(config('app.url'));
         Gate::define('access-admin', fn (User $user): bool => app(AccountPolicy::class)->allows($user, AccountAction::Admin));
         Gate::policy(DriveProofRun::class, TenantResourcePolicy::class);
+        Gate::policy(Project::class, TenantResourcePolicy::class);
+        RateLimiter::for('gallery-password', fn (Request $request) => [
+            Limit::perMinute(10)->by('gallery-ip:'.$request->ip()),
+            Limit::perMinute(5)->by('gallery:'.hash('sha256', (string) $request->route('capability')).'|'.$request->route('type').'|'.$request->ip()),
+        ]);
         RateLimiter::for('login', fn (Request $request) => [
             Limit::perMinute(5)->by('login:'.hash('sha256', mb_strtolower(trim(is_string($request->input('email')) ? $request->input('email') : '')).'|'.$request->ip())),
             Limit::perMinute(30)->by('login-ip:'.$request->ip()),

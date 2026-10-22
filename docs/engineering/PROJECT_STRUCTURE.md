@@ -1,6 +1,6 @@
 # SnapPik Project Structure
 
-**Classification:** TASK-001 foundation, TASK-003 authentication/access policy and TASK-002 local/test provider prototype exist; remaining project/gallery/billing paths are planned. [Package state](../index.md).
+**Classification:** TASK-001 foundation, TASK-003 authentication/access policy, TASK-002 local/test provider prototype, TASK-004 project/catalogue, TASK-005 client selection/preview and TASK-006 progress/history/export implementation exist. TASK-004–TASK-006 acceptance awaits TASK-002's real resource-key fixture. Finished-photo downloads, product ZIP and billing workflows remain planned. [Package state](../index.md).
 
 ## Existing documentation
 
@@ -19,17 +19,21 @@ docs/
 
 ## Existing application foundation
 
-The root now contains generated `artisan`, `app/Models/User.php`, `app/Providers/AppServiceProvider.php`, `bootstrap/`, Laravel `config/`, `public/`, `storage/`, and the default users/cache/jobs migrations, factory and empty seeder. `app/Http/Middleware/` contains the Inertia and security-header middleware. `routes/web.php` defines public/authenticated/admin boundaries and a closed client route; `routes/console.php` has no domain schedules yet.
+The root now contains generated `artisan`, `app/Models/User.php`, `app/Providers/AppServiceProvider.php`, `bootstrap/`, Laravel `config/`, `public/`, `storage/`, and the default users/cache/jobs migrations, factory and empty seeder. `app/Http/Middleware/` contains the Inertia and security-header middleware. `routes/web.php` defines public/authenticated/admin/project boundaries and scoped capability routes; `routes/console.php` has no domain schedules yet.
 
 `resources/views/app.blade.php` owns the before-paint theme initializer and Inertia entry document. `resources/js/app.tsx`, `lib/appearance-init.js`, `lib/appearance.ts`, `lib/motion.ts`, `layouts/shell.tsx`, `components/ui/`, and `pages/{public,auth,photographer,admin,client}/` establish the shared presentation foundation. `resources/css/{tokens,app}.css` holds the theme tokens and styles. Self-hosted font licenses are in `public/licenses/`.
 
 Real `composer.json`/`composer.lock`, `package.json`/`package-lock.json`, environment examples, TypeScript/Vite/Vitest/Playwright configuration and `.github/workflows/ci.yml` exist. Tests live in `tests/Feature/`, `tests/Browser/`, `tests/Integration/`, `tests/Support/` and frontend `*.test.ts(x)` files. Local downloaded runtimes and generated screenshots are ignored, not source deliverables.
 
-TASK-003 adds `Actions/Auth/{VerifyAccount,ResetAccountPassword,SetAccountSuspension}.php`, `Http/Controllers/Auth/AccountController.php`, `Models/AccountAccess.php`, `Notifications/AccountLink.php`, `Services/Auth/AccountMail.php`, `Services/Access/{AccountAction,AccountPolicy,GalleryGate}.php`, `Policies/TenantResourcePolicy.php`, `Contracts/PhotographerOwned.php`, `Console/Commands/ProvisionAdmin.php` and additive account-access/audit migrations. `resources/js/components/auth-form.tsx` and `pages/auth/` contain the functional account forms. The dedicated `playwright.auth.config.ts` uses an isolated PostgreSQL test database for synthetic registration. PostgreSQL process-race workers live only under `tests/Support/`. These paths implement account policy; project, gallery, payment and voucher Actions/Models remain planned.
+TASK-003 adds `Actions/Auth/{VerifyAccount,ResetAccountPassword,SetAccountSuspension}.php`, `Http/Controllers/Auth/AccountController.php`, `Models/AccountAccess.php`, `Notifications/AccountLink.php`, `Services/Auth/AccountMail.php`, `Services/Access/{AccountAction,AccountPolicy,GalleryGate}.php`, `Policies/TenantResourcePolicy.php`, `Contracts/PhotographerOwned.php`, `Console/Commands/ProvisionAdmin.php` and additive account-access/audit migrations. `resources/js/components/auth-form.tsx` and `pages/auth/` contain the functional account forms. The dedicated `playwright.auth.config.ts` uses an isolated PostgreSQL test database for synthetic registration. PostgreSQL process-race workers live only under `tests/Support/`. These paths implement account policy; payment and voucher Actions/Models remain planned.
 
 TASK-002 adds `app/Contracts/{DriveSource,ArchiveStorage,ArchiveUpload}.php`, `app/Integrations/{GoogleDrive,ArchiveStorage}/`, `app/Services/{Drive,Archives}/`, sanitized `ProviderFailure`, `app/Jobs/BuildDriveProofArchive.php`, `app/Models/DriveProof{Run,Node}.php`, their isolated PostgreSQL migration, `config/drive_proof.php` and `app/Console/Commands/DriveProof.php`. Dependency bindings live in `AppServiceProvider`. Provider snapshots remain inside adapters/encrypted prototype metadata; no provider code is imported by React. The command and prototype orchestration are local/test-only; these paths do not imply real-provider verification or finished gallery jobs.
 
 `app/Services/Drive/DriveRequestPacer.php` now coordinates provider request starts through the shared cache/lock. `AppServiceProvider` injects its callback into the Drive adapter, keeping timing state out of controllers, models and UI code. Its operational interval lives in `config/drive_proof.php` and `.env.example`; tests cover independent instances, safe failure and pacing on retries/EOF metadata checks.
+
+TASK-004 adds `Actions/Projects/ManageProject.php`, `Http/Requests/ProjectConfiguration.php`, `Http/Controllers/Photographer/ProjectController.php`, `Http/Controllers/Client/GalleryController.php`, `Models/{Project,GalleryModule,CatalogueRevision,CatalogueEntry}.php`, `Services/Drive/ImportProjectCatalogue.php`, `Jobs/ImportCatalogue.php` and the additive project/catalogue/choice-snapshot migration. `pages/photographer/{projects,project,project-diagnostics}.tsx` provide project management and bounded diagnostics; `pages/client/project.tsx` provides gated module status/password entry. The `catalogues` database queue connection in `config/queue.php` deliberately shares domain PostgreSQL transactions. `tests/Support/{CatalogueDrive,project-browser-fixture}.php` and `playwright.projects.config.ts` support synthetic queue/browser checks, with no production fixture routes. TASK-005 extends these boundaries with selection/photo previews below; finished-photo downloads remain TASK-007.
+
+TASK-005 adds `Actions/Selections/ManageSelection.php`, `Services/Access/SelectionAccess.php`, `Http/Controllers/Client/SelectionController.php`, `Contracts/DrivePreviewSource.php`, `Services/Drive/PreviewImage.php`, the additive selection-history/receipts/parent-identity migration and `pages/client/selection.tsx`. `PublicDriveSource` also implements the preview contract; provider URLs remain adapter-only. `tests/Feature/ClientSelectionTest.php`, `tests/Integration/SelectionConcurrencyTest.php`, `tests/Support/{SelectionFixture,selection-race-worker}.php`, `tests/Browser/selection.spec.ts` and `playwright.selection.config.ts` contain synthetic HTTP/browser and independent-process PostgreSQL checks. Confirmation snapshots/receipts use transactional database rows; no unused domain model scaffolding is introduced.
 
 ## Target application layout
 
@@ -90,6 +94,8 @@ tests/
 storage/            # Framework/runtime scratch, never a public photo library
 docs/               # Existing authoritative documentation
 ```
+
+TASK-006 adds `Services/Selections/ProjectProgress.php`, `Http/Controllers/Photographer/ProgressController.php`, the additive acknowledgement-time migration, `pages/photographer/results.tsx`, `components/project-progress.tsx`, `hooks/use-progress.ts` and `lib/progress.ts`. Existing dashboard/project-list pages compose the shared progress view. `tests/Feature/PhotographerProgressTest.php`, `tests/Support/progress-browser-fixture.php`, `tests/Browser/progress.spec.ts` and `playwright.progress.config.ts` provide isolated state-transition/export/browser verification. Filename export uses private temporary text storage and existing selection snapshots; no provider integration or unused domain model is introduced.
 
 ## Ownership and dependencies
 

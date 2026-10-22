@@ -1,7 +1,10 @@
 <?php
 
 use App\Http\Controllers\Auth\AccountController;
-use App\Services\Access\AccountPolicy;
+use App\Http\Controllers\Client\GalleryController;
+use App\Http\Controllers\Client\SelectionController;
+use App\Http\Controllers\Photographer\ProgressController;
+use App\Http\Controllers\Photographer\ProjectController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -25,17 +28,32 @@ Route::post('/email/verification-notification', [AccountController::class, 'send
     ->middleware(['auth', 'throttle:account-mail'])->name('verification.send');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', function (AccountPolicy $policy) {
-        abort_unless(request()->user()->role === 'photographer', 403);
-
-        return Inertia::render('photographer/dashboard', ['accountState' => $policy->state(request()->user())]);
-    })->name('dashboard');
+    Route::get('/projects', [ProgressController::class, 'index'])->name('projects.index');
+    Route::get('/projects/data', [ProgressController::class, 'index'])->name('projects.data');
+    Route::get('/projects/create', [ProjectController::class, 'create'])->name('projects.create');
+    Route::post('/projects', [ProjectController::class, 'store'])->name('projects.store');
+    Route::get('/projects/{project}', [ProjectController::class, 'show'])->name('projects.show');
+    Route::get('/projects/{project}/diagnostics', [ProjectController::class, 'diagnostics'])->name('projects.diagnostics');
+    Route::get('/projects/{project}/results', [ProgressController::class, 'show'])->name('projects.results');
+    Route::get('/projects/{project}/results/data', [ProgressController::class, 'show'])->name('projects.results.data');
+    Route::get('/projects/{project}/results/export', [ProgressController::class, 'export'])->name('projects.results.export');
+    Route::put('/projects/{project}', [ProjectController::class, 'update'])->name('projects.update');
+    Route::post('/projects/{project}/commands', [ProjectController::class, 'command'])->name('projects.command');
+    Route::post('/projects/{project}/selection/reopen', [ProjectController::class, 'reopen']);
+    Route::get('/dashboard', [ProgressController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/data', [ProgressController::class, 'index'])->name('dashboard.data');
     Route::get('/admin', fn () => Inertia::render('admin/dashboard'))
         ->middleware('can:access-admin')->name('admin.dashboard');
 });
 
-// TASK-004 must resolve and authorize capabilities before rendering client data.
-Route::get('/g/{capability}', fn () => abort(404))->name('client.gallery');
+Route::get('/g/{capability}', [GalleryController::class, 'show'])->name('client.gallery');
+Route::get('/g/{capability}/selection', [SelectionController::class, 'show']);
+Route::get('/g/{capability}/selection/data', [SelectionController::class, 'data']);
+Route::post('/g/{capability}/selection/choices', [SelectionController::class, 'mutate']);
+Route::post('/g/{capability}/selection/confirm', [SelectionController::class, 'confirm']);
+Route::get('/g/{capability}/selection/preview/{entry}', [SelectionController::class, 'preview'])->whereNumber('entry');
+Route::post('/g/{capability}/{type}/password', [GalleryController::class, 'unlock'])
+    ->whereIn('type', ['selection', 'delivery'])->middleware('throttle:gallery-password');
 
 // Synthetic component previews have no account/gallery data, and are local only.
 Route::get('/_foundation/{surface}', function (string $surface) {

@@ -29,6 +29,71 @@ class PublicDriveSourceTest extends TestCase
         });
     }
 
+    public function test_thumbnail_is_refreshed_through_official_metadata_and_proxied_without_credentials(): void
+    {
+        $photo = F::photo();
+        $photo['resourceKey'] = 'synthetic-preview-key';
+        $url = 'https://lh3.googleusercontent.com/synthetic-short-lived-thumbnail';
+        $source = $this->source([F::json([...$photo, 'thumbnailLink' => $url]),
+            new Response(200, ['Content-Type' => 'image/png', 'Content-Length' => '9'], 'thumbnail')]);
+        $image = $source->thumbnail(DriveItem::fromArray($photo));
+        $this->assertSame('image/png', $image->mimeType);
+        $this->assertSame(9, $image->length);
+        $this->assertSame('thumbnail', (string) $image->stream);
+        $image->stream->close();
+        $this->assertStringContainsString('thumbnailLink', (string) $this->history[0]['request']->getUri());
+        $this->assertSame('photo1/synthetic-preview-key', $this->history[0]['request']->getHeaderLine('X-Goog-Drive-Resource-Keys'));
+        $request = $this->history[1]['request'];
+        $this->assertSame($url, (string) $request->getUri());
+        foreach (['X-Goog-Api-Key', 'X-Goog-Drive-Resource-Keys', 'Cookie', 'Referer'] as $header) {
+            $this->assertSame('', $request->getHeaderLine($header));
+        }
+        $this->assertFalse($this->history[1]['options']['allow_redirects']);
+        $this->assertTrue($this->history[1]['options']['stream']);
+    }
+
+    public static function unsafeThumbnails(): array
+    {
+        return array_map(fn ($url) => [$url], [null, 'http://lh3.googleusercontent.com/image',
+            'https://evil.test/image', 'https://lh3.googleusercontent.com.evil.test/image',
+            'https://lh3.googleusercontent.com@127.0.0.1/image', 'https://user@lh3.googleusercontent.com/image',
+            'https://lh3.googleusercontent.com:443/image', 'https://lh3.googleusercontent.com/image#fragment',
+            'file:///etc/passwd', 'https://127.0.0.1/image']);
+    }
+
+    #[DataProvider('unsafeThumbnails')]
+    public function test_missing_or_unsafe_thumbnail_does_not_make_an_outbound_fetch(?string $url): void
+    {
+        $source = $this->source([F::json([...F::photo(), 'thumbnailLink' => $url])]);
+        try {
+            $source->thumbnail(DriveItem::fromArray(F::photo()));
+            $this->fail('Unsafe thumbnail must be rejected.');
+        } catch (ProviderFailure $failure) {
+            $this->assertSame('drive_thumbnail_unavailable', $failure->reason);
+            $this->assertCount(1, $this->history);
+        }
+    }
+
+    public function test_thumbnail_redirect_html_and_revocation_are_never_returned_as_an_image(): void
+    {
+        $photo = [...F::photo(), 'thumbnailLink' => 'https://lh3.googleusercontent.com/synthetic-image'];
+        foreach ([new Response(302, ['Location' => 'https://evil.test/image']), new Response(200, ['Content-Type' => 'text/html'], '<html>Denied</html>'),
+            new Response(403, ['Content-Type' => 'image/jpeg'], 'Denied')] as $response) {
+            $this->history = [];
+            $source = $this->source([F::json($photo), $response]);
+            try {
+                $source->thumbnail(DriveItem::fromArray(F::photo()));
+                $this->fail('Invalid thumbnail response must fail.');
+            } catch (ProviderFailure $failure) {
+                $this->assertSame('drive_thumbnail_unavailable', $failure->reason);
+                $this->assertCount(2, $this->history);
+            }
+        }
+        $source = $this->source([F::json([...$photo, 'version' => '8'])]);
+        $this->expectException(ProviderFailure::class);
+        $source->thumbnail(DriveItem::fromArray(F::photo()));
+    }
+
     public function test_folder_url_parser_and_resource_key(): void
     {
         $reference = DriveReference::fromFolderUrl('https://drive.google.com/drive/u/0/folders/synthetic-root?resourcekey=synthetic-key&usp=sharing');

@@ -2,7 +2,10 @@
 
 namespace Tests\Integration;
 
+use App\Actions\Auth\VerifyAccount;
+use App\Actions\Projects\ManageProject;
 use App\Models\AccountAccess;
+use App\Models\Project;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +33,7 @@ class AccountConcurrencyTest extends TestCase
         try {
             User::whereKey($user->id)->lockForUpdate()->firstOrFail();
             for ($i = 0; $i < 2; $i++) {
-                $process = new Process([PHP_BINARY, base_path('tests/Support/account-race-worker.php')], base_path(), $env, json_encode($payload), 30);
+                $process = new Process([PHP_BINARY, base_path('tests/Support/account-race-worker.php')], base_path(), $env, json_encode([...$payload, 'worker' => $i]), 30);
                 $process->start();
                 $processes[] = $process;
             }
@@ -81,5 +84,63 @@ class AccountConcurrencyTest extends TestCase
         $this->assertSame(['rejected', 'reset'], $outputs);
         $this->assertTrue(Hash::check('ConcurrentPassword123', $user->fresh()->password));
         $this->assertDatabaseCount('password_reset_tokens', 0);
+    }
+
+    public function test_concurrent_project_creates_cannot_take_the_same_final_trial_slot(): void
+    {
+        $user = User::factory()->unverified()->create();
+        app(VerifyAccount::class)->handle($user);
+        $data = ['name' => 'Synthetic race project', 'allowance' => 2,
+            'selection_source' => 'https://drive.google.com/drive/folders/synthetic-root'];
+        for ($i = 0; $i < 2; $i++) {
+            app(ManageProject::class)->create($user, $data);
+        }
+        $outputs = $this->race($user, ['action' => 'project-create', 'user_id' => $user->id, 'data' => $data]);
+        sort($outputs);
+        $this->assertSame(['created', 'rejected'], $outputs);
+        $this->assertSame(3, Project::where('user_id', $user->id)->whereNull('archived_at')->count());
+        $this->assertDatabaseCount('jobs', 3);
+    }
+
+    public function test_project_request_and_database_queue_dispatch_roll_back_together(): void
+    {
+        $user = User::factory()->unverified()->create();
+        app(VerifyAccount::class)->handle($user);
+        try {
+            DB::transaction(function () use ($user) {
+                app(ManageProject::class)->create($user, ['name' => 'Synthetic rollback', 'allowance' => 2,
+                    'selection_source' => 'https://drive.google.com/drive/folders/synthetic-root']);
+                $this->assertDatabaseCount('jobs', 1);
+                throw new \LogicException('Synthetic failure before outer commit.');
+            });
+            $this->fail('The synthetic transaction must roll back.');
+        } catch (\LogicException) {
+            $this->assertDatabaseCount('projects', 0);
+            $this->assertDatabaseCount('catalogue_revisions', 0);
+            $this->assertDatabaseCount('jobs', 0);
+        }
+    }
+
+    public function test_concurrent_restores_cannot_take_the_same_final_trial_slot(): void
+    {
+        $user = User::factory()->unverified()->create();
+        app(VerifyAccount::class)->handle($user);
+        $action = app(ManageProject::class);
+        $data = ['name' => 'Synthetic restore project', 'allowance' => 2,
+            'selection_source' => 'https://drive.google.com/drive/folders/synthetic-root'];
+        $ids = [];
+        for ($i = 0; $i < 2; $i++) {
+            $project = $action->create($user, $data);
+            $action->command($user, $project->id, $project->version, 'archive');
+            $ids[] = $project->id;
+        }
+        for ($i = 0; $i < 2; $i++) {
+            $action->create($user, $data);
+        }
+        $outputs = $this->race($user, ['action' => 'project-restore', 'user_id' => $user->id, 'project_ids' => $ids]);
+        sort($outputs);
+        $this->assertSame(['rejected', 'restored'], $outputs);
+        $this->assertSame(3, Project::whereNull('archived_at')->count());
+        $this->assertDatabaseCount('projects', 4);
     }
 }
