@@ -1,6 +1,6 @@
 # SnapPik MVP Backlog
 
-**TASK-001, TASK-003 and TASK-009: COMPLETE. TASK-002: FULL-CATALOGUE ZIP VERIFIED / REAL RESOURCE-KEY FIXTURE PENDING. TASK-004–TASK-008: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING. TASK-010–TASK-015: NOT STARTED.** Product authority: [PRD](../product/PRD.md). Technical contracts: [Architecture](../engineering/ARCHITECTURE.md). [Package approval state](../index.md).
+**TASK-001, TASK-003 and TASK-009: COMPLETE. TASK-002: FULL-CATALOGUE ZIP VERIFIED / REAL RESOURCE-KEY FIXTURE PENDING. TASK-004–TASK-008: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING. TASK-010: IMPLEMENTED / REAL SANDBOX QRIS ACCEPTANCE PENDING. TASK-011–TASK-015: NOT STARTED.** Product authority: [PRD](../product/PRD.md). Technical contracts: [Architecture](../engineering/ARCHITECTURE.md). [Package approval state](../index.md).
 
 These are implementation tasks, not claims that the application exists. Dependencies are hard prerequisites for declaring a task complete; a task may contain a bounded exploratory prototype without advertising it as a finished feature. Technical feasibility proofs precede broad UI work. Production publication remains a separately authorized action.
 
@@ -103,17 +103,18 @@ These are implementation tasks, not claims that the application exists. Dependen
 - Acceptance: invalid percentage/fixed/limit/date values are rejected; code normalization cannot create duplicates; limits span versions of the same code; a limit cannot be reduced below held plus used capacity. Old versions remain identifiable and changes are audited. No photographer can administer codes or inspect others' usage.
 - Out of scope: stacking, cashback, referrals, zero-pay vouchers, per-user manual entitlement grants.
 - Completion evidence: admin browser flow, validation/versioning/tenant tests and integer-discount example results.
-- Verification record: [TASK-009 evidence](TASK-009_EVIDENCE.md). Owner-only create/edit/deactivate/reactivate screens, normalized permanent code identities, immutable terms, audited versions, stale-form protection, cross-version held/successful capacity checks and paginated usage reports are implemented. PostgreSQL feature/process-race checks and four narrow/wide light/dark browser flows verify the task. Integer quotes preserve exact IDR amounts and reject invalid payable totals. Reservation/redemption tables support reporting; their production writers and the order foreign key remain TASK-010/TASK-011. No manual grant, checkout or payment integration is claimed.
+- Verification record: [TASK-009 evidence](TASK-009_EVIDENCE.md). Owner-only create/edit/deactivate/reactivate screens, normalized permanent code identities, immutable terms, audited versions, stale-form protection, cross-version held/successful capacity checks and paginated usage reports are implemented. PostgreSQL feature/process-race checks and four narrow/wide light/dark browser flows verify the task. Integer quotes preserve exact IDR amounts and reject invalid payable totals. Reservation/redemption tables support reporting. TASK-010 subsequently adds orders, foreign keys and holds; TASK-011 owns redemption/release. TASK-009 itself introduces no manual grant or payment integration.
 
 ## TASK-010 — Deliver server-priced checkout and voucher reservations
 
-- Status: NOT STARTED
+- Status: IMPLEMENTED / REAL SANDBOX QRIS ACCEPTANCE PENDING (October 23, 2026; not complete)
 - Requirements: REQ-003, REQ-012, REQ-013
 - Dependencies: TASK-003, TASK-009
 - Scope: Pro price snapshots, checkout quote, single-voucher application, total/per-user atomic holds, stable provider-order identity, checkout idempotency, resume and unknown-creation recovery through Midtrans adapter.
 - Acceptance: displayed base/discount/payable equals order/provider snapshot; amount/owner/duration tampering fails. Two buyers racing the last voucher slot cannot both reserve; two pending orders cannot bypass one user's limit. Repeated submit uses one order. Browser abandonment/timeouts do not release an uncertain reservation or create a second provider order. Nonpositive/below-channel-minimum totals are rejected.
 - Out of scope: auto-debit, customer surcharges, additional storage SKUs, free checkout.
 - Completion evidence: PostgreSQL reservation-race tests, adapter timeout/resume contracts and sandbox QRIS checkout demonstration.
+- Verification record: [TASK-010 evidence](TASK-010_EVIDENCE.md). Immutable server quotes/order terms, total/per-account holds, stable provider identity, idempotent creation, encrypted Snap pages, tenant-scoped billing and same-order unknown-creation recovery are implemented. Real PostgreSQL process races and synthetic Midtrans/browser verification are recorded there. The owner confirmed no sandbox merchant is configured and chose synthetic verification; the required real sandbox QRIS demonstration remains open. TASK-011 owns settlement/grants, durable callbacks/reconciliation and verified reservation release. No live payment or production publication is claimed.
 
 ## TASK-011 — Deliver verified payment grants and reconciliation
 

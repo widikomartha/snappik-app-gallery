@@ -1,12 +1,12 @@
 # SnapPik
 
-SnapPik is a subscription application for photographer photo selection and finished-photo delivery. TASK-001 establishes the application foundation; TASK-003 adds authentication, one trial, roles and shared access policy. TASK-004 implements project configuration, separate module gates, capability management and background catalogue revision publication. TASK-005 adds client photo browsing, gated previews, shared autosave, review, confirmation and photographer reopening. TASK-006 adds progress/history/export; TASK-007 adds finished-gallery browsing and protected individual original downloads. TASK-008 adds complete background ZIP jobs, protected downloads and recovery/cleanup. TASK-009 adds owner voucher management, immutable terms, usage reports and integer quote rules. TASK-002's Drive-to-R2 prototype verified one complete 384-photo ZIP with independent CRC/MD5 checks and cleanup; a real resource-key fixture remains pending, so TASK-004–TASK-008 acceptance also remains open. Checkout/payment workflows remain in later [backlog tasks](docs/planning/BACKLOG.md).
+SnapPik is a subscription application for photographer photo selection and finished-photo delivery. TASK-001 establishes the application foundation; TASK-003 adds authentication, one trial, roles and shared access policy. TASK-004 implements project configuration, separate module gates, capability management and background catalogue revision publication. TASK-005 adds client photo browsing, gated previews, shared autosave, review, confirmation and photographer reopening. TASK-006 adds progress/history/export; TASK-007 adds finished-gallery browsing and protected individual original downloads. TASK-008 adds complete background ZIP jobs, protected downloads and recovery/cleanup. TASK-009 adds owner voucher management, immutable terms, usage reports and integer quote rules. TASK-010 adds server-priced sandbox checkout, voucher holds and resumable same-order recovery; its real sandbox QRIS demonstration is pending merchant configuration. TASK-002's Drive-to-R2 prototype verified one complete 384-photo ZIP with independent CRC/MD5 checks and cleanup; a real resource-key fixture remains pending, so TASK-004–TASK-008 acceptance also remains open. Verified payment processing remains TASK-011 in the [backlog](docs/planning/BACKLOG.md).
 
 ## Current state
 
 Laravel 13, PHP 8.4+, React 19, TypeScript, Inertia 3, Vite 8, Motion 14 and PostgreSQL are configured at the repository root. Both package managers have real lockfiles. The skeleton was generated from official `laravel/laravel` v13.11.0, with the official Inertia adapter added separately to keep authentication workflows in TASK-003.
 
-The owner requested TASK-001–TASK-007 on October 22, 2026, and configured and authorized the recorded TASK-002 provider smoke testing. TASK-004–TASK-008 acceptance remains dependent on TASK-002's real resource-key fixture. The owner requested TASK-008 and TASK-009 on October 23, 2026. Final approval of the entire documentation package remains pending in the [index](docs/index.md). Provider test access does not imply production deployment or complete real-provider product acceptance.
+The owner requested TASK-001–TASK-007 on October 22, 2026, and configured and authorized the recorded TASK-002 provider smoke testing. TASK-004–TASK-008 acceptance remains dependent on TASK-002's real resource-key fixture. The owner requested TASK-008–TASK-010 on October 23, 2026, and chose synthetic checkout verification because a sandbox merchant is not configured. Final approval of the entire documentation package remains pending in the [index](docs/index.md). Provider test access does not imply production deployment or complete real-provider product acceptance.
 
 ## Prerequisites
 
@@ -44,7 +44,7 @@ npm run build
 php artisan serve --host=127.0.0.1 --port=8000
 ```
 
-Open [local SnapPik](http://127.0.0.1:8000). For frontend hot reload, run `npm run dev` in a second terminal while Artisan serves PHP. Keep the Vite development server local. Migrations include database queue/cache/session, isolated TASK-002 proof staging, account/access, project/catalogue, selection history, mutation receipts, delivery archives and voucher versions/accounting. No user is seeded automatically. The catalogue worker command is below; the ZIP worker and maintenance schedule are described below.
+Open [local SnapPik](http://127.0.0.1:8000). For frontend hot reload, run `npm run dev` in a second terminal while Artisan serves PHP. Keep the Vite development server local. Migrations include database queue/cache/session, isolated TASK-002 proof staging, account/access, project/catalogue, selection history, mutation receipts, delivery archives, voucher versions/accounting and immutable Pro/order snapshots. No user is seeded automatically. The catalogue worker command is below; the ZIP worker and maintenance schedule are described below.
 
 ## Checks
 
@@ -64,6 +64,7 @@ npm run test:browser:progress
 npm run test:browser:delivery
 npm run test:browser:archives
 npm run test:browser:vouchers
+npm run test:browser:checkout
 ```
 
 Playwright starts a local Artisan server when needed. It uses the development `.env` database and synthetic preview pages, without creating accounts. Do not run it against a production server. Screenshots are generated under ignored `test-results/`. CI installs locked dependencies, uses an isolated PostgreSQL 18 service with synthetic credentials, and runs the same checks without deployment or external-service secrets.
@@ -138,6 +139,18 @@ The worker uses the same restricted Drive API key and private R2 archive bucket 
 Ready output expires exactly 24 hours after readiness, using server time even if deletion is delayed. Keep the scheduler running: every minute it fails abandoned leased attempts after checking their process lock, expires old output and retries exact-attempt object/multipart cleanup. Run maintenance manually with `php artisan snappik:archives-maintain`. A killed worker becomes a visible failure after its 15-minute lease expires and maintenance runs; a live slow worker retains its session lock. Recreate the failed ZIP explicitly. Production requires supervised workers/scheduler, private bucket policy, permissions to list/abort multipart uploads, and adequate temporary disk. A deployment lifecycle rule is an additional backstop, not the access-control clock. Maintenance only targets persisted `archives/{job}/{attempt}.zip` identities, never backup prefixes.
 
 `npm run test:browser:archives` uses a dedicated loopback server on port 18768, guarded `snappik_test`, real queue consumption, and synthetic HTTP/disk provider bindings shared with the delivery browser fixture. Run it after PHPUnit teardown/migration and sequentially with other database-writing browser suites. [TASK-008 evidence](docs/planning/TASK-008_EVIDENCE.md) records tests and open real-provider/deployment acceptance gates.
+
+## Sandbox checkout and voucher reservations
+
+Apply migrations with `php artisan migrate --no-interaction`. A verified photographer opens **Langganan dan tagihan** from the dashboard or visits `/billing`. Pro starts at IDR 29,000 for 30 days, without automatic repeat billing or content quotas. **Periksa harga** validates one optional voucher and shows the exact server-calculated base/discount/payable before checkout. Continuing atomically creates an immutable order and optional voucher hold; repeated submission uses its original operation key. Future price/version changes require a new quote for new orders and preserve existing orders.
+
+The Midtrans adapter is sandbox-only. Set `MIDTRANS_SANDBOX_MERCHANT_ID` and `MIDTRANS_SANDBOX_SERVER_KEY` in the ignored local `.env` when an authorized QRIS-enabled sandbox merchant is available; confirm its minimum using `MIDTRANS_QRIS_MINIMUM_IDR` (default 1). Never paste keys into commands, source or documentation. No Client Key is needed for the hosted redirect. Without configuration the page retains billing history and explains checkout unavailability. No sandbox credentials were configured or real QRIS page demonstrated during TASK-010.
+
+Orders resume from their own history page. **Periksa atau pulihkan pesanan** checks the same provider identity before an uncertain creation can retry; **Buka checkout QRIS sandbox** reopens the saved protected page. Browser loss, local timeout, page closure and the 24-hour opening-window expiry never release an uncertain voucher hold. Quote/operation identity persists in the browser session when storage is available, and the server's history remains canonical. Suspended photographers can read their own billing history but cannot quote/create/resume/open checkout. Expired photographers can renew.
+
+TASK-010 does not activate paid access, process callbacks or release holds. A matching terminal provider observation is displayed for review; durable verified settlement, grants/redemptions and terminal release are TASK-011. Return parameters do not change payment state. Do not use this incomplete payment lifecycle for real transactions.
+
+`npm run test:browser:checkout` uses loopback port 18770, `snappik_test` and a CLI-only synthetic HTTP transport behind the real Midtrans adapter. It exercises a provider timeout, lost browser reply, reload/replay and voucher deactivation without contacting Midtrans. Run it after PHPUnit/test-schema migration and sequentially with the other database-writing browser suites. [TASK-010 evidence](docs/planning/TASK-010_EVIDENCE.md) records verification and the remaining real sandbox gate.
 
 ## TASK-002 Drive/ZIP proof
 
@@ -214,7 +227,7 @@ Apply the additive migration with `php artisan migrate --no-interaction`. A prov
 
 Each save publishes an immutable version. The code itself cannot be renamed, deleted or reused. The detail page shows prior terms, audited changes, held/released reservations and successful usage across all versions. Limits cannot fall below held plus successful usage, including the most-used account. Disable the enabled checkbox and save a reason to stop new orders while retaining earlier pending-order contracts. A stale form must load the latest version before resubmitting; validation failures retain entered values.
 
-`npm run test:browser:vouchers` uses a fresh loopback server on port 18769, guarded `snappik_test` and CLI-only synthetic owner/accounting fixtures. Run it after PHPUnit/test-schema migration and sequentially with other database-writing browser suites. [TASK-009 evidence](docs/planning/TASK-009_EVIDENCE.md) records verification. The production reservation/redemption writers, order foreign key and Midtrans integration remain TASK-010/TASK-011; this screen cannot grant access or mark a payment successful. No real owner was provisioned or payment made for these checks.
+`npm run test:browser:vouchers` uses a fresh loopback server on port 18769, guarded `snappik_test` and CLI-only synthetic owner/accounting fixtures. Run it after PHPUnit/test-schema migration and sequentially with other database-writing browser suites. [TASK-009 evidence](docs/planning/TASK-009_EVIDENCE.md) records verification. TASK-010 now provides the order foreign key, held-reservation writer and sandbox Midtrans adapter; verified redemption/release remains TASK-011. This screen cannot grant access or mark a payment successful. No real owner was provisioned or payment made for these checks.
 
 ## Documentation
 

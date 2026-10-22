@@ -6,6 +6,7 @@ use App\Http\Controllers\Client\ArchiveController;
 use App\Http\Controllers\Client\DeliveryController;
 use App\Http\Controllers\Client\GalleryController;
 use App\Http\Controllers\Client\SelectionController;
+use App\Http\Controllers\Photographer\BillingController;
 use App\Http\Controllers\Photographer\ProgressController;
 use App\Http\Controllers\Photographer\ProjectController;
 use Illuminate\Support\Facades\Route;
@@ -31,6 +32,12 @@ Route::post('/email/verification-notification', [AccountController::class, 'send
     ->middleware(['auth', 'throttle:account-mail'])->name('verification.send');
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');
+    Route::post('/billing/quote', [BillingController::class, 'quote'])->middleware('throttle:30,1');
+    Route::post('/billing/orders', [BillingController::class, 'store'])->middleware('throttle:20,1');
+    Route::get('/billing/orders/{order}', [BillingController::class, 'show'])->whereUuid('order');
+    Route::post('/billing/orders/{order}/resume', [BillingController::class, 'resume'])->whereUuid('order')->middleware('throttle:20,1');
+    Route::get('/billing/orders/{order}/open', [BillingController::class, 'open'])->whereUuid('order');
     Route::get('/projects', [ProgressController::class, 'index'])->name('projects.index');
     Route::get('/projects/data', [ProgressController::class, 'index'])->name('projects.data');
     Route::get('/projects/create', [ProjectController::class, 'create'])->name('projects.create');

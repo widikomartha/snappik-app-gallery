@@ -1,6 +1,6 @@
 # SnapPik Project Structure
 
-**Classification:** TASK-001 foundation, TASK-003 authentication/access policy, TASK-002 local/test provider prototype, TASK-004 project/catalogue, TASK-005 client selection/preview, TASK-006 progress/history/export, TASK-007 finished-gallery/individual-download, TASK-008 complete delivery ZIP and TASK-009 owner voucher management implementations exist. TASK-004–TASK-008 acceptance awaits TASK-002's real resource-key fixture. Checkout/payment workflows remain planned. [Package state](../index.md).
+**Classification:** TASK-001 foundation, TASK-003 authentication/access policy, TASK-002 local/test provider prototype, TASK-004 project/catalogue, TASK-005 client selection/preview, TASK-006 progress/history/export, TASK-007 finished-gallery/individual-download, TASK-008 complete delivery ZIP, TASK-009 owner vouchers and TASK-010 checkout/reservations implementations exist. TASK-004–TASK-008 acceptance awaits TASK-002's real resource-key fixture; TASK-010 awaits a real sandbox QRIS demonstration. Verified payment processing remains planned. [Package state](../index.md).
 
 ## Existing documentation
 
@@ -126,10 +126,14 @@ MVP gallery ZIP code belongs to archive services/jobs. Future photo-upload code 
 
 ## Implemented TASK-009 owner vouchers
 
-`Actions/Billing/ManageVoucher.php`, `Models/{Voucher,VoucherVersion}.php`, `Services/Billing/{VoucherUsage,VoucherQuote}.php`, `Http/Requests/VoucherConfiguration.php` and `Http/Controllers/Admin/VoucherController.php` implement owner management, immutable terms, capacity checks, integer quotes and reports. The additive `2026_10_23_200000_create_vouchers.php` migration adds root/version/accounting tables, audit references, PostgreSQL constraints and history triggers. Order UUIDs have no order foreign key until TASK-010 creates orders; production accounting writers remain TASK-010/TASK-011.
+`Actions/Billing/ManageVoucher.php`, `Models/{Voucher,VoucherVersion}.php`, `Services/Billing/{VoucherUsage,VoucherQuote}.php`, `Http/Requests/VoucherConfiguration.php` and `Http/Controllers/Admin/VoucherController.php` implement owner management, immutable terms, capacity checks, integer quotes and reports. The additive `2026_10_23_200000_create_vouchers.php` migration adds root/version/accounting tables, audit references, PostgreSQL constraints and history triggers. TASK-010 subsequently adds the order foreign key and held-reservation writer; redemption/release remains TASK-011.
 
 `pages/admin/{vouchers,voucher}.tsx` compose the shared shell/controls; `/admin` links to management. `tests/Feature/VoucherManagementTest.php`, `tests/Integration/VoucherConcurrencyTest.php`, `tests/Support/{VoucherFixture,voucher-race-worker,voucher-browser-fixture}.php`, `tests/Browser/vouchers.spec.ts` and `playwright.vouchers.config.ts` provide isolated validation, authorization, accounting/version, process-race and rendered browser checks. No payment adapter, order model or unused grant endpoint is introduced.
 
+## Implemented TASK-010 checkout and reservations
+
+TASK-010 adds `Actions/Billing/{Checkout,ResumeCheckout}.php`, `Models/Order.php`, `Contracts/PaymentGateway.php`, `Services/Billing/GatewayCheckout.php`, `Integrations/Midtrans/SandboxGateway.php`, `Http/Controllers/Photographer/BillingController.php`, `config/billing.php` and the additive checkout-order migration. `pages/photographer/{billing,order}.tsx`, `components/purchase-totals.tsx` and `lib/billing.ts` compose the existing shell/primitives. `tests/Feature/CheckoutTest.php`, `tests/Integration/{CheckoutConcurrencyTest,MidtransCheckoutTest}.php`, `tests/Support/CheckoutFixture.php`, the checkout process/browser fixtures, `tests/Browser/checkout.spec.ts` and `playwright.checkout.config.ts` verify local/synthetic behavior. Test transports are CLI-only and never loaded by production routes. No new dependency or callback/grant scaffolding is introduced.
+
 ## Bootstrap boundary
 
-TASK-001 establishes package lockfiles, manifests, environment examples, local setup and safe CI. [README](../../README.md) owns supported commands; Backlog and its linked evidence own actual verification results. Additional integrated release evidence remains future work.
+TASK-001 establishes package manifests/lockfiles, environment examples, local setup and safe CI. [README](../../README.md) owns supported commands; Backlog and its linked evidence own actual verification results. Additional integrated release evidence remains future work.

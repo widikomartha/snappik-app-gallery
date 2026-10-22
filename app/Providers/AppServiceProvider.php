@@ -7,8 +7,10 @@ use App\Contracts\DeliveryArchiveStorage;
 use App\Contracts\DrivePreviewSource;
 use App\Contracts\DriveRangeSource;
 use App\Contracts\DriveSource;
+use App\Contracts\PaymentGateway;
 use App\Integrations\ArchiveStorage\R2ArchiveStorage;
 use App\Integrations\GoogleDrive\PublicDriveSource;
+use App\Integrations\Midtrans\SandboxGateway;
 use App\Models\DriveProofRun;
 use App\Models\Project;
 use App\Models\User;
@@ -33,6 +35,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->singleton(PaymentGateway::class, fn () => new SandboxGateway(new Client, (string) config('billing.server_key'), (string) config('billing.merchant_id')));
         $this->app->singleton(DriveRequestPacer::class, fn () => new DriveRequestPacer((string) config('drive_proof.api_key'), (int) config('drive_proof.request_interval_ms')));
         $this->app->singleton(DriveSource::class, fn ($app) => new PublicDriveSource(new Client, (string) config('drive_proof.api_key'),
             beforeRequest: fn () => $app->make(DriveRequestPacer::class)->wait()));

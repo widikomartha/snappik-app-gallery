@@ -73,3 +73,7 @@ dialog .photo-preview img { height: auto; max-height: 60vh; }
 .result-records li { padding: 0.75rem 0; border-bottom: 1px solid var(--color-border); }
 textarea:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 .voucher-record { padding: 1.5rem 0; border-bottom: 1px solid var(--color-border); }
+.voucher-record a { overflow-wrap: anywhere; }
+.billing-totals { margin: 0; max-width: 36rem; }
+.billing-totals div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.5rem 1.5rem; padding: 0.75rem 0; border-bottom: 1px solid var(--color-border); }
+.billing-totals dd { margin: 0; }

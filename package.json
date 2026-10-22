@@ -17,7 +17,8 @@
     "test:browser:progress": "playwright test --config playwright.progress.config.ts",
     "test:browser:delivery": "playwright test --config playwright.delivery.config.ts",
     "test:browser:archives": "playwright test --config playwright.archives.config.ts",
-    "test:browser:vouchers": "playwright test --config playwright.vouchers.config.ts"
+    "test:browser:vouchers": "playwright test --config playwright.vouchers.config.ts",
+    "test:browser:checkout": "playwright test --config playwright.checkout.config.ts"
   },
   "dependencies": {
     "@fontsource/dm-sans": "^5.2.0",
