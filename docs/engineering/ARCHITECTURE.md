@@ -1,6 +1,6 @@
 # SnapPik Architecture
 
-**System phase:** TASK-001 application foundation implemented; domain behavior and provider integrations remain planned. [Package state](../index.md). [PRD](../product/PRD.md) owns product behavior and commercial rules.
+**System phase:** TASK-001 foundation and TASK-002 local/test provider prototype implemented; real-provider proof is blocked by missing configuration. Product workflows remain planned. [Package state](../index.md). [PRD](../product/PRD.md) owns product behavior and commercial rules.
 
 ## Approved boundaries and technology
 
@@ -16,7 +16,17 @@
 | Email | Framework mail boundary with an operator-configured transactional SMTP service for verification/recovery. No marketing or client-message automation. |
 | Hosting | A Linux web host capable of running PHP web processes, persistent workers, scheduler, PostgreSQL and outbound HTTPS. Vendor/domain/sizing are deployment inputs; no service has been purchased. |
 
-The foundation uses Laravel 13 / PHP 8.4+, React 19, Inertia 3, TypeScript, Vite 8, Motion 14 and PostgreSQL, with real dependency lockfiles. It was generated from the official Laravel skeleton with Inertia installed separately, leaving authentication flows to TASK-003. [README](../../README.md) records actual setup commands; Backlog links verification evidence. Node is needed for frontend build tooling, not a second application backend. The remaining contracts below describe the complete MVP and do not claim implemented provider/domain behavior.
+The foundation uses Laravel 13 / PHP 8.4+, React 19, Inertia 3, TypeScript, Vite 8, Motion 14 and PostgreSQL, with real dependency lockfiles. It was generated from the official Laravel skeleton with Inertia installed separately, leaving authentication flows to TASK-003. [README](../../README.md) records actual setup commands; Backlog links verification evidence. Node is needed for frontend build tooling, not a second application backend. The contracts below describe the complete MVP; the bounded TASK-002 implementation is distinguished from planned product behavior below.
+
+### Implemented TASK-002 prototype boundary
+
+`DriveSource`, `ArchiveStorage` and `ArchiveUpload` are provider contracts. `PublicDriveSource` calls only the fixed official Drive v3 API using a configured server API key, resource-key headers, bounded retries and no redirects. It validates metadata, downloadability, media type/length, original MD5 when supplied, and versions before/after streaming. Native status/retry classes are sanitized; provider URLs, bodies and chained SDK exceptions are excluded from diagnostics.
+
+`drive_proof_runs`, `drive_proof_nodes` and `drive_proof_pages` are isolated prototype tables, not published product catalogues. Runs belong to persisted local test users. Metadata/resource keys and page tokens are encrypted; iterative traversal commits each page and its checkpoint atomically, retains unsupported/shortcut reports, detects identity/page cycles and serializes import attempts with a PostgreSQL advisory lock. Failed imports remain incomplete and can resume from committed checkpoints. Prototype orchestration and the worker refuse production execution; there are no new web endpoints or capability links.
+
+`BuildDriveProofArchive` claims a staged run atomically and passes its scoped ordered manifest to `BuildStreamingZip`. The locked ZipStream-PHP library streams STORE/ZIP64 output to the AWS SDK/R2 multipart adapter. Nonfinal parts use equal, adaptively selected sizes; one temporary part spills to disk above 1 MiB instead of buffering a large object. Multipart Content-MD5, completion length/type checks, whole-attempt abort/delete and a distinct cleanup-required state protect output. Each attempt uses a fresh private key. The smoke verifier independently reads the completed object, extracts each identity and checks count, size, CRC and source MD5. Readiness has a 24-hour expiry; the verifier enforces it. The command can delete proof objects explicitly.
+
+This prototype has no product publication pointer, gallery access/gate policy, client download endpoint, automatic cleanup scheduler, orphan-upload sweeper, leased crash recovery or product deduplication. These remain TASK-004/TASK-007/TASK-008 work. ZipStream retains central-directory metadata in memory; the measured byte-stream result does not prove bounded memory for arbitrarily many entries. Product large-count tests must assess that separately. Provider access and actual R2 behavior remain unverified; [TASK-002 evidence](../planning/TASK-002_EVIDENCE.md) records the blocker, synthetic results and ZIP-reader compatibility observations.
 
 ## Browser appearance and motion
 
@@ -201,7 +211,7 @@ Create encrypted off-host PostgreSQL backups on a scheduled basis and verify res
 
 ## Verification strategy
 
-TASK-001 establishes the foundation feature/component/browser checks and actual commands in README. The domain checks below remain planned. Backlog owns execution sequencing and evidence.
+TASK-001 establishes the foundation feature/component/browser checks and actual commands in README. TASK-002 adds synthetic provider contracts, PostgreSQL staging tests and an opt-in measured ZIP64 test, also configured as a separate CI step. The product-domain and actual provider checks below remain planned unless explicitly evidenced in Backlog. Backlog owns execution sequencing and evidence.
 
 - Unit tests: integer discount/rounding and minimums, UTC interval comparisons, allowance decisions, path sanitization and provider state mapping.
 - Database feature tests with real PostgreSQL transactions: tenant isolation, last trial slot, last choice slot, edit-versus-confirm, duplicate callback, simultaneous extensions, last voucher reservation and safe release. Do not replace these races solely with mocked repository tests.

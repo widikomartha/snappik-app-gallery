@@ -1,6 +1,6 @@
 # SnapPik MVP Backlog
 
-**TASK-001: COMPLETE. TASK-002–TASK-015: NOT STARTED.** Product authority: [PRD](../product/PRD.md). Technical contracts: [Architecture](../engineering/ARCHITECTURE.md). [Package approval state](../index.md).
+**TASK-001: COMPLETE. TASK-002: PROTOTYPE IMPLEMENTED / PROVIDER VERIFICATION BLOCKED. TASK-003–TASK-015: NOT STARTED.** Product authority: [PRD](../product/PRD.md). Technical contracts: [Architecture](../engineering/ARCHITECTURE.md). [Package approval state](../index.md).
 
 These are implementation tasks, not claims that the application exists. Dependencies are hard prerequisites for declaring a task complete; a task may contain a bounded exploratory prototype without advertising it as a finished feature. Technical feasibility proofs precede broad UI work. Production publication remains a separately authorized action.
 
@@ -18,13 +18,14 @@ These are implementation tasks, not claims that the application exists. Dependen
 
 ## TASK-002 — Prove public Drive and one large ZIP end to end
 
-- Status: NOT STARTED
+- Status: PROTOTYPE IMPLEMENTED / PROVIDER VERIFICATION BLOCKED (explicitly requested October 22, 2026; not complete)
 - Requirements: REQ-005, REQ-010, REQ-011, REQ-017
 - Dependencies: TASK-001
 - Scope: establish provider Contracts, an official public-Drive adapter, paginated descendant import and a worker prototype streaming source files into one private R2 ZIP64 object. Prove the architecture before polishing product screens.
 - Acceptance: an authorized public folder with subfolders/resource-key cases imports fully; individual original bytes match; a multi-file archive contains every expected identity; a synthetic source above 4 GiB produces one extractable archive without holding it in RAM. Document measured memory and native provider failures. A failing second input never yields ready partial output. Unavailable credentials are stated as an integration blocker, not bypassed by scraping.
 - Out of scope: broad photographer OAuth, storing originals permanently, several ZIP parts, a Drive-folder redirect.
 - Completion evidence: adapter contract results, authorized provider smoke-test record, ZIP entry/CRC validation and measured streaming resource profile. Any infeasible boundary is resolved before dependent delivery tasks proceed.
+- Verification record: [TASK-002 evidence](TASK-002_EVIDENCE.md). Official API adapter, encrypted PostgreSQL staging/checkpoints, local/test-only worker, private R2 multipart adapter, independent extraction verifier and smoke-test commands exist. Synthetic contracts and a source above 4 GiB were exercised. The owner confirmed missing provider configuration; no authorized Drive/R2 smoke test or real native-provider failure was observed. TASK-004, TASK-007 and TASK-008 cannot treat this prerequisite as complete. The evidence also records the installed libzip strict-check compatibility result.
 
 ## TASK-003 — Implement authentication, roles and access policy
 

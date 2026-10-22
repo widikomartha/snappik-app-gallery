@@ -1,6 +1,6 @@
 # SnapPik Project Structure
 
-**Classification:** the TASK-001 foundation exists; remaining domain paths are planned. [Package state](../index.md).
+**Classification:** the TASK-001 foundation and TASK-002 local/test provider prototype exist; remaining product-domain paths are planned. [Package state](../index.md).
 
 ## Existing documentation
 
@@ -23,7 +23,9 @@ The root now contains generated `artisan`, `app/Models/User.php`, `app/Providers
 
 `resources/views/app.blade.php` owns the before-paint theme initializer and Inertia entry document. `resources/js/app.tsx`, `lib/appearance-init.js`, `lib/appearance.ts`, `lib/motion.ts`, `layouts/shell.tsx`, `components/ui/`, and `pages/{public,auth,photographer,admin,client}/` establish the shared presentation foundation. `resources/css/{tokens,app}.css` holds the theme tokens and styles. Self-hosted font licenses are in `public/licenses/`.
 
-Real `composer.json`/`composer.lock`, `package.json`/`package-lock.json`, environment examples, TypeScript/Vite/Vitest/Playwright configuration and `.github/workflows/ci.yml` exist. Tests currently live in `tests/Feature/`, `tests/Browser/` and frontend `*.test.ts(x)` files. No domain Actions, provider Contracts/Integrations, Jobs, Policies, Integration suite or completed authentication workflows exist yet. Local downloaded runtimes and generated screenshots are ignored, not source deliverables.
+Real `composer.json`/`composer.lock`, `package.json`/`package-lock.json`, environment examples, TypeScript/Vite/Vitest/Playwright configuration and `.github/workflows/ci.yml` exist. Tests live in `tests/Feature/`, `tests/Browser/`, `tests/Integration/`, `tests/Support/` and frontend `*.test.ts(x)` files. No product Actions, Policies or completed authentication workflows exist yet. Local downloaded runtimes and generated screenshots are ignored, not source deliverables.
+
+TASK-002 adds `app/Contracts/{DriveSource,ArchiveStorage,ArchiveUpload}.php`, `app/Integrations/{GoogleDrive,ArchiveStorage}/`, `app/Services/{Drive,Archives}/`, sanitized `ProviderFailure`, `app/Jobs/BuildDriveProofArchive.php`, `app/Models/DriveProof{Run,Node}.php`, their isolated PostgreSQL migration, `config/drive_proof.php` and `app/Console/Commands/DriveProof.php`. Dependency bindings live in `AppServiceProvider`. Provider snapshots remain inside adapters/encrypted prototype metadata; no provider code is imported by React. The command and prototype orchestration are local/test-only; these paths do not imply real-provider verification or finished gallery jobs.
 
 ## Target application layout
 

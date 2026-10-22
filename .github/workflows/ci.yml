@@ -44,6 +44,10 @@ jobs:
       - run: npm run build
       - run: npm test
       - run: composer test
+      - name: Stream and extract one ZIP64 archive above 4 GiB
+        run: php -d memory_limit=128M vendor/bin/phpunit --filter LargeZipProofTest
+        env:
+          SNAPPIK_LARGE_PROOF: '1'
       - run: php artisan migrate --force
       - run: npx playwright install --with-deps chromium
       - run: npm run test:browser

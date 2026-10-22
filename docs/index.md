@@ -6,13 +6,15 @@
 
 **Final document approval: pending.**
 
-**Implementation phase: TASK-001 implemented and verified; TASK-002–TASK-015 not started.**
+**Implementation phase: TASK-001 implemented and verified; TASK-002 prototype implemented with provider integration blocked; TASK-003–TASK-015 not started.**
 
 This file owns package status and approval tracking. Baseline approval authorized creation of this English documentation package in `D:\Website\snappik-app-gallery`. It did not approve unseen final documents, authorize deployment, or establish that future software is correct. Change package state to **APPROVED / IMPLEMENTATION READY** only after the owner explicitly approves the final documents and documentation checks pass.
 
 On October 22, 2026, the owner approved incorporating the ZenGrid direction, Motion animation and light/dark appearance into the design documentation. [REQ-021 and REQ-022](product/PRD.md#req-021--light-and-dark-appearance) define the behavior; the [Design System](design/DESIGN_SYSTEM.md) defines the visual contract. This approval authorizes the documentation change, not application implementation or dependency installation. Final package approval is still pending.
 
 Later on October 22, 2026, the owner explicitly requested implementation of TASK-001. That request authorizes the bootstrap and its dependencies/checks; it is not recorded as final approval of the entire documentation package or authorization for deployment.
+
+The owner subsequently explicitly requested TASK-002, authorizing its provider contracts, local/test prototype, dependencies and checks. The owner confirmed that an authorized Drive test source and private R2 credentials are not configured and requested documenting that blocker. Synthetic adapter and large-ZIP checks are recorded in [TASK-002 evidence](planning/TASK-002_EVIDENCE.md). The real-provider acceptance gate remains open; this request does not approve the complete document package or authorize publication.
 
 ## Sources of truth
 
