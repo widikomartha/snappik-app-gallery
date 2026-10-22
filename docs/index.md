@@ -6,7 +6,7 @@
 
 **Final document approval: pending.**
 
-**Implementation phase: TASK-001 and TASK-003 complete; TASK-002 full-catalogue ZIP verified, real resource-key fixture pending; TASK-004–TASK-007 implemented with local/synthetic verification, prerequisite acceptance pending; TASK-008–TASK-015 not started.**
+**Implementation phase: TASK-001 and TASK-003 complete; TASK-002 full-catalogue ZIP verified, real resource-key fixture pending; TASK-004–TASK-008 implemented with local/synthetic verification, prerequisite acceptance pending; TASK-009–TASK-015 not started.**
 
 This file owns package status and approval tracking. Baseline approval authorized creation of this English documentation package in `D:\Website\snappik-app-gallery`. It did not approve unseen final documents, authorize deployment, or establish that future software is correct. Change package state to **APPROVED / IMPLEMENTATION READY** only after the owner explicitly approves the final documents and documentation checks pass.
 
@@ -31,6 +31,8 @@ On October 22, 2026, the owner explicitly requested TASK-005, authorizing client
 On October 22, 2026, the owner explicitly requested TASK-006, authorizing the photographer progress overview, current/historical results, filename export, local migration and checks. [TASK-006 evidence](planning/TASK-006_EVIDENCE.md) records implementation and verification. TASK-005's prerequisite acceptance remains open through TASK-004/TASK-002, so TASK-006 is not declared complete. This request does not approve the entire documentation package or authorize production publication, real messages or new provider transfers. Final document approval remains pending.
 
 On October 22, 2026, the owner explicitly requested TASK-007, authorizing finished-gallery browsing, protected individual original downloads, local dependencies and checks. [TASK-007 evidence](planning/TASK-007_EVIDENCE.md) records implementation and verification. TASK-004/TASK-005 acceptance remains dependent on TASK-002's authorized real resource-key fixture, so TASK-007 is not declared complete. This request does not approve the entire documentation package or authorize production publication, real messages or additional live-provider transfers. Final document approval remains pending.
+
+On October 23, 2026, the owner explicitly requested TASK-008, authorizing complete delivery ZIP manifests/jobs, private streaming output/downloads, recovery/cleanup, client status UI, local migrations and checks. [TASK-008 evidence](planning/TASK-008_EVIDENCE.md) records implementation and verification. TASK-002's real resource-key fixture and TASK-007 prerequisite acceptance remain open, so TASK-008 is not declared complete. This request does not approve the entire document package or authorize additional live-provider transfers, real messages or production publication. Final document approval remains pending.
 
 ## Sources of truth
 

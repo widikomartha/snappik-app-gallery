@@ -6,9 +6,6 @@ use App\Contracts\ArchiveStorage;
 use App\Contracts\DriveSource;
 use App\Services\Drive\DriveItem;
 use App\Services\ProviderFailure;
-use GuzzleHttp\Psr7\FnStream;
-use ZipStream\CompressionMethod;
-use ZipStream\ZipStream;
 
 final class BuildStreamingZip
 {
@@ -19,34 +16,32 @@ final class BuildStreamingZip
      *
      * @param  iterable<array{item: DriveItem, path: string}>  $entries
      */
-    public function build(string $key, iterable $entries, int $expectedCount, int $expectedBytes, int $maximumZipBytes, ?\Closure $progress = null): array
+    public function build(string $key, iterable $entries, int $expectedCount, int $expectedBytes, int $maximumZipBytes, ?\Closure $progress = null, ?\Closure $pulse = null): array
     {
         if ($expectedCount < 1) {
             throw new ProviderFailure('archive_empty_manifest');
         }
         $upload = $this->storage->begin($key, $maximumZipBytes);
         $outputFailure = null;
-        $output = new FnStream([
-            'isReadable' => fn () => false, 'isWritable' => fn () => true,
-            'write' => function (string $bytes) use ($upload, &$outputFailure): int {
-                try {
-                    return $upload->write($bytes);
-                } catch (\Throwable $error) {
-                    $outputFailure = $error;
-                    throw $error;
-                }
-            },
-        ]);
+        $output = function (string $bytes) use ($upload, &$outputFailure, $pulse): int {
+            try {
+                $pulse?->__invoke();
+
+                return $upload->write($bytes);
+            } catch (\Throwable $error) {
+                $outputFailure = $error;
+                throw $error;
+            }
+        };
         $count = 0;
         $bytes = 0;
         try {
-            $zip = new ZipStream(outputStream: $output, defaultCompressionMethod: CompressionMethod::STORE,
-                enableZip64: true, defaultEnableZeroHeader: true, sendHttpHeaders: false);
+            $zip = new BoundedZip($output);
             foreach ($entries as $entry) {
                 $item = $entry['item'];
                 $stream = $this->drive->original($item);
                 try {
-                    $zip->addFileFromPsr7Stream(fileName: $entry['path'], stream: $stream, exactSize: $item->size);
+                    $zip->add($entry['path'], $stream, $item->size);
                     // The library reads exactSize. Check surplus bytes and call the source's
                     // verifier directly, since PSR stream wrappers may swallow exceptions.
                     if ($stream->read(1) !== '' || ! $stream->eof()) {

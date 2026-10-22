@@ -1,13 +1,16 @@
 <?php
 
 use App\Models\AccountAccess;
+use App\Models\ArchiveJob;
 use App\Models\CatalogueEntry;
 use App\Models\Project;
 use App\Models\User;
+use App\Services\Archives\ArchiveRecovery;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Queue;
 use Tests\Support\DeliveryFixture;
+use Tests\Support\DeliveryTransport;
 use Tests\Support\DriveFixtures as F;
 
 require __DIR__.'/../../vendor/autoload.php';
@@ -41,13 +44,28 @@ try {
         $bytes = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=');
         foreach (CatalogueEntry::where('revision_id', $module->published_revision_id)->where('kind', 'photo')->get() as $photo) {
             $metadata = [...F::photo($photo->file_id, $bytes, 'Hasil akhir.png'), 'mimeType' => 'image/png'];
-            $photo->update(['name' => 'Hasil akhir.png', 'metadata' => $metadata]);
+            $photo->update(['name' => 'Hasil akhir.png', 'bytes' => strlen($bytes), 'metadata' => $metadata]);
         }
     } else {
         $owner = User::where('email', $input['email'])->firstOrFail();
         $project = Project::where('user_id', $owner->id)->firstOrFail();
         $module = $project->modules()->where('type', 'delivery')->firstOrFail();
-        if ($input['action'] === 'expire-account') {
+        if ($input['action'] === 'work-archive') {
+            DeliveryTransport::bind($app);
+            $app->make(Kernel::class)->call('queue:work', [
+                'connection' => 'archives', '--queue' => 'archives', '--stop-when-empty' => true, '--tries' => 0, '--timeout' => 0,
+            ]);
+        } elseif ($input['action'] === 'recover-archive') {
+            DeliveryTransport::bind($app);
+            ArchiveJob::where('module_id', $module->id)->where('state', 'processing')->update(['lease_until' => now()]);
+            $app->make(ArchiveRecovery::class)->sweep();
+        } elseif ($input['action'] === 'expire-archive') {
+            ArchiveJob::where('module_id', $module->id)->update(['expires_at' => now()]);
+        } elseif ($input['action'] === 'cleanup-archives') {
+            DeliveryTransport::bind($app);
+            ArchiveJob::where('module_id', $module->id)->where('state', 'ready')->update(['expires_at' => now()]);
+            $app->make(ArchiveRecovery::class)->sweep();
+        } elseif ($input['action'] === 'expire-account') {
             AccountAccess::whereKey($owner->id)->update(['access_ends_at' => now()]);
             $project->modules()->where('type', 'selection')->update(['deadline' => now()]);
         } elseif ($input['action'] === 'revoke-download') {

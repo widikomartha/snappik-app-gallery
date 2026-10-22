@@ -33,6 +33,8 @@ final class R2HttpFixture
 
     public int $interruptedReads = 0;
 
+    public ?string $orphanKey = null;
+
     public function __construct(public string $path) {}
 
     public function client(): S3Client
@@ -91,6 +93,18 @@ final class R2HttpFixture
             clearstatcache(true, $this->path);
 
             return Create::promiseFor(new Response(200, ['Content-Length' => (string) (filesize($this->path) + ($this->wrongHead ? 1 : 0)), 'Content-Type' => 'application/zip', 'ETag' => '"synthetic-complete"']));
+        }
+        if ($method === 'GET' && array_key_exists('uploads', $query)) {
+            $this->operations[] = 'list';
+            $this->readRequests[] = ['prefix' => $query['prefix'] ?? null, 'marker' => $query['key-marker'] ?? null];
+            $key = htmlspecialchars($this->orphanKey ?? '', ENT_XML1);
+            $last = isset($query['key-marker']);
+            $xml = '<ListMultipartUploadsResult><IsTruncated>'.($last ? 'false' : 'true').'</IsTruncated>'
+                .($last ? '' : '<NextKeyMarker>'.$key.'</NextKeyMarker><NextUploadIdMarker>one</NextUploadIdMarker>')
+                .'<Upload><Key>'.$key.'</Key><UploadId>'.($last ? 'two' : 'one').'</UploadId></Upload>'
+                .'<Upload><Key>backups/do-not-touch</Key><UploadId>backup</UploadId></Upload></ListMultipartUploadsResult>';
+
+            return Create::promiseFor(new Response(200, [], $xml));
         }
         if ($method === 'GET') {
             $this->operations[] = 'get';

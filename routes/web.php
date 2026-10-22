@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AccountController;
+use App\Http\Controllers\Client\ArchiveController;
 use App\Http\Controllers\Client\DeliveryController;
 use App\Http\Controllers\Client\GalleryController;
 use App\Http\Controllers\Client\SelectionController;
@@ -50,6 +51,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::get('/g/{capability}', [GalleryController::class, 'show'])->name('client.gallery');
 Route::get('/g/{capability}/delivery', [DeliveryController::class, 'show']);
 Route::get('/g/{capability}/delivery/data', [DeliveryController::class, 'data']);
+Route::get('/g/{capability}/delivery/archive', [ArchiveController::class, 'status']);
+Route::post('/g/{capability}/delivery/archive', [ArchiveController::class, 'store'])->middleware('throttle:20,1');
+Route::get('/g/{capability}/delivery/archive/{archive}', [ArchiveController::class, 'download'])->whereUuid('archive');
 Route::get('/g/{capability}/delivery/media/{entry}', [DeliveryController::class, 'media'])->whereNumber('entry');
 Route::get('/g/{capability}/selection', [SelectionController::class, 'show']);
 Route::get('/g/{capability}/selection/data', [SelectionController::class, 'data']);

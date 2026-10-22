@@ -2,15 +2,16 @@
 
 namespace App\Integrations\ArchiveStorage;
 
-use App\Contracts\ArchiveStorage;
 use App\Contracts\ArchiveUpload;
+use App\Contracts\DeliveryArchiveStorage;
+use App\Services\Drive\ByteRange;
 use App\Services\ProviderFailure;
 use Aws\Exception\AwsException;
 use Aws\S3\S3Client;
 use GuzzleHttp\Psr7\PumpStream;
 use Psr\Http\Message\StreamInterface;
 
-final class R2ArchiveStorage implements ArchiveStorage
+final class R2ArchiveStorage implements DeliveryArchiveStorage
 {
     // R2 native service capacity, not a subscription/gallery quota.
     public const MAXIMUM_OBJECT_BYTES = 5 * 1024 ** 4 - 5 * 1024 ** 3;
@@ -19,7 +20,7 @@ final class R2ArchiveStorage implements ArchiveStorage
 
     public function begin(string $key, int $maximumBytes): ArchiveUpload
     {
-        if (! preg_match('~\Aproofs/[a-f0-9-]{36}/[a-f0-9-]{36}\.zip\z~', $key)) {
+        if (! preg_match('~\A(?:proofs|archives)/[a-f0-9-]{36}/[a-f0-9-]{36}\.zip\z~', $key)) {
             throw new ProviderFailure('archive_invalid_private_key');
         }
         if ($maximumBytes > self::MAXIMUM_OBJECT_BYTES) {
@@ -59,7 +60,7 @@ final class R2ArchiveStorage implements ArchiveStorage
                     return false;
                 }
                 $end = min($size - 1, $offset + 8 * 1024 ** 2 - 1);
-                $bytes = $this->readRange($key, $offset, $end, $size, $etag);
+                $bytes = $this->readChunk($key, $offset, $end, $size, $etag);
                 $offset = $end + 1;
 
                 return $bytes;
@@ -69,7 +70,66 @@ final class R2ArchiveStorage implements ArchiveStorage
         }
     }
 
-    private function readRange(string $key, int $start, int $end, int $size, string $etag): string
+    public function slice(string $key, ByteRange $range, int $expectedSize): StreamInterface
+    {
+        try {
+            $head = $this->client->headObject(['Bucket' => $this->bucket, 'Key' => $key]);
+            $etag = $head['ETag'] ?? null;
+            if ((int) ($head['ContentLength'] ?? -1) !== $expectedSize || ($head['ContentType'] ?? '') !== 'application/zip'
+                || ! is_string($etag) || $etag === '' || $range->start < 0 || $range->end >= $expectedSize) {
+                throw new ProviderFailure('r2_read_invalid_response');
+            }
+            $offset = $range->start;
+
+            return new PumpStream(function () use ($key, $range, $expectedSize, $etag, &$offset): string|false {
+                if ($offset > $range->end) {
+                    return false;
+                }
+                $end = min($range->end, $offset + 8 * 1024 ** 2 - 1);
+                $bytes = $this->readChunk($key, $offset, $end, $expectedSize, $etag);
+                $offset = $end + 1;
+
+                return $bytes;
+            }, ['size' => $range->length()]);
+        } catch (\Throwable $error) {
+            throw $error instanceof ProviderFailure ? $error : new ProviderFailure('r2_read_failed', retryable: true);
+        }
+    }
+
+    public function cleanup(string $key): void
+    {
+        // Never sweep a bucket or a broad prefix. Attempt identities cannot name backups.
+        if (! preg_match('~\Aarchives/[a-f0-9-]{36}/[a-f0-9-]{36}\.zip\z~', $key)) {
+            throw new ProviderFailure('archive_invalid_private_key');
+        }
+        try {
+            $markers = [];
+            do {
+                $page = $this->client->listMultipartUploads(['Bucket' => $this->bucket, 'Prefix' => $key, 'MaxUploads' => 100] + $markers);
+                foreach ($page['Uploads'] ?? [] as $upload) {
+                    if ($upload['Key'] === $key) {
+                        try {
+                            $this->client->abortMultipartUpload(['Bucket' => $this->bucket, 'Key' => $key, 'UploadId' => $upload['UploadId']]);
+                        } catch (AwsException $error) {
+                            if ($error->getAwsErrorCode() !== 'NoSuchUpload') {
+                                throw $error;
+                            }
+                        }
+                    }
+                }
+                $next = ['KeyMarker' => $page['NextKeyMarker'] ?? '', 'UploadIdMarker' => $page['NextUploadIdMarker'] ?? ''];
+                if (($page['IsTruncated'] ?? false) && ($next === $markers || $next['KeyMarker'] === '')) {
+                    throw new ProviderFailure('r2_cleanup_invalid_page');
+                }
+                $markers = $next;
+            } while ($page['IsTruncated'] ?? false);
+            $this->delete($key);
+        } catch (\Throwable) {
+            throw new ProviderFailure('r2_cleanup_failed', retryable: true);
+        }
+    }
+
+    private function readChunk(string $key, int $start, int $end, int $size, string $etag): string
     {
         for ($attempt = 1; $attempt <= 3; $attempt++) {
             try {

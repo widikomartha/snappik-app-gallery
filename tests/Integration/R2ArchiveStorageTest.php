@@ -3,6 +3,7 @@
 namespace Tests\Integration;
 
 use App\Integrations\ArchiveStorage\R2ArchiveStorage;
+use App\Services\Drive\ByteRange;
 use App\Services\ProviderFailure;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -13,6 +14,41 @@ class R2ArchiveStorageTest extends TestCase
     private string $path;
 
     private const KEY = 'proofs/11111111-1111-1111-1111-111111111111/22222222-2222-2222-2222-222222222222.zip';
+
+    public function test_product_range_pins_the_complete_object_and_scoped_cleanup_paginates_orphan_uploads(): void
+    {
+        $fixture = new R2HttpFixture($this->path);
+        $storage = new R2ArchiveStorage($fixture->client(), 'synthetic-private-bucket');
+        $key = str_replace('proofs/', 'archives/', self::KEY);
+        $upload = $storage->begin($key, 100);
+        $upload->write('complete archive bytes');
+        $upload->complete();
+        $stream = $storage->slice($key, new ByteRange(4, 12), 22);
+        $this->assertSame('lete arch', $stream->getContents());
+        $stream->close();
+        $this->assertSame('bytes=4-12', $fixture->readRequests[0]['range']);
+        $this->assertSame('"synthetic-complete"', $fixture->readRequests[0]['if_match']);
+        $fixture->orphanKey = $key;
+        $storage->cleanup($key);
+        $this->assertSame(2, count(array_filter($fixture->operations, fn ($op) => $op === 'list')));
+        $this->assertSame(2, count(array_filter($fixture->operations, fn ($op) => $op === 'abort')));
+        $this->assertSame($key, $fixture->readRequests[1]['prefix']);
+        $this->assertSame($key, $fixture->readRequests[2]['marker']);
+        $this->assertFileDoesNotExist($this->path);
+    }
+
+    public function test_product_cleanup_cannot_target_a_backup_key(): void
+    {
+        $fixture = new R2HttpFixture($this->path);
+        $storage = new R2ArchiveStorage($fixture->client(), 'synthetic-private-bucket');
+        try {
+            $storage->cleanup('backups/keep.zip');
+            $this->fail('Expected scoped-key refusal');
+        } catch (ProviderFailure $failure) {
+            $this->assertSame('archive_invalid_private_key', $failure->reason);
+        }
+        $this->assertSame([], $fixture->operations);
+    }
 
     protected function setUp(): void
     {

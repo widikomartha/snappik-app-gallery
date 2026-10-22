@@ -31,6 +31,15 @@ return [
 
     'connections' => [
 
+        'archives' => [
+            'driver' => 'database',
+            'connection' => 'pgsql',
+            'table' => 'jobs',
+            'queue' => 'archives',
+            'retry_after' => 900,
+            'after_commit' => false,
+        ],
+
         // Same PostgreSQL connection as domain transactions: job insertion and
         // catalogue pointer/request changes commit or roll back together.
         'catalogues' => [

@@ -1,12 +1,12 @@
 # SnapPik
 
-SnapPik is a subscription application for photographer photo selection and finished-photo delivery. TASK-001 establishes the application foundation; TASK-003 adds authentication, one trial, roles and shared access policy. TASK-004 implements project configuration, separate module gates, capability management and background catalogue revision publication. TASK-005 adds client photo browsing, gated previews, shared autosave, review, confirmation and photographer reopening. TASK-006 adds progress/history/export; TASK-007 adds finished-gallery browsing and protected individual original downloads. TASK-002's Drive-to-R2 prototype verified one complete 384-photo ZIP with independent CRC/MD5 checks and cleanup; a real resource-key fixture remains pending, so TASK-004–TASK-007 acceptance also remains open. Product ZIP and billing workflows remain in later [backlog tasks](docs/planning/BACKLOG.md).
+SnapPik is a subscription application for photographer photo selection and finished-photo delivery. TASK-001 establishes the application foundation; TASK-003 adds authentication, one trial, roles and shared access policy. TASK-004 implements project configuration, separate module gates, capability management and background catalogue revision publication. TASK-005 adds client photo browsing, gated previews, shared autosave, review, confirmation and photographer reopening. TASK-006 adds progress/history/export; TASK-007 adds finished-gallery browsing and protected individual original downloads. TASK-008 adds complete background ZIP jobs, protected downloads and recovery/cleanup. TASK-002's Drive-to-R2 prototype verified one complete 384-photo ZIP with independent CRC/MD5 checks and cleanup; a real resource-key fixture remains pending, so TASK-004–TASK-008 acceptance also remains open. Billing workflows remain in later [backlog tasks](docs/planning/BACKLOG.md).
 
 ## Current state
 
 Laravel 13, PHP 8.4+, React 19, TypeScript, Inertia 3, Vite 8, Motion 14 and PostgreSQL are configured at the repository root. Both package managers have real lockfiles. The skeleton was generated from official `laravel/laravel` v13.11.0, with the official Inertia adapter added separately to keep authentication workflows in TASK-003.
 
-The owner requested TASK-001–TASK-007 on October 22, 2026, and configured and authorized the recorded TASK-002 provider smoke testing. TASK-004–TASK-007 acceptance remains dependent on TASK-002's real resource-key fixture. Final approval of the entire documentation package remains pending in the [index](docs/index.md). Provider test access does not imply production deployment or complete product ZIP integration.
+The owner requested TASK-001–TASK-007 on October 22, 2026, and configured and authorized the recorded TASK-002 provider smoke testing. TASK-004–TASK-008 acceptance remains dependent on TASK-002's real resource-key fixture. The owner requested TASK-008 on October 23, 2026. Final approval of the entire documentation package remains pending in the [index](docs/index.md). Provider test access does not imply production deployment or complete real-provider product acceptance.
 
 ## Prerequisites
 
@@ -44,7 +44,7 @@ npm run build
 php artisan serve --host=127.0.0.1 --port=8000
 ```
 
-Open [local SnapPik](http://127.0.0.1:8000). For frontend hot reload, run `npm run dev` in a second terminal while Artisan serves PHP. Keep the Vite development server local. Migrations include database queue/cache/session, isolated TASK-002 proof staging, account/access, project/catalogue, selection history and mutation receipts. No user is seeded automatically. The catalogue worker command is below; other product workers/schedules arrive with their owning tasks.
+Open [local SnapPik](http://127.0.0.1:8000). For frontend hot reload, run `npm run dev` in a second terminal while Artisan serves PHP. Keep the Vite development server local. Migrations include database queue/cache/session, isolated TASK-002 proof staging, account/access, project/catalogue, selection history, mutation receipts and delivery archives. No user is seeded automatically. The catalogue worker command is below; the ZIP worker and maintenance schedule are described below.
 
 ## Checks
 
@@ -62,6 +62,7 @@ npm run test:browser:projects
 npm run test:browser:selection
 npm run test:browser:progress
 npm run test:browser:delivery
+npm run test:browser:archives
 ```
 
 Playwright starts a local Artisan server when needed. It uses the development `.env` database and synthetic preview pages, without creating accounts. Do not run it against a production server. Screenshots are generated under ignored `test-results/`. CI installs locked dependencies, uses an isolated PostgreSQL 18 service with synthetic credentials, and runs the same checks without deployment or external-service secrets.
@@ -83,7 +84,7 @@ php artisan queue:work catalogues --queue=catalogues --timeout=0 --tries=0
 
 This worker uses the existing restricted `GOOGLE_DRIVE_API_KEY` and paced official Drive adapter. Its named connection deliberately shares the domain PostgreSQL database. It stores metadata only, traverses all descendant pages and retains encrypted checkpoints across queue redelivery. Provider errors become visible failed imports; **Segarkan** requests a fresh attempt. It never downloads originals, writes to Drive or uses R2. New module publication requires a complete catalogue; a successful refresh swaps an already published module's revision atomically. A failed refresh retains its old catalogue and choices with stale status. Excluded files/shortcuts and missing choices have complete paginated diagnostics. The project page polls persisted import status without resetting unsaved form fields.
 
-Each module has separate publication/password/deadline settings. Archive closes links while preserving all records; restore rechecks access/trial slots. Capability rotation closes the old link. `/g/{capability}` provides gated module status/counts and password entry, with links into selection and finished galleries. ZIP UI remains TASK-008. [TASK-004 evidence](docs/planning/TASK-004_EVIDENCE.md) records its synthetic checks; final acceptance is pending TASK-002's real resource-key fixture.
+Each module has separate publication/password/deadline settings. Archive closes links while preserving all records; restore rechecks access/trial slots. Capability rotation closes the old link. `/g/{capability}` provides gated module status/counts and password entry, with links into selection and finished galleries. The finished gallery includes TASK-008 ZIP status and downloads. [TASK-004 evidence](docs/planning/TASK-004_EVIDENCE.md) records its synthetic checks; final acceptance is pending TASK-002's real resource-key fixture.
 
 `npm run test:browser:projects` starts a separate loopback server on port 18764, forces `snappik_test`, uses database sessions and synthetic accounts, and consumes real database queue jobs with a test-only synthetic Drive binding. Run it after PHPUnit and separately from the auth suite; never run either while another test refreshes the database. It leaves synthetic records until the next PHPUnit refresh. No external provider requests or real messages are made by these browser fixtures. Review screenshots mask source/share fields.
 
@@ -115,9 +116,27 @@ Use the project's separate **Hasil akhir** public Drive source, complete its cat
 
 **Unduh berkas asli** streams the published JPEG/PNG through SnapPik as a native browser attachment. Safe filenames retain their extension/case, with unsafe characters/device names sanitized. The browser reports transfer completion. Provider failures before response output appear as a clear text error in a new tab; they are never saved as a JPEG/PNG attachment. Interrupted or late integrity failures leave an incomplete transfer for explicit retry. A valid delivery remains readable/downloadable after ordinary account expiry. Its own deadline, password generation, capability rotation, archive, suspension and publication still gate every new request, including HEAD and Range.
 
-Single byte ranges support closed/open-ended/suffix forms and strong If-Range matching. Unsatisfiable supported ranges return 416; malformed/unsupported/multipart ranges and unmatched If-Range validators fall back to the full original. Downloads check fresh Drive permission/metadata and response type/length; full originals verify MD5 and partial originals verify boundaries/length with metadata checked again at EOF. There is no permanent originals cache. No migration or new production environment setting is required for TASK-007. Download All remains TASK-008.
+Single byte ranges support closed/open-ended/suffix forms and strong If-Range matching. Unsatisfiable supported ranges return 416; malformed/unsupported/multipart ranges and unmatched If-Range validators fall back to the full original. Downloads check fresh Drive permission/metadata and response type/length; full originals verify MD5 and partial originals verify boundaries/length with metadata checked again at EOF. There is no permanent originals cache. No migration or new production environment setting is required for TASK-007. Download All uses the complete ZIP job described below.
 
 `npm run test:browser:delivery` starts a dedicated loopback PHP server on port 18767 against `snappik_test`. Its CLI-only test router injects synthetic upstream HTTP responses behind the real Drive adapter for both images and attachments; no external provider request is made. Run `php artisan migrate --env=testing --no-interaction` after PHPUnit teardown and before the browser suite. Run database-writing browser suites sequentially. [TASK-007 evidence](docs/planning/TASK-007_EVIDENCE.md) records checks and outstanding real-provider/deployment gates.
+
+## Complete delivery ZIP jobs
+
+Apply migrations, then run a dedicated worker and the scheduler in separate local terminals:
+
+```powershell
+php artisan migrate --no-interaction
+php artisan queue:work archives --queue=archives --timeout=0 --tries=0
+php artisan schedule:work
+```
+
+The worker uses the same restricted Drive API key and private R2 archive bucket configured below. It snapshots every supported photo in the published delivery revision, including subfolders and all UI pages, into an immutable encrypted manifest. **Siapkan ZIP semua foto** creates or reattaches to one persistent job. Closing the tab does not cancel it. The finished gallery restores status and polls while visible, showing measured file progress, failure, readiness and expiry. Repeated requests reuse active/valid ready output; failed or expired output can be explicitly recreated with a fresh attempt key. A new revision or gate generation never reuses an older ZIP. Ordinary subscription expiry permits valid ZIP creation/download.
+
+**Unduh ZIP lengkap** downloads one private ZIP through SnapPik, with safe attachment headers and per-request authorization for GET, HEAD and Range. It never redirects to Drive or splits the ZIP. Source identity/permission/version/length failures fail the whole attempt. ZIP64 handles large byte offsets and entry counts; central-directory records spill to temporary disk after 1 MiB. Multipart buffers and bounded private read ranges prevent whole-object RAM buffering. Native provider limits remain explicit failures, without a photo/project byte or count quota.
+
+Ready output expires exactly 24 hours after readiness, using server time even if deletion is delayed. Keep the scheduler running: every minute it fails abandoned leased attempts after checking their process lock, expires old output and retries exact-attempt object/multipart cleanup. Run maintenance manually with `php artisan snappik:archives-maintain`. A killed worker becomes a visible failure after its 15-minute lease expires and maintenance runs; a live slow worker retains its session lock. Recreate the failed ZIP explicitly. Production requires supervised workers/scheduler, private bucket policy, permissions to list/abort multipart uploads, and adequate temporary disk. A deployment lifecycle rule is an additional backstop, not the access-control clock. Maintenance only targets persisted `archives/{job}/{attempt}.zip` identities, never backup prefixes.
+
+`npm run test:browser:archives` uses a dedicated loopback server on port 18768, guarded `snappik_test`, real queue consumption, and synthetic HTTP/disk provider bindings shared with the delivery browser fixture. Run it after PHPUnit teardown/migration and sequentially with other database-writing browser suites. [TASK-008 evidence](docs/planning/TASK-008_EVIDENCE.md) records tests and open real-provider/deployment acceptance gates.
 
 ## TASK-002 Drive/ZIP proof
 
@@ -158,7 +177,7 @@ php artisan snappik:drive-proof --owner=$proofOwnerId --resume=$proofRunId --ver
 php artisan snappik:drive-proof --owner=$proofOwnerId --resume=$proofRunId --cleanup
 ```
 
-These commands refuse production execution and scope runs to the specified persisted local test user. The worker claims each eligible attempt once; it is a prototype, with no public gallery route, production access policy or crash lease. A failed input aborts/deletes the whole attempt. A cleanup failure becomes `cleanup_required` and needs operator investigation; it cannot be retried as a ready archive. Use the provider console to investigate orphaned multipart uploads if the process was killed. The product sweeper, durable cleanup retries and crash recovery remain TASK-008. Proof objects have a 24-hour application expiry, but this prototype has no automatic cleanup schedule: explicitly run `--cleanup` and configure the private test bucket's temporary-object/incomplete-upload lifecycle backstop.
+These commands refuse production execution and scope runs to the specified persisted local test user. The worker claims each eligible attempt once; it is a prototype, with no public gallery route, production access policy or crash lease. A failed input aborts/deletes the whole attempt. A cleanup failure becomes `cleanup_required` and needs operator investigation; it cannot be retried as a ready archive. Use the provider console to investigate orphaned multipart uploads if the process was killed. TASK-008 implements a separate product sweeper, durable cleanup retries and crash recovery for product archive attempts; it does not adopt these prototype proof objects. Proof objects have a 24-hour application expiry, but this prototype has no automatic cleanup schedule: explicitly run `--cleanup` and configure the private test bucket's temporary-object/incomplete-upload lifecycle backstop.
 
 The installed Windows libzip strict `CHECKCONS` checker rejects the large zero-header ZIP64 layout; normal libzip extraction with complete CRC/MD5 validation and Python's independent CRC reader passed. Compatibility across actual client extractors remains a gate for delivery productization; do not disable ZIP64 or split the archive to hide it.
 

@@ -1,6 +1,6 @@
 # SnapPik MVP Backlog
 
-**TASK-001 and TASK-003: COMPLETE. TASK-002: FULL-CATALOGUE ZIP VERIFIED / REAL RESOURCE-KEY FIXTURE PENDING. TASK-004–TASK-007: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING. TASK-008–TASK-015: NOT STARTED.** Product authority: [PRD](../product/PRD.md). Technical contracts: [Architecture](../engineering/ARCHITECTURE.md). [Package approval state](../index.md).
+**TASK-001 and TASK-003: COMPLETE. TASK-002: FULL-CATALOGUE ZIP VERIFIED / REAL RESOURCE-KEY FIXTURE PENDING. TASK-004–TASK-008: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING. TASK-009–TASK-015: NOT STARTED.** Product authority: [PRD](../product/PRD.md). Technical contracts: [Architecture](../engineering/ARCHITECTURE.md). [Package approval state](../index.md).
 
 These are implementation tasks, not claims that the application exists. Dependencies are hard prerequisites for declaring a task complete; a task may contain a bounded exploratory prototype without advertising it as a finished feature. Technical feasibility proofs precede broad UI work. Production publication remains a separately authorized action.
 
@@ -85,13 +85,14 @@ These are implementation tasks, not claims that the application exists. Dependen
 
 ## TASK-008 — Productize complete single-ZIP jobs
 
-- Status: NOT STARTED
+- Status: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING (explicitly requested October 23, 2026; TASK-002/TASK-007 acceptance remains open)
 - Requirements: REQ-002, REQ-011, REQ-015, REQ-017, REQ-018
 - Dependencies: TASK-002, TASK-007
 - Scope: immutable manifests, deduplicated persistent jobs, streaming worker, progress/status UI, protected ZIP download, expiry/recreation and retryable partial-object cleanup.
 - Acceptance: Download All covers the entire published delivery revision including every subfolder, not merely the visible page. Duplicate names are preserved; missing/changed/truncated input fails the whole attempt. Closing/reopening the browser restores status; repeated clicks share one job; private storage and gate changes cannot be bypassed. An archive is inaccessible at its 24-hour application deadline even if cleanup is delayed. No application byte/count cap or multiple ZIP-part fallback is added.
 - Out of scope: archives of RAW/video/unsupported files, permanent ZIP retention, best-effort incomplete archives.
 - Completion evidence: actual ZIP entry/CRC/identity checks, large-stream measurement, restart/retry/deduplication tests, expiry tests and a browser download from SnapPik.
+- Verification record: [TASK-008 evidence](TASK-008_EVIDENCE.md). Complete immutable encrypted manifests, transactional persistent deduplication, leased/advisory-locked streaming attempts, private range downloads, browser status restoration, exact 24-hour expiry/recreation and retryable exact-key object/orphan-upload cleanup are implemented. Synthetic PostgreSQL/SDK/browser checks and independent ZIP extraction are recorded in the evidence. TASK-002's authorized real resource-key fixture and TASK-007 acceptance remain hard completion gates; no additional live-provider transfer or production publication is claimed.
 
 ## TASK-009 — Deliver owner voucher management
 

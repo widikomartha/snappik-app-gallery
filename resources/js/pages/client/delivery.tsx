@@ -4,6 +4,7 @@ import { Shell } from '../../layouts/shell';
 import { Button } from '../../components/ui/button';
 import { Dialog } from '../../components/ui/dialog';
 import { Status } from '../../components/ui/status';
+import { DeliveryArchive } from '../../components/delivery-archive';
 
 type Photo = { id: number; name: string; path: string };
 type Page<T> = { data: T[]; current_page: number; last_page: number; total: number };
@@ -52,6 +53,7 @@ export default function Delivery() {
     {busy && <Status>Memuat hasil akhir…</Status>}
     {failed && <Status tone="error">Galeri gagal dimuat. Periksa koneksi atau kembali ke galeri untuk memeriksa kata sandi dan batas waktu. Tampilan sebelumnya belum diperbarui.</Status>}
     <Button variant="secondary" disabled={busy} onClick={() => void load()}>Periksa hasil akhir terbaru</Button>
+    <DeliveryArchive base={base} />
     {gallery && <><nav className="panel stack" aria-label="Folder hasil akhir"><h2>Folder</h2>{gallery.legacyFolders && <Status tone="warning">Katalog lama: semua foto tersedia. Minta fotografer menyegarkan katalog untuk navigasi folder.</Status>}<p>{gallery.folder ? `${gallery.folder} · termasuk subfolder` : 'Semua folder'}</p><div className="actions"><Button variant="ghost" disabled={disabled} onClick={() => setQuery(q => ({ ...q, folder: '', page: 1 }))}>Semua folder</Button>{gallery.folders.data.map(folder => <Button key={folder.id} variant="secondary" disabled={disabled} onClick={() => setQuery(q => ({ ...q, folder: String(folder.id), page: 1 }))}>{folder.path}</Button>)}</div>
       {gallery.folders.last_page > 1 && <div className="actions"><Button disabled={disabled || query.folder_page <= 1} onClick={() => setQuery(q => ({ ...q, folder_page: q.folder_page - 1 }))}>Folder sebelumnya</Button><span>Halaman folder {gallery.folders.current_page} / {gallery.folders.last_page}</span><Button disabled={disabled || query.folder_page >= gallery.folders.last_page} onClick={() => setQuery(q => ({ ...q, folder_page: q.folder_page + 1 }))}>Folder berikutnya</Button></div>}
     </nav>

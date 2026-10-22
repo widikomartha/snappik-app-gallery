@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Contracts\ArchiveStorage;
+use App\Contracts\DeliveryArchiveStorage;
 use App\Contracts\DrivePreviewSource;
 use App\Contracts\DriveRangeSource;
 use App\Contracts\DriveSource;
@@ -58,6 +59,7 @@ class AppServiceProvider extends ServiceProvider
             ]);
         });
         $this->app->singleton(ArchiveStorage::class, fn ($app) => new R2ArchiveStorage($app->make(S3Client::class), (string) config('drive_proof.r2.bucket')));
+        $this->app->singleton(DeliveryArchiveStorage::class, fn ($app) => $app->make(ArchiveStorage::class));
     }
 
     /**

@@ -1,6 +1,6 @@
 # SnapPik Project Structure
 
-**Classification:** TASK-001 foundation, TASK-003 authentication/access policy, TASK-002 local/test provider prototype, TASK-004 project/catalogue, TASK-005 client selection/preview, TASK-006 progress/history/export and TASK-007 finished-gallery/individual-download implementation exist. TASK-004–TASK-007 acceptance awaits TASK-002's real resource-key fixture. Product ZIP and billing workflows remain planned. [Package state](../index.md).
+**Classification:** TASK-001 foundation, TASK-003 authentication/access policy, TASK-002 local/test provider prototype, TASK-004 project/catalogue, TASK-005 client selection/preview, TASK-006 progress/history/export, TASK-007 finished-gallery/individual-download and TASK-008 complete delivery ZIP implementation exist. TASK-004–TASK-008 acceptance awaits TASK-002's real resource-key fixture. Billing workflows remain planned. [Package state](../index.md).
 
 ## Existing documentation
 
@@ -19,7 +19,7 @@ docs/
 
 ## Existing application foundation
 
-The root now contains generated `artisan`, `app/Models/User.php`, `app/Providers/AppServiceProvider.php`, `bootstrap/`, Laravel `config/`, `public/`, `storage/`, and the default users/cache/jobs migrations, factory and empty seeder. `app/Http/Middleware/` contains the Inertia and security-header middleware. `routes/web.php` defines public/authenticated/admin/project boundaries and scoped capability routes; `routes/console.php` has no domain schedules yet.
+The root now contains generated `artisan`, `app/Models/User.php`, `app/Providers/AppServiceProvider.php`, `bootstrap/`, Laravel `config/`, `public/`, `storage/`, and the default users/cache/jobs migrations, factory and empty seeder. `app/Http/Middleware/` contains the Inertia and security-header middleware. `routes/web.php` defines public/authenticated/admin/project boundaries and scoped capability routes; `routes/console.php` schedules archive maintenance every minute.
 
 `resources/views/app.blade.php` owns the before-paint theme initializer and Inertia entry document. `resources/js/app.tsx`, `lib/appearance-init.js`, `lib/appearance.ts`, `lib/motion.ts`, `layouts/shell.tsx`, `components/ui/`, and `pages/{public,auth,photographer,admin,client}/` establish the shared presentation foundation. `resources/css/{tokens,app}.css` holds the theme tokens and styles. Self-hosted font licenses are in `public/licenses/`.
 
@@ -117,6 +117,12 @@ Provider payloads stay in their adapters. Frontend types describe application co
 The [Design System](../design/DESIGN_SYSTEM.md) owns UI tokens and animation recipes. Shared appearance/motion configuration belongs outside page components; layouts compose it without duplicating theme state. The before-paint theme initializer belongs in the framework entry document and must agree with `appearance.ts`; verify its exact entry path after scaffold generation. CSS must not encode entitlement policy or alter photograph colors.
 
 MVP gallery ZIP code belongs to archive services/jobs. Future photo-upload code must not be created as unused scaffolding, routes, or advertised UI. Provider-independent contracts may support the approved MVP without implementing the deferred product.
+
+## Implemented TASK-008 delivery archives
+
+`Models/{ArchiveJob,ArchiveEntry}.php`, the additive delivery-archive migration, `Services/Archives/{DeliveryArchives,ArchiveRecovery,BoundedZip}.php`, `Jobs/BuildDeliveryArchive.php`, `Http/Controllers/Client/ArchiveController.php` and `Console/Commands/RecoverArchives.php` implement product ZIP orchestration. `Contracts/DeliveryArchiveStorage.php` extends the existing storage boundary with pinned range reads and exact-attempt cleanup; the R2 adapter implements both. The `archives` database queue shares the PostgreSQL domain transaction. `routes/console.php` schedules maintenance every minute. `components/delivery-archive.tsx` supplies the persisted status/download UI inside the finished gallery.
+
+`BoundedZip` isolates entry/footer encoding from the locked ZipStream dependency and spools central directory metadata to temporary disk. `BuildStreamingZip` uses it for both product and proof archives. `tests/Feature/ClientArchiveTest.php`, `tests/Integration/{ArchiveConcurrencyTest,ManyEntryZipTest}.php`, `tests/Support/{ArchiveDisk,DeliveryTransport}.php`, `tests/Support/archive-process-worker.php`, `tests/Browser/archives.spec.ts` and `playwright.archives.config.ts` add isolated verification. The delivery browser router and CLI fixture share synthetic provider bindings; production code never imports them.
 
 ## Bootstrap boundary
 
