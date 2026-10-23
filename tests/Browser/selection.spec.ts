@@ -25,6 +25,7 @@ for (const width of [360, 1440]) {
       await page.getByLabel('Nama proyek / klien').fill('Synthetic selection browser project');
       await page.getByLabel('Batas pilihan klien').fill('2');
       await page.getByLabel('Folder Google Drive · Pemilihan foto').fill('https://drive.google.com/drive/folders/browser-selection');
+      await page.getByText('Kata sandi & batas waktu · Pemilihan foto', { exact: true }).click();
       await page.getByLabel('Kata sandi baru · Pemilihan foto').fill('BrowserSelect123');
       await page.getByRole('button', { name: 'Buat proyek dan impor' }).click();
       await expect(page).toHaveURL(/\/projects\/[a-f0-9-]+$/);
@@ -67,11 +68,11 @@ for (const width of [360, 1440]) {
         await route.abort('failed');
       }, { times: 1 });
       await first.getByRole('button', { name: /^Pilih / }).first().click();
-      await expect(first.getByText('Penyimpanan belum dapat dipastikan.', { exact: false })).toBeVisible();
+      await expect(first.getByText('Pilihan terakhir belum bisa dipastikan tersimpan.', { exact: false })).toBeVisible();
       const retryRequest = first.waitForRequest(request => request.url().endsWith('/selection/choices'));
-      await first.getByRole('button', { name: 'Coba simpan operasi yang sama' }).click();
+      await first.getByRole('button', { name: 'Coba simpan lagi' }).click();
       expect((await retryRequest).postDataJSON().operation_id).toBe(operationId);
-      await expect(first.getByText('Tersimpan di server.', { exact: true })).toBeVisible();
+      await expect(first.getByText('Pilihan tersimpan.', { exact: true })).toBeVisible();
       await expect(first.getByRole('heading', { name: '1 / 2 foto dipilih' })).toBeVisible();
       await first.reload();
       await expect(first.getByRole('heading', { name: '1 / 2 foto dipilih' })).toBeVisible();
@@ -94,7 +95,7 @@ for (const width of [360, 1440]) {
       await first.getByRole('button', { name: 'Ya, konfirmasi dan kunci' }).focus();
       await first.keyboard.press('Enter');
       await expect(first.getByText('Pilihan atau katalog berubah di sesi lain.', { exact: false })).toBeVisible();
-      await first.getByRole('button', { name: 'Periksa pilihan di server' }).click();
+      await first.getByRole('button', { name: 'Muat ulang pilihan' }).click();
       await expect(first.locator('.photo-tile')).toHaveCount(2);
       // Confirm below allowance, while the other client still holds an editable stale page.
       await first.getByRole('button', { name: /^Hapus pilihan / }).last().click();
@@ -113,7 +114,7 @@ for (const width of [360, 1440]) {
       await page.getByRole('button', { name: 'Buka kembali pemilihan', exact: true }).click();
       await page.getByRole('button', { name: 'Konfirmasi buka kembali', exact: true }).click();
       await expect(page.getByRole('button', { name: 'Buka kembali pemilihan', exact: true })).toHaveCount(0);
-      await first.getByRole('button', { name: 'Periksa pilihan di server' }).click();
+      await first.getByRole('button', { name: 'Muat ulang pilihan' }).click();
       await expect(first.getByRole('button', { name: 'Konfirmasi pilihan', exact: true })).toBeEnabled();
       await expect(first.getByRole('heading', { name: '1 / 2 foto dipilih' })).toBeVisible();
       if (width === 1440 && theme === 'light') {
@@ -134,11 +135,11 @@ for (const width of [360, 1440]) {
         fixture({ action: 'expire-selection-account', email });
         await first.getByRole('button', { name: /^Pilih / }).first().click();
         await expect(first.getByText('Masa akses fotografer berakhir. Pilihan tersimpan tetap tersedia.', { exact: true })).toBeVisible();
-        await first.getByRole('button', { name: 'Periksa pilihan di server' }).click();
+        await first.getByRole('button', { name: 'Muat ulang pilihan' }).click();
         await expect(first.getByText('Masa akses fotografer berakhir. Pilihan tersimpan hanya dapat dibaca.', { exact: true })).toBeVisible();
         await expect(first.getByRole('heading', { name: '2 / 2 foto dipilih' })).toBeVisible();
         fixture({ action: 'close-selection-deadline', email });
-        await first.getByRole('button', { name: 'Periksa pilihan di server' }).click();
+        await first.getByRole('button', { name: 'Muat ulang pilihan' }).click();
         await expect(first.getByText('Galeri gagal dimuat.', { exact: false })).toBeVisible();
       }
       expect(errors).toEqual([]);

@@ -1,10 +1,11 @@
+import { PageHeader } from '../../components/ui/page-header';
 import { Head } from '@inertiajs/react';
 import { Operations, ReasonAction, Audit, Pagination, OrderRecords, instant, stateLabel, type Page, type AuditRow, type OrderRow } from './operations';
 import type { Account } from './accounts';
 type Project = { id: string; name: string; archived_at: string | null; selection_locked_at: string | null; created_at: string };
 type Grant = { order_id: string; paid_at: string; starts_at: string; ends_at: string; duration_days: number };
 export default function AccountDetail({ account: a, projects, orders, grants, audit }: { account: Account; projects: Page<Project>; orders: Page<OrderRow>; grants: Page<Grant>; audit: Page<AuditRow> }) {
-  return <Operations><Head title={a.name} /><h1>{a.name}</h1><p>{a.email} · {stateLabel(a.state)} · Akses sampai {instant(a.accessEndsAt)}</p>
+  return <Operations><Head title={a.name} /><PageHeader title={a.name} scene="account" /><p>{a.email} · {stateLabel(a.state)} · Akses sampai {instant(a.accessEndsAt)}</p>
     <section className="panel stack" aria-label="Status akun"><h2>Suspensi akun</h2><p>Penangguhan menutup permintaan galeri baru dan perubahan akun. Tagihan tetap dapat dibaca. Reaktivasi mengikuti masa akses dan pengaturan galeri yang tersimpan.</p>
       <ReasonAction key={a.id} url={`/admin/accounts/${a.id}/suspension`} label={a.state === 'suspended' ? 'Aktifkan kembali akun' : 'Tangguhkan akun'} suspended={a.state !== 'suspended'} version={a.suspension_version} method="put" />
     </section>

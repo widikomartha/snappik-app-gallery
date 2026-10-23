@@ -1,3 +1,4 @@
+import { PageHeader } from '../../components/ui/page-header';
 import { Head, Link } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 import { Shell } from '../../layouts/shell';
@@ -40,7 +41,8 @@ function FilenameExport({ url, historical }: { url: string; historical: boolean 
   }
   return <section className="panel stack" aria-label="Ekspor nama berkas">
     <h2>Salin nama berkas</h2>
-    <p>Daftar lengkap {historical ? 'konfirmasi yang dipilih' : 'pilihan saat ini'}, satu berkas per baris. Nama sama memakai jalur folder; jalur sama disertai ID berkas. Karakter baris baru dan garis miring terbalik ditulis sebagai {'\\n, \\r dan \\\\'}.</p>
+    <p>Gunakan daftar {historical ? 'dari konfirmasi ini' : 'pilihan klien'} untuk menemukan foto yang akan diedit di komputer Anda. Setiap baris berisi satu nama berkas; nama yang sama dilengkapi lokasi folder agar tidak tertukar.</p>
+    <details className="disclosure"><summary>Cara membaca nama berkas yang sama</summary><p>Jika nama dan folder sama, daftar menyertakan ID berkas untuk membedakannya. Karakter khusus pada nama ditulis sebagai {'\\n, \\r dan \\\\'} agar satu berkas tetap berada dalam satu baris.</p></details>
     <div className="actions"><Button pending={pending} onClick={() => void prepare()}>Siapkan daftar nama berkas</Button>
       {output && <Button variant="secondary" onClick={() => void copy()}>Salin nama berkas</Button>}</div>
     {message && <Status>{message}</Status>}
@@ -54,29 +56,30 @@ export default function ResultsPage(initial: Results) {
   const { data, error, denied, pending, refresh } = useProgress(initial, `${base}/results/data${window.location.search}`);
   const { progress, records, history, snapshot } = data;
   const confirmation = snapshot ? `?confirmation=${snapshot.id}` : `?version=${progress.version}&revision=${progress.revision ?? ''}`;
-  return <Shell surface="photographer"><Head title={`Hasil · ${progress.name}`} /><div className="stack">
+  return <Shell surface="photographer"><Head title={`Hasil · ${progress.name}`} /><div className="stack results-workspace">
     <nav className="actions"><Link href="/dashboard">Ruang fotografer</Link><Link href={`${base}`}>Pengaturan proyek</Link></nav>
-    <h1>Hasil pemilihan · {progress.name}</h1>
+    <PageHeader title={<>Hasil pemilihan · {progress.name}</>} scene="selection" description="Periksa apakah klien sudah mengonfirmasi, lalu salin nama berkas untuk menemukan foto yang perlu diedit." />
     <div className="actions"><Button variant="secondary" pending={pending} onClick={() => void refresh()}>Periksa hasil terbaru</Button><p className="muted">Diperiksa: {localTime(data.checkedAt)} · diperbarui setiap 15 detik.</p></div>
     {error && <Status tone="warning">{error}</Status>}
     {!denied && <>
-      <section className="panel stack" aria-label="Progres saat ini"><h2>Progres saat ini</h2><ProgressStatus progress={progress} /></section>
+      <section className="panel stack results-progress" aria-label="Progres saat ini"><h2>Progres saat ini</h2><ProgressStatus progress={progress} /></section>
+      <div className="results-columns"><div className="stack">
       <section className="panel stack" aria-label="Hasil tersimpan">
         <h2>{snapshot ? `Riwayat konfirmasi · putaran ${snapshot.epoch}` : 'Pilihan saat ini'}</h2>
-        <p>{snapshot ? `Snapshot tetap dari ${localTime(snapshot.confirmedAt)}. ${progress.status === 'confirmed' && snapshot.epoch === progress.epoch ? 'Snapshot konfirmasi saat ini.' : 'Riwayat, bukan konfirmasi saat ini.'}` : progress.status === 'confirmed' ? 'Pilihan saat ini dikunci oleh konfirmasi.' : 'Pilihan draf yang sudah tersimpan, belum dikonfirmasi.'}</p>
+        <p>{snapshot ? `Daftar foto saat klien mengonfirmasi pada ${localTime(snapshot.confirmedAt)}. ${progress.status === 'confirmed' && snapshot.epoch === progress.epoch ? 'Ini konfirmasi yang berlaku saat ini.' : 'Riwayat, bukan konfirmasi saat ini. Daftar ini tidak berubah meskipun klien memilih ulang.'}` : progress.status === 'confirmed' ? 'Klien sudah mengonfirmasi. Daftar ini terkunci dan siap digunakan untuk proses edit.' : 'Pilihan draf yang sudah tersimpan, belum dikonfirmasi. Tunggu konfirmasi klien sebelum menggunakan daftar ini sebagai hasil akhir.'}</p>
         {snapshot && <Link href={`${base}/results`}>Kembali ke pilihan saat ini</Link>}
         <p>{records.total} berkas tersimpan · menampilkan hingga 20 per halaman.</p>
         {records.data.length === 0 && <Status>Belum ada pilihan di halaman ini.</Status>}
-        <ul className="result-records">{records.data.map(record => <li key={record.file_id}><strong>{record.name}</strong><p className="photo-path">{record.path} · ID: {record.file_id}</p>{Number(record.available) === 0 && <p className="muted">Tidak tersedia dalam katalog terbit saat ini. Catatan hasil tetap disimpan.</p>}</li>)}</ul>
+        <ul className="result-records">{records.data.map(record => <li key={record.file_id}><strong>{record.name}</strong><p className="photo-path">{record.path}</p>{Number(record.available) === 0 && <p className="muted">Foto tidak ditemukan dalam galeri terbaru. Nama dan pilihan tetap disimpan.</p>}<details className="record-detail"><summary>Detail berkas</summary><p>ID: {record.file_id}</p></details></li>)}</ul>
         <nav className="actions" aria-label="Halaman hasil">{records.prev_page_url && <Link href={records.prev_page_url}>Hasil sebelumnya</Link>}{records.next_page_url && <Link href={records.next_page_url}>Hasil berikutnya</Link>}</nav>
       </section>
-      <FilenameExport key={`${snapshot?.id ?? 'current'}-${progress.version}-${progress.revision}`} url={`${base}/results/export${confirmation}`} historical={!!snapshot} />
       <section className="panel stack" aria-label="Riwayat konfirmasi"><h2>Riwayat konfirmasi</h2>
         {history.data.length === 0 && <Status>Belum ada konfirmasi. Pilihan draf tetap terlihat di atas.</Status>}
         {history.data.map(item => <article key={item.id}><h3><Link href={`${base}/results?confirmation=${item.id}`}>Konfirmasi putaran {item.epoch}</Link></h3>
           <p>{localTime(item.confirmed_at)} · {item.count} foto · {progress.status === 'confirmed' && item.epoch === progress.epoch ? 'Konfirmasi saat ini' : 'Riwayat, bukan konfirmasi saat ini'}</p></article>)}
         <nav className="actions" aria-label="Halaman riwayat">{history.prev_page_url && <Link href={history.prev_page_url}>Riwayat sebelumnya</Link>}{history.next_page_url && <Link href={history.next_page_url}>Riwayat berikutnya</Link>}</nav>
       </section>
+      </div><aside className="stack results-sidebar" aria-label="Daftar untuk proses edit"><FilenameExport key={`${snapshot?.id ?? 'current'}-${progress.version}-${progress.revision}`} url={`${base}/results/export${confirmation}`} historical={!!snapshot} /></aside></div>
     </>}
   </div></Shell>;
 }

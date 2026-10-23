@@ -1,3 +1,4 @@
+import { PageHeader } from '../../components/ui/page-header';
 import { Head, Link } from '@inertiajs/react';
 import { Shell } from '../../layouts/shell';
 import { Status } from '../../components/ui/status';
@@ -15,7 +16,7 @@ const messages: Record<number, { title: string; detail: string }> = {
 export default function ErrorPage({ statusCode, clientGallery }: { statusCode: number; clientGallery: boolean }) {
   const message = messages[statusCode] ?? messages[500];
   return <Shell surface={clientGallery ? 'client' : 'public'}><Head title={message.title}><meta name="robots" content="noindex,nofollow,noarchive" /></Head>
-    <section className="panel stack"><p className="eyebrow">{statusCode}</p><h1>{message.title}</h1><Status tone="error">{message.detail}</Status>
+    <section className="panel stack"><p className="eyebrow">{statusCode}</p><PageHeader title={message.title} scene="projects" /><Status tone="error">{message.detail}</Status>
       <div className="actions"><Button variant="secondary" onClick={() => window.location.reload()}>Muat ulang halaman</Button><Link href="/">Kembali ke beranda</Link></div>
     </section></Shell>;
 }

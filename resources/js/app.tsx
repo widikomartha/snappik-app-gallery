@@ -1,8 +1,7 @@
 import '@fontsource/dm-sans/latin-400.css';
 import '@fontsource/dm-sans/latin-500.css';
-import '@fontsource/raleway/latin-300.css';
-import '@fontsource/raleway/latin-500.css';
 import '../css/app.css';
+import '../css/product.css';
 import { createInertiaApp, router } from '@inertiajs/react';
 import { createRoot } from 'react-dom/client';
 import { MotionConfig } from 'motion/react';

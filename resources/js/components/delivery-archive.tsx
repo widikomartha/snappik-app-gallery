@@ -1,3 +1,4 @@
+import { Archive, DocumentDownload, Refresh } from 'iconsax-reactjs';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from './ui/button';
 import { Status } from './ui/status';
@@ -37,17 +38,17 @@ export function DeliveryArchive({ base }: { base: string }) {
     return () => { serial.current++; clearInterval(timer); document.removeEventListener('visibilitychange', visible); };
   }, [load]);
   const active = archive?.state === 'queued' || archive?.state === 'processing';
-  return <section className="panel stack" aria-label="Unduh semua foto">
-    <h2>Unduh semua foto</h2><p>Satu ZIP berisi seluruh hasil akhir, termasuk semua subfolder dan halaman. Proses tetap berjalan saat browser ditutup.</p>
+  return <section className="panel stack archive-panel" aria-label="Unduh semua foto">
+    <div className="section-heading"><div><span className="eyebrow">Simpan seluruh hasil edit</span><h2 className="section-title"><Archive size={26} aria-hidden="true" />Unduh semua foto</h2></div></div><p>Semua foto dari galeri ini akan dikemas dalam satu file ZIP, termasuk foto di subfolder dan halaman lain. Penyiapan tetap berjalan jika Anda menutup halaman.</p>
     {stale && <Status tone="warning">Status ZIP belum diperbarui. Periksa koneksi atau kembali ke galeri untuk memeriksa akses. Permintaan yang belum mendapat balasan dapat diperiksa atau dicoba lagi dengan aman.</Status>}
     {archive?.state === 'queued' && <Status>ZIP menunggu antrean.</Status>}
     {archive?.state === 'processing' && <Status>Menyiapkan ZIP · {archive.completedFiles} / {archive.files} foto selesai.</Status>}
     {archive?.state === 'ready' && <Status tone="success">ZIP lengkap siap · {archive.files} foto. Berlaku sampai {archive.expiresAt && new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Makassar' }).format(new Date(archive.expiresAt))} WITA (24 jam setelah siap).</Status>}
-    {archive?.state === 'failed' && <Status tone="error">ZIP gagal. Tidak ada arsip sebagian yang dapat diunduh. {archive.failure === 'archive_worker_interrupted' ? 'Pekerja terhenti; coba lagi.' : archive.failure?.includes('capacity') ? 'Batas teknis penyedia tercapai. Hubungi fotografer.' : 'Sumber atau izin mungkin berubah. Coba lagi setelah sumber tersedia atau hubungi fotografer.'}</Status>}
+    {archive?.state === 'failed' && <Status tone="error">ZIP gagal disiapkan. {archive.failure === 'archive_worker_interrupted' ? 'Proses terhenti sebelum selesai. Tekan Buat ulang ZIP untuk mencoba lagi.' : archive.failure?.includes('capacity') ? 'Layanan penyimpanan tidak dapat menyelesaikan file ini. Hubungi fotografer.' : 'Sebagian foto mungkin tidak dapat diakses. Hubungi fotografer untuk memeriksa folder, lalu buat ulang ZIP.'} Unduhan baru tersedia setelah semua foto berhasil dikemas.</Status>}
     {archive?.state === 'expired' && <Status tone="warning">ZIP kedaluwarsa. Buat ulang untuk mengunduh seluruh foto.</Status>}
-    <div className="actions"><Button variant="secondary" disabled={busy} onClick={() => void load()}>Periksa status ZIP</Button>
+    <div className="actions"><Button variant="secondary" disabled={busy} onClick={() => void load()}><Refresh size={20} aria-hidden="true" />Periksa status ZIP</Button>
       {!denied && !active && archive?.state !== 'ready' && <Button disabled={busy} onClick={() => void load(true)}>{archive ? 'Buat ulang ZIP' : 'Siapkan ZIP semua foto'}</Button>}
-      {!stale && archive?.state === 'ready' && <a className="button button--primary" href={`${base}/archive/${archive.id}`} target="_blank" rel="noopener noreferrer">Unduh ZIP lengkap</a>}
+      {!stale && archive?.state === 'ready' && <a className="button button--primary" href={`${base}/archive/${archive.id}`} target="_blank" rel="noopener noreferrer"><DocumentDownload size={21} aria-hidden="true" />Unduh ZIP lengkap</a>}
     </div>
   </section>;
 }

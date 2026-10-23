@@ -1,3 +1,6 @@
+import { EmptyState } from '../../components/ui/empty-state';
+import { Card, Receipt1 } from 'iconsax-reactjs';
+import { PageHeader } from '../../components/ui/page-header';
 import { Head, Link, router } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 import { Shell } from '../../layouts/shell';
@@ -39,25 +42,25 @@ export default function Billing({ ownerId, canCheckout, configured, base, orders
     finally { sending.current = false; setBusy(false); }
   }
   return <Shell surface="photographer"><Head title="Langganan dan tagihan" /><div className="stack">
-    <h1>Langganan dan tagihan</h1><Link href="/dashboard">Kembali ke ruang fotografer</Link>
-    <section className="panel stack" aria-label="Checkout Pro"><h2>Pro, ruang untuk semua karya.</h2>
+    <PageHeader title="Langganan dan tagihan" scene="billing" description="Aktifkan atau perpanjang Pro untuk mengelola proyek. Periksa harga terlebih dahulu, lalu lanjutkan ke pembayaran QRIS." /><Link href="/dashboard">Kembali ke ruang fotografer</Link>
+    <div className="billing-layout"><section className="panel stack" aria-label="Checkout Pro"><h2 className="section-title"><Card size={25} aria-hidden="true" />Aktifkan atau perpanjang Pro</h2>
       <p>{idr(base)} / 30 hari. Tanpa kuota jumlah proyek aktif, foto, ukuran foto, atau ukuran proyek.</p>
       <Status>Lingkungan sandbox · pembayaran uji QRIS.</Status>
       {!canCheckout && <Status tone="warning">{configured ? 'Akun ditangguhkan. Riwayat tagihan tetap dapat dibaca; checkout tidak tersedia.' : 'Checkout sandbox belum dikonfigurasi oleh pengelola.'}</Status>}
       <form className="stack" aria-label="Periksa harga Pro" onSubmit={e => { e.preventDefault(); void submit(false); }}>
-        <Field label="Kode voucher (opsional)" value={voucher} disabled={!canCheckout || busy} maxLength={64} onChange={e => { setVoucher(e.target.value); saveIntent(null); }} description="Satu voucher untuk pembelian awal maupun perpanjangan. Reservasi dibuat saat melanjutkan checkout." />
+        <Field label="Kode voucher (opsional)" value={voucher} disabled={!canCheckout || busy} maxLength={64} onChange={e => { setVoucher(e.target.value); saveIntent(null); }} description="Punya kode voucher? Masukkan di sini, lalu tekan Periksa harga untuk melihat total setelah potongan." />
         <Button type="submit" variant="secondary" disabled={!canCheckout || busy}>Periksa harga</Button>
       </form>
       {error && <Status tone="error">{error} Jika sudah mengirim checkout, coba kembali dengan harga yang sama atau buka pesanan di riwayat.</Status>}
       {intent && <section className="stack" aria-label="Harga terkonfirmasi"><PurchaseTotals quote={intent.quote} />
         <Button pending={busy} disabled={!canCheckout} onClick={() => void submit(true)}>Buat atau lanjutkan checkout QRIS</Button>
-        <p className="muted">Jika koneksi terputus, tombol ini menggunakan identitas checkout yang sama. Menutup halaman tidak membatalkan pesanan.</p>
+        <p className="muted">Jika koneksi terputus, gunakan tombol yang sama untuk melanjutkan pesanan. Menutup halaman tidak membatalkan pesanan.</p>
       </section>}
     </section>
-    <section className="panel stack" aria-label="Riwayat pesanan"><h2>Riwayat pesanan</h2>
-      {orders.data.length === 0 && <p>Belum ada pesanan.</p>}
+    <section className="panel stack" aria-label="Riwayat pesanan"><h2 className="section-title"><Receipt1 size={25} aria-hidden="true" />Riwayat pesanan</h2>
+      {orders.data.length === 0 && <EmptyState title="Belum ada pesanan." description="Pesanan Pro Anda akan tercatat di sini setelah checkout dibuat." scene="billing" />}
       {orders.data.map(order => <article key={order.id} className="voucher-record"><p>Pro · {idr(order.payable_idr)} · {order.state === 'paid' ? 'Pembayaran terverifikasi' : order.state === 'failed' ? 'Pembayaran tidak berhasil' : order.state === 'review' ? 'Menunggu pemeriksaan' : 'Belum terverifikasi'}{order.needsReview && order.state !== 'review' ? ' · Perlu pemeriksaan pengelola' : ''}</p><Link href={`/billing/orders/${order.id}`}>Buka pesanan {order.id}</Link></article>)}
       <div className="actions">{orders.prev_page_url && <Link href={orders.prev_page_url}>Sebelumnya</Link>}{orders.next_page_url && <Link href={orders.next_page_url}>Berikutnya</Link>}</div>
     </section>
-  </div></Shell>;
+  </div></div></Shell>;
 }

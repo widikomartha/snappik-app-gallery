@@ -1,3 +1,6 @@
+import { EmptyState } from '../../components/ui/empty-state';
+import { DocumentDownload, SearchZoomIn } from 'iconsax-reactjs';
+import { PageHeader } from '../../components/ui/page-header';
 import { Head, Link } from '@inertiajs/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Shell } from '../../layouts/shell';
@@ -20,7 +23,7 @@ function Preview({ photo, base, original = false }: { photo: Photo; base: string
 function Download({ photo, base }: { photo: Photo; base: string }) {
   // Native download streaming keeps large originals out of JavaScript memory.
   // On failure the new tab displays the server's text error instead of saving HTML as a photo.
-  return <a className="button button--secondary" href={`${base}/media/${photo.id}?download=1`} target="_blank" rel="noopener noreferrer" aria-label={`Unduh asli ${photo.path}`}>Unduh berkas asli</a>;
+  return <a className="button button--secondary" href={`${base}/media/${photo.id}?download=1`} target="_blank" rel="noopener noreferrer" aria-label={`Unduh asli ${photo.path}`}><DocumentDownload size={20} aria-hidden="true" />Unduh berkas asli</a>;
 }
 
 export default function Delivery() {
@@ -49,17 +52,16 @@ export default function Delivery() {
   const photo = zoom === null ? null : gallery?.photos.data[zoom];
   const disabled = busy || failed;
   return <Shell surface="client"><Head title="Hasil akhir"><meta name="robots" content="noindex,nofollow,noarchive" /></Head><div className="stack">
-    <Link href={base.replace(/\/delivery$/, '')}>Kembali ke galeri</Link><h1>Hasil akhir</h1>
-    <p>Unduh berkas asli melalui SnapPik. Jika unduhan gagal, pesan kesalahan tampil di tab baru. Coba lagi atau hubungi fotografer; periksa status selesai di unduhan browser.</p>
+    <Link href={base.replace(/\/delivery$/, '')}>Kembali ke galeri</Link><PageHeader title="Hasil akhir" scene="delivery" description="Foto yang sudah selesai diedit oleh fotografer. Unduh foto satu per satu dari daftar di bawah, atau simpan semuanya dalam satu file ZIP." />
     {busy && <Status>Memuat hasil akhir…</Status>}
     {failed && <Status tone="error">Galeri gagal dimuat. Periksa koneksi atau kembali ke galeri untuk memeriksa kata sandi dan batas waktu. Tampilan sebelumnya belum diperbarui.</Status>}
-    <Button variant="secondary" disabled={busy} onClick={() => void load()}>Periksa hasil akhir terbaru</Button>
     <DeliveryArchive base={base} />
-    {gallery && <><nav className="panel stack" aria-label="Folder hasil akhir"><h2>Folder</h2>{gallery.legacyFolders && <Status tone="warning">Katalog lama: semua foto tersedia. Minta fotografer menyegarkan katalog untuk navigasi folder.</Status>}<p>{gallery.folder ? `${gallery.folder} · termasuk subfolder` : 'Semua folder'}</p><div className="actions"><Button variant="ghost" disabled={disabled} onClick={() => setQuery(q => ({ ...q, folder: '', page: 1 }))}>Semua folder</Button>{gallery.folders.data.map(folder => <Button key={folder.id} variant="secondary" disabled={disabled} onClick={() => setQuery(q => ({ ...q, folder: String(folder.id), page: 1 }))}>{folder.path}</Button>)}</div>
+    <div className="section-heading"><h2>Foto hasil edit</h2><Button variant="ghost" disabled={busy} onClick={() => void load()}>Periksa hasil akhir terbaru</Button></div>
+    {gallery && <><nav className="gallery-folders stack" aria-label="Folder hasil akhir"><h3>Jelajahi folder</h3>{gallery.legacyFolders && <Status tone="warning">Foto tetap dapat dilihat. Hubungi fotografer jika Anda membutuhkan daftar folder.</Status>}{gallery.folder && <p>Menampilkan {gallery.folder}, termasuk subfolder.</p>}<div className="actions"><Button variant={!query.folder ? 'primary' : 'secondary'} disabled={disabled} onClick={() => setQuery(q => ({ ...q, folder: '', page: 1 }))}>Semua folder</Button>{gallery.folders.data.map(folder => <Button key={folder.id} variant={query.folder === String(folder.id) ? 'primary' : 'secondary'} disabled={disabled} onClick={() => setQuery(q => ({ ...q, folder: String(folder.id), page: 1 }))}>{folder.path}</Button>)}</div>
       {gallery.folders.last_page > 1 && <div className="actions"><Button disabled={disabled || query.folder_page <= 1} onClick={() => setQuery(q => ({ ...q, folder_page: q.folder_page - 1 }))}>Folder sebelumnya</Button><span>Halaman folder {gallery.folders.current_page} / {gallery.folders.last_page}</span><Button disabled={disabled || query.folder_page >= gallery.folders.last_page} onClick={() => setQuery(q => ({ ...q, folder_page: q.folder_page + 1 }))}>Folder berikutnya</Button></div>}
     </nav>
-      {gallery.photos.data.length === 0 && <Status>Tidak ada foto di folder atau halaman ini.</Status>}
-      <div className="client-photo-grid" aria-label="Foto hasil akhir" aria-busy={busy}>{gallery.photos.data.map((item, index) => <GalleryTile className="panel photo-tile stack" index={index} key={item.id}><Preview photo={item} base={base} /><strong>{item.name}</strong><span className="muted photo-path">{item.path}</span><Button variant="secondary" disabled={disabled} onClick={() => setZoom(index)} aria-label={`Perbesar ${item.path}`}>Perbesar</Button>{!disabled && <Download photo={item} base={base} />}</GalleryTile>)}</div>
+      {gallery.photos.data.length === 0 && <EmptyState title="Tidak ada foto di folder atau halaman ini." scene="delivery" />}
+      <div className="client-photo-grid" aria-label="Foto hasil akhir" aria-busy={busy}>{gallery.photos.data.map((item, index) => <GalleryTile className="panel photo-tile stack" index={index} key={item.id}><Preview photo={item} base={base} /><strong>{item.name}</strong><span className="muted photo-path">{item.path}</span><Button variant="secondary" disabled={disabled} onClick={() => setZoom(index)} aria-label={`Perbesar ${item.path}`}><SearchZoomIn size={20} aria-hidden="true" />Perbesar</Button>{!disabled && <Download photo={item} base={base} />}</GalleryTile>)}</div>
       <nav className="actions" aria-label="Halaman foto"><Button disabled={disabled || query.page <= 1} onClick={() => setQuery(q => ({ ...q, page: q.page - 1 }))}>Foto sebelumnya</Button><span>Halaman {gallery.photos.current_page} / {gallery.photos.last_page} · {gallery.photos.total} foto</span><Button disabled={disabled || query.page >= gallery.photos.last_page} onClick={() => setQuery(q => ({ ...q, page: q.page + 1 }))}>Foto berikutnya</Button></nav>
     </>}
     <Dialog open={!!photo} onClose={() => setZoom(null)} title={photo?.name ?? 'Pratinjau hasil akhir'}>{photo && <div className="stack"><Preview key={photo.id} photo={photo} base={base} original /><p>{photo.path} · Foto {zoom! + 1} pada halaman ini</p><Download photo={photo} base={base} /><div className="actions"><Button variant="secondary" disabled={zoom === 0} onClick={() => setZoom(n => n! - 1)}>Sebelumnya</Button><Button variant="secondary" disabled={zoom === gallery!.photos.data.length - 1} onClick={() => setZoom(n => n! + 1)}>Berikutnya</Button></div></div>}</Dialog>

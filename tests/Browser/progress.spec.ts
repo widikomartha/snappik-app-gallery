@@ -64,13 +64,13 @@ for (const width of [360, 1440]) {
       fixture({ action: 'expire', email });
       fixture({ action: 'failed-refresh', email });
       await page.getByRole('button', { name: 'Periksa progres' }).click();
-      await expect(page.getByRole('region', { name: 'Progres proyek' })).toContainText('Akses berakhir. Metadata');
+      await expect(page.getByRole('region', { name: 'Progres proyek' })).toContainText('Masa aktif akun berakhir. Proyek');
       await expect(page.getByRole('region', { name: 'Progres proyek' })).not.toContainText('Uji coba aktif.');
       await page.getByRole('link', { name: 'Lihat hasil dan salin nama berkas', exact: true }).click();
       await page.getByRole('link', { name: 'Konfirmasi putaran 1', exact: true }).click();
       await expect(page.getByRole('region', { name: 'Progres saat ini' })).toContainText('Dibekukan · akses akun berakhir');
       await expect(page.getByRole('region', { name: 'Progres saat ini' })).toContainText('Penyegaran katalog gagal');
-      await expect(page.getByRole('region', { name: 'Hasil tersimpan' })).toContainText('Tidak tersedia dalam katalog terbit saat ini');
+      await expect(page.getByRole('region', { name: 'Hasil tersimpan' })).toContainText('Foto tidak ditemukan dalam galeri terbaru');
       await expect(page.locator('.result-records li')).toHaveCount(2);
       await page.getByRole('button', { name: 'Siapkan daftar nama berkas' }).click();
       await expect(page.getByLabel('Daftar nama berkas lengkap')).toHaveValue('nested/same.jpg [ID: one]\nnested/same.jpg [ID: two]\n');

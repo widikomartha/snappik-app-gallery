@@ -1,3 +1,4 @@
+import { PageHeader } from '../../components/ui/page-header';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Shell } from '../../layouts/shell';
 import { Button } from '../../components/ui/button';
@@ -7,7 +8,7 @@ import type { Purchase } from '../../lib/billing';
 
 export default function Order({ order, canCheckout }: { order: Purchase; canCheckout: boolean }) {
   const form = useForm({});
-  return <Shell surface="photographer"><Head title="Pesanan Pro" /><div className="stack"><h1>Pesanan Pro</h1>
+  return <Shell surface="photographer"><Head title="Pesanan Pro" /><div className="stack"><PageHeader title="Pesanan Pro" scene="billing" description="Periksa rincian pembayaran dan status akses yang terverifikasi." />
     <Link href="/billing">Semua tagihan</Link><section className="panel stack" aria-label="Pesanan Pro">
       <p className="photo-path">Pesanan {order.id}</p><Status>Sandbox QRIS · pembayaran uji.</Status>
       <PurchaseTotals quote={order} />

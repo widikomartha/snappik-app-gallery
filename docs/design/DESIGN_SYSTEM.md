@@ -6,7 +6,37 @@
 
 This document owns visual tokens, component presentation and animation recipes. [PRD REQ-021 and REQ-022](../product/PRD.md#req-021--light-and-dark-appearance) own appearance and interaction behavior; [Architecture](../engineering/ARCHITECTURE.md#browser-appearance-and-motion) owns technical integration. Visual presentation must never change permissions, commercial rules or server-confirmed state.
 
-The owner-selected [ZenGrid reference](https://designmd.ai/chef/zengrid) informs the neutral palette, typography and photo-led grid. SnapPik's dark palette, accessible text colors, operational components and animation recipes below are local adaptations, not claims about a downloaded reference implementation. The published reference page was inspected; no source kit or dependency has been installed.
+The earlier owner-selected [ZenGrid reference](https://designmd.ai/chef/zengrid) informed the initial neutral, photo-led foundation. The owner-approved illustrated monochrome direction below now supplies the shared visual language. SnapPik's dark palette, accessible text colors, operational components and animation recipes below are local adaptations, not claims about a downloaded reference implementation. The published reference page was inspected; no source kit or dependency has been installed.
+
+On October 24, 2026, the owner approved and requested implementation of a separate public landing treatment: monochrome, Manrope headings, rounded original illustrations, small pastel accents, richer illustration animation and complete Indonesian product content. The [landing decision brief](LANDING_DIRECTION.md) records that approval. The owner subsequently explicitly requested extending this design to the remaining pages, adapting each layout, illustration and animation to its task. The shared application now uses Manrope/DM Sans, monochrome tokens, rounded surfaces and small pastel illustration accents. The landing keeps its richer composition and pausable decorative loops; operational screens use finite illustration entrances.
+
+## Approved illustrated direction and landing treatment
+
+The public landing uses these scoped overrides in `tokens.css`. Existing token meanings remain unchanged. Pastels are decorative illustration fills, not status colors or text colors.
+
+| Token | Light | Dark |
+| --- | --- | --- |
+| `--color-bg` | `#F5F5F5` | `#171717` |
+| `--color-surface` | `#FFFFFF` | `#242424` |
+| `--color-surface-subtle` | `#DEDEDE` | `#393939` |
+| `--color-text` | `#171717` | `#F5F5F5` |
+| `--color-text-muted` | `#626262` | `#B5B5B5` |
+| `--color-border` | `#C9C9C9` | `#4C4C4C` |
+| `--color-control-border` | `#737373` | `#B5B5B5` |
+| `--color-primary` / `--color-on-primary` | `#171717` / `#F5F5F5` | `#F5F5F5` / `#171717` |
+| `--color-focus` | `#171717` | `#F5F5F5` |
+| `--color-illustration-neutral` | `#737373` | `#B5B5B5` |
+| `--color-illustration-sage` | `#CFE5D7` | `#A4C2AD` |
+| `--color-illustration-lavender` | `#E0D8F0` | `#B2A5CD` |
+| `--color-illustration-peach` | `#F2D4C4` | `#D5B09A` |
+
+The reference gray `#737373` is used for illustration details and control boundaries, rather than supporting text. Supporting text uses `#626262` in light appearance to retain readable contrast. Headings use the self-hosted Manrope Latin 700 subset with its SIL OFL license; body text and controls retain DM Sans. Hero type scales from approximately 34px to 61px, with a 38px narrow-screen treatment. Supporting section headings use approximately 29–36px. CSS expresses these sizes in relative units. Rounded illustrated frames and pricing panels use approximately 15–29px radii; CTA links use pill shapes. Rounded gallery frames never crop, filter or recolor real client photographs.
+
+The approved content order is hero, value strip, photographer problem/benefit, three-step workflow, selection example, delivery, project controls, Drive source disclosure, trial/Pro, FAQ and final registration CTA. Navigation links target these sections. Registration and login use real application routes. Pro price/duration come from `WelcomeController`'s current persisted plan; missing prices show an explicit unavailable message. The synthetic interactive gallery is labeled as a simulation and never writes project selections. Public legal/support links appear only when configured through the existing shell.
+
+Landing illustration float, drift, check and ZIP accents use a seven-second cycle; the decorative flow path uses a three-second dash cycle. These decorative loops are an owner-approved exception to the finite-motion rule below. A visible pause control stops all of them. CSS and a subscribed reduced-motion preference disable motion immediately; offscreen scenes pause through one shared observer. Essential content remains visible, and animations never claim a real save, payment or archive result. Existing Motion section reveals remain finite.
+
+The owner subsequently requested a cleaner landing and Iconsax icons. Use the Linear Iconsax style through the pinned `iconsax-reactjs` dependency for theme/motion controls, the value strip, feature markers, benefit lists, CTA arrows and FAQ chevrons. Icons inherit `currentColor`; decorative icons are hidden from assistive technology. The shared theme control uses a moon/sun icon with an accessible action label and native tooltip. The illustration pause/play control is a 44px icon button beside the hero artwork; omit it when reduced motion disables the animation. The header keeps login and section navigation, with registration CTAs in the page content. Remove redundant header registration, the separate illustration-status caption and the closing secondary pricing CTA. Preserve the synthetic-demo label and source/trial/paid-entitlement disclosures.
 
 ## Experience principles
 
@@ -22,19 +52,19 @@ Use semantic CSS custom properties, not page-specific hex values. These opaque s
 
 | Token | Light | Dark | Purpose |
 | --- | --- | --- | --- |
-| `--color-bg` | `#FAF9F6` | `#171614` | Page background |
-| `--color-surface` | `#FFFFFF` | `#211F1C` | Cards, fields, dialogs |
-| `--color-surface-subtle` | `#F0EEEA` | `#2B2824` | Grouped sections, metadata strips |
-| `--color-surface-hover` | `#E7E3DD` | `#35312C` | Neutral interactive hover |
-| `--color-text` | `#292524` | `#F5F5F4` | Headings, body, labels |
-| `--color-text-muted` | `#57534E` | `#D6D3D1` | Supporting text on neutral surfaces |
-| `--color-text-tertiary` | `#78716C` | `#A8A29E` | Metadata on page or surface only |
-| `--color-border` | `#D6D3D1` | `#44403C` | Decorative dividers; not a control's sole identifier |
-| `--color-control-border` | `#78716C` | `#A8A29E` | Input bounds, selection indicators |
-| `--color-primary` | `#57534E` | `#E7E5E4` | Primary button background |
-| `--color-on-primary` | `#FFFFFF` | `#292524` | Primary button text and icons |
-| `--color-focus` | `#57534E` | `#E7E5E4` | Visible outline with surface-colored separation |
-| `--color-selected-bg` | `#E7E5E4` | `#35312C` | Selected row or photo metadata strip |
+| `--color-bg` | `#F5F5F5` | `#171717` | Page background |
+| `--color-surface` | `#FFFFFF` | `#242424` | Cards, fields, dialogs |
+| `--color-surface-subtle` | `#EFEFEF` | `#303030` | Grouped sections, metadata strips |
+| `--color-surface-hover` | `#E9E9E9` | `#393939` | Neutral interactive hover |
+| `--color-text` | `#171717` | `#F5F5F5` | Headings, body, labels |
+| `--color-text-muted` | `#626262` | `#B5B5B5` | Supporting text on neutral surfaces |
+| `--color-text-tertiary` | `#626262` | `#B5B5B5` | Metadata on page or surface only |
+| `--color-border` | `#C9C9C9` | `#4C4C4C` | Decorative dividers; not a control's sole identifier |
+| `--color-control-border` | `#737373` | `#B5B5B5` | Input bounds, selection indicators |
+| `--color-primary` | `#171717` | `#F5F5F5` | Primary button background |
+| `--color-on-primary` | `#FFFFFF` | `#171717` | Primary button text and icons |
+| `--color-focus` | `#171717` | `#F5F5F5` | Visible outline with surface-colored separation |
+| `--color-selected-bg` | `#E6E6E6` | `#393939` | Selected row or photo metadata strip |
 | `--color-success` / `--color-success-bg` | `#3F6212` / `#ECFCCB` | `#BEF264` / `#24301B` | Confirmed successful operation |
 | `--color-warning` / `--color-warning-bg` | `#854D0E` / `#FEF3C7` | `#FDE68A` / `#332B18` | Needs attention, frozen access |
 | `--color-error` / `--color-error-bg` | `#B91C1C` / `#FEE2E2` | `#FCA5A5` / `#381F1F` | Validation or operational failure |
@@ -43,15 +73,15 @@ Use `--color-text` on `--color-surface-subtle` for informational banners. Pair s
 
 Reference accents are not automatically suitable for small text. Text must meet 4.5:1 contrast, or 3:1 for large text; meaningful control boundaries, icons and focus indicators must meet 3:1 against adjacent colors. Decorative borders are exempt from being the sole functional signal. These rules follow [W3C text contrast](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html) and [non-text contrast](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html).
 
-Initial numeric checks on the opaque token pairs: light body/page 14.41:1, dark body/page 16.58:1; light tertiary/page 4.56:1; primary button text 7.63:1 light and 12.08:1 dark; semantic text/background pairs at least 5.30:1. These calculations do not verify rendered components, overlays, focus placement or browser accessibility. Recheck actual combinations during implementation.
+Validate actual rendered text/background pairs and control boundaries in both themes; browser results are recorded in the decision brief. Decorative pastel fills are reserved for original illustrations and never substitute for semantic state colors.
 
 ## Typography, spacing and geometry
 
-| Role | Planned font | Size / line height | Weight |
+| Role | Implemented font | Size / line height | Weight |
 | --- | --- | --- | --- |
-| Public hero / H1 | Raleway, sans-serif fallback | 32px narrow, 40px wide / 1.2 | 300 |
-| H2 | Raleway, sans-serif fallback | 28px narrow, 32px wide / 1.25 | 300 |
-| H3 / H4 | Raleway, sans-serif fallback | 24px / 1.3; 18px / 1.4 | 500 |
+| Product H1 | Manrope, system sans-serif fallback | 24px narrow, 28–36px wide / 1.2 | 700 |
+| H2 | Manrope, system sans-serif fallback | 24px / 1.3 | 700 |
+| H3 / H4 | Manrope, system sans-serif fallback | 18px / 1.4 | 700 |
 | Body / forms | DM Sans, system sans-serif fallback | 16px / 1.5 | 400 |
 | Compact table / supporting copy | DM Sans, system sans-serif fallback | 15px / 1.5; 13px / 1.5 | 400–500 |
 | Identifiers / filenames when useful | System monospace | 13px / 1.5 | 400 |
@@ -60,7 +90,26 @@ Use relative font units in CSS and preserve browser zoom. Critical instructions,
 
 Use spacing steps 4, 8, 12, 24, 36, 48, 72, 96 and 120px. The 12px rhythm structures content; 4/8px handle icon and label detail. Use 48px between major mobile sections and 72–120px on spacious desktop public pages. Operational panels use 24–36px padding on wide screens and 16–24px on narrow screens.
 
-Use a 1280px maximum public content width and 1440px maximum operational workspace width, with 16px narrow and 24–48px wide gutters. Initial layout breakpoints are 640px and 1024px; verify fluid behavior between them. Gallery columns adapt to available width; reduce columns rather than make labels or controls too small. Cards/inputs use a restrained 4px radius; images use square corners. Separate surfaces with borders and tone changes, without decorative shadows, gradients or glow.
+Use a 1280px maximum public content width and 1440px maximum operational workspace width, with 16px narrow and 24–48px wide gutters. Initial layout breakpoints are 640px and 1024px; verify fluid behavior between them. Gallery columns adapt to available width; reduce columns rather than make labels or controls too small. Product panels use 24px radii, fields 14px, illustration/module frames 20–32px and action buttons pill shapes. Gallery preview frames are rounded while the full original photo remains visible with `object-fit: contain`. Separate surfaces with borders and tone changes, without decorative shadows, gradients or glow.
+
+### Layout adaptations
+
+Authentication uses a two-column illustration/story and form composition, collapsing to a compact illustrated banner above the form on mobile. Photographer and admin workspaces share a sidebar with Iconsax navigation and active-page indication; below 1024px it becomes a wrapping navigation grid. Dashboard/project cards show actual server state, the client selection allowance and a compact selection meter. Settings group project identity, source/access rules, publication controls and sharing actions separately. Billing separates checkout and history; admin summaries separate accounts, payments and jobs. Client pages use a smaller illustrated heading and full-width photo grids, with separate selection and delivery entry cards.
+
+Original SVG scenes cover accounts, projects, selection, delivery, billing and administration. They have no definition IDs, carry no domain state and are hidden from assistive technology. Shared status and dialog controls use Iconsax with explicit accessible names. Product illustration entrances run once for 800ms with offsets between -3px and 4px, become static under reduced motion and never gate content. No perpetual decoration is introduced on operational screens.
+
+### Task hierarchy and product language
+
+The owner's October 24 follow-up requests clearer explanations and stronger layout hierarchy. Preserve the accepted typography, monochrome tokens and illustration language while adapting working screens to their actual task:
+
+- Explain the action, its effect and the next step in Indonesian. Prefer visible user concepts such as saved choices, finished photos and gallery access over internal terms such as operation IDs, snapshots and published catalogues. Technical identifiers and export-escaping details belong in expandable secondary content.
+- Distinguish saved draft choices from confirmed choices. Explain that confirmation locks changes and that the photographer must reopen selection. Describe the shared list across devices without implying independent selections per visitor.
+- Keep project name, allowance and the selection source visible initially. Group optional contacts, unconfigured delivery, passwords/deadlines and Drive setup guidance into labeled native disclosures; expand fields with validation errors and existing delivery sources. Explain that the selection allowance limits client choices rather than gallery storage, that delivery can be added later and that saving a draft does not publish it.
+- On wide project screens, separate the editing column from publication/sharing controls. On narrow screens, put sharing/publication before the settings form in both visual and DOM order. New projects show source setup guidance; the three-step explanation is omitted once selection is published. Archive and link replacement remain available in a secondary disclosure.
+- Give client module cards a clear purpose and direct opening action. Consolidate selection count and review navigation, keep routine save feedback compact, and make failures persistent with explicit recovery choices. Folder navigation is a compact toolbar rather than another prominent card.
+- Separate results/history from filename export on wide screens and stack them on narrow screens. Keep confirmation state visible so a saved draft is not mistaken for a final editing brief. Reduce header artwork to supporting scale on operational screens; real photos retain their full original rendering.
+
+The clipboard action copies the existing project URL, provides success acknowledgement only after completion and selects the field for manual copying if access is denied. No messaging integration is implied. These are presentation changes within the existing product contracts, not authorization for additional provider services or deferred features. Follow-up verification is recorded in the [decision brief](LANDING_DIRECTION.md).
 
 ## Theme control and appearance
 
@@ -101,7 +150,7 @@ Use the `motion` package's React entry point, `motion/react`, for shared animati
 | Selection indicator / count | 120–180ms visual feedback; pending versus saved stays explicit | Immediate state and accessible announcement |
 | Theme switch | Optional 150ms surface/text color transition; never animate first paint | Immediate token change |
 
-Use a shared ease-out curve `(0.2, 0, 0, 1)` for these finite transitions. No perpetual decorative animation, scroll hijacking, parallax, mandatory splash sequence or animated photographic color changes. A busy indicator can loop only while genuinely pending; in reduced motion use a static status label instead. A selected count must not announce every animation frame.
+Use a shared ease-out curve `(0.2, 0, 0, 1)` for these finite transitions. Outside the approved public landing illustration exception above, do not use perpetual decorative animation. Scroll hijacking, parallax, mandatory splash sequences and animated photographic color changes remain excluded throughout. A busy indicator can loop only while genuinely pending; in reduced motion use a static status label instead. A selected count must not announce every animation frame.
 
 Apply `MotionConfig reducedMotion="user"` globally and use `useReducedMotion` for custom recipes. The global option alone does not disable every custom loop, stagger or CSS animation; handle these explicitly. Follow the official [Motion accessibility guidance](https://motion.dev/docs/react-accessibility). Essential content/actions remain usable if animations are disabled or interrupted.
 

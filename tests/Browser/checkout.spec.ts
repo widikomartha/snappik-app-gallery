@@ -26,7 +26,7 @@ for (const width of [360, 1440]) for (const theme of ['light', 'dark'] as const)
     await page.getByLabel('Email', { exact: true }).fill(email);
     await page.getByLabel('Kata sandi', { exact: true }).fill('BrowserCheckoutPassword123');
     await page.getByRole('button', { name: 'Masuk', exact: true }).click();
-    await page.getByRole('link', { name: 'Langganan dan tagihan', exact: true }).click();
+    await page.getByRole('link', { name: 'Tagihan', exact: true }).click();
     await expect(page.getByRole('region', { name: 'Riwayat pesanan' })).toContainText('Belum ada pesanan');
     await page.getByLabel('Kode voucher (opsional)').fill('INVALID');
     await page.getByRole('button', { name: 'Periksa harga', exact: true }).click();

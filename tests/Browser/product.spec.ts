@@ -38,6 +38,7 @@ for (const width of [360, 1440]) for (const theme of ['light', 'dark'] as const)
     await inspect(page, `public-${suffix}`);
     await page.getByRole('link', { name: 'Masuk akun', exact: true }).click();
     await expect(page.locator('main')).toBeFocused();
+    await inspect(page, `auth-${suffix}`);
     await page.getByLabel('Email', { exact: true }).fill(email);
     await page.getByLabel('Kata sandi', { exact: true }).fill('WrongPassword123');
     await page.getByRole('button', { name: 'Masuk', exact: true }).click();
@@ -45,9 +46,14 @@ for (const width of [360, 1440]) for (const theme of ['light', 'dark'] as const)
     await expect(page.getByText('Email atau kata sandi tidak cocok.', { exact: true })).toBeVisible();
     await page.getByLabel('Kata sandi', { exact: true }).fill('BrowserDeliveryPassword123');
     await page.getByRole('button', { name: 'Masuk', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Ruang fotografer', exact: true })).toBeVisible();
+    await inspect(page, `dashboard-${suffix}`);
     await page.getByRole('link', { name: 'Daftar proyek', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Proyek Anda', exact: true })).toBeVisible();
+    await inspect(page, `projects-${suffix}`);
     await page.getByRole('link', { name: 'Synthetic finished gallery', exact: true }).click();
     const share = await page.getByLabel('Tautan klien', { exact: true }).inputValue();
+    await inspect(page, `project-settings-${suffix}`);
     const projectUrl = page.url();
     await page.getByLabel('Nama proyek / klien', { exact: true }).fill('Draf tetap tersimpan di halaman');
     await page.getByRole('button', { name: /Aktifkan tema/ }).focus();
@@ -89,11 +95,11 @@ for (const width of [360, 1440]) for (const theme of ['light', 'dark'] as const)
     await expect(client.getByText('Menyimpan…', { exact: true })).toBeVisible();
     await client.getByRole('button', { name: /Aktifkan tema/ }).click();
     await expect(client.getByRole('heading', { name: '0 / 2 foto dipilih' })).toBeVisible();
-    await expect(client.getByText('Tersimpan di server.', { exact: true })).toHaveCount(0);
+    await expect(client.getByText('Pilihan tersimpan.', { exact: true })).toHaveCount(0);
     release();
-    await expect(client.getByText('Penyimpanan belum dapat dipastikan.', { exact: false })).toBeVisible();
+    await expect(client.getByText('Pilihan terakhir belum bisa dipastikan tersimpan.', { exact: false })).toBeVisible();
     await inspect(client, `failed-save-${suffix}`);
-    await client.getByRole('button', { name: 'Coba simpan operasi yang sama', exact: true }).click();
+    await client.getByRole('button', { name: 'Coba simpan lagi', exact: true }).click();
     await expect(client.getByRole('heading', { name: '1 / 2 foto dipilih' })).toBeVisible();
     await client.getByRole('button', { name: /Aktifkan tema/ }).click();
     const zoom = client.getByRole('button', { name: /^Perbesar / });
@@ -105,7 +111,7 @@ for (const width of [360, 1440]) for (const theme of ['light', 'dark'] as const)
     await client.keyboard.press('Escape');
     await expect(zoom).toBeFocused();
     fixture('freeze-account', email);
-    await client.getByRole('button', { name: 'Periksa pilihan di server', exact: true }).click();
+    await client.getByRole('button', { name: 'Muat ulang pilihan', exact: true }).click();
     await expect(client.getByText('Masa akses fotografer berakhir. Pilihan tersimpan hanya dapat dibaca.', { exact: true })).toBeVisible();
     await expect(client.getByRole('button', { name: /^Hapus pilihan / })).toBeDisabled();
     await inspect(client, `frozen-${suffix}`);
@@ -117,6 +123,7 @@ for (const width of [360, 1440]) for (const theme of ['light', 'dark'] as const)
     await inspect(page, `expired-results-${suffix}`);
     await page.getByRole('link', { name: 'Tagihan', exact: true }).click();
     await expect(page.getByRole('region', { name: 'Riwayat pesanan', exact: true })).toBeVisible();
+    await inspect(page, `billing-${suffix}`);
 
     await client.getByRole('link', { name: 'Kembali ke galeri', exact: true }).click();
     await client.getByLabel('Kata sandi · Hasil akhir', { exact: true }).fill('Delivery123');

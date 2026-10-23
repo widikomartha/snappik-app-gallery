@@ -1,4 +1,5 @@
 @import './tokens.css';
+@import './fonts.css';
 
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--color-bg); color: var(--color-text); font-family: 'DM Sans', system-ui, sans-serif; font-size: 1rem; line-height: 1.5; }
@@ -6,7 +7,7 @@ button, input, select { font: inherit; }
 a { color: inherit; text-underline-offset: 0.25em; }
 a, button, input { -webkit-tap-highlight-color: transparent; }
 :focus-visible { outline: 2px solid var(--color-focus); outline-offset: 4px; }
-h1, h2, h3 { font-family: Raleway, sans-serif; overflow-wrap: anywhere; }
+h1, h2, h3 { font-family: Manrope, system-ui, sans-serif; overflow-wrap: anywhere; }
 h1 { font-size: 2rem; line-height: 1.2; font-weight: 300; margin: 0 0 1.5rem; }
 h2 { font-size: 1.75rem; line-height: 1.25; font-weight: 300; margin: 0 0 1rem; }
 p { margin: 0 0 1.5rem; }

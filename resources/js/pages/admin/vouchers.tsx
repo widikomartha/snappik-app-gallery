@@ -1,3 +1,4 @@
+import { PageHeader } from '../../components/ui/page-header';
 import { Head, Link } from '@inertiajs/react';
 import { Shell } from '../../layouts/shell';
 import { Status } from '../../components/ui/status';
@@ -7,7 +8,7 @@ type Row = { id: number; code: string; terms: Terms; held: number; used: number 
 
 export default function Vouchers({ vouchers }: { vouchers: Page<Row> }) {
   return <Shell surface="admin"><Head title="Voucher" /><div className="stack">
-    <Link href="/admin">Administrasi platform</Link><h1>Voucher</h1>
+    <Link href="/admin">Administrasi platform</Link><PageHeader title="Voucher" scene="billing" description="Atur diskon serta periksa reservasi dan riwayat penggunaannya." />
     <Link className="button button--primary" href="/admin/vouchers/create">Buat voucher</Link>
     <p>Kode memiliki riwayat versi tetap. Batas penggunaan menghitung seluruh versi, termasuk reservasi yang masih ditahan.</p>
     {vouchers.data.length === 0 && <Status>Belum ada voucher.</Status>}

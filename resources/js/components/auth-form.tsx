@@ -26,6 +26,9 @@ export function AuthForm({ mode, status, token = '', email = '' }: { mode: Mode;
     <Head title={page.title} />
     <div className="auth-content stack">
       <h1>{page.title}</h1>
+      {mode === 'login' && <p className="muted">Masuk dengan akun fotografer untuk menyiapkan galeri dan melihat pilihan klien.</p>}
+      {mode === 'forgot' && <p className="muted">Masukkan email akun Anda. Jika email terdaftar, Anda akan menerima tautan untuk membuat kata sandi baru.</p>}
+      {mode === 'reset' && <p className="muted">Buat kata sandi baru untuk akun Anda, lalu gunakan untuk masuk kembali.</p>}
       {status && <Status>{status}</Status>}
       {mode === 'register' && <p className="muted">Uji coba 7 hari dimulai setelah verifikasi email. Maksimal 3 proyek aktif selama uji coba.</p>}
       <form className="panel stack" onSubmit={submit}>

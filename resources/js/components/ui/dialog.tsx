@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { Button } from './button';
 import { motion, useReducedMotion } from 'motion/react';
 import { timing } from '../../lib/motion';
+import { CloseCircle } from 'iconsax-reactjs';
 
 export function Dialog({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: ReactNode }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -43,7 +44,7 @@ export function Dialog({ open, onClose, title, children }: { open: boolean; onCl
       }}>
       <div className="dialog-header">
         <h2 id={titleId}>{title}</h2>
-        <Button variant="ghost" onClick={onClose} autoFocus>Tutup</Button>
+        <Button variant="ghost" className="button--icon" aria-label="Tutup" title="Tutup" onClick={onClose} autoFocus><CloseCircle size={22} aria-hidden="true" focusable="false" /></Button>
       </div>
       {children}
     </motion.dialog>

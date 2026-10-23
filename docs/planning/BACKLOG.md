@@ -212,7 +212,13 @@ These are implementation tasks, not claims that the application exists. Dependen
 8. Admin can inspect accounts/orders/vouchers/failures, change future price, suspend/reactivate and retry safe work. No admin/tenant bypass, unverified payment grant, permanent source deletion or secret exposure succeeds.
 9. Workers/scheduler restart safely; an isolated encrypted-backup restore succeeds; HTTPS, mail, source API, private archive delivery and monitoring are verified in the intended environment.
 10. Light/dark switching works across all SnapPik surfaces with persistent browser preference, readable contrast and unchanged selections/forms/photos. Both modes pass the narrow/wide viewport and keyboard checks.
-11. ZenGrid-derived components and Motion recipes remain consistent across all shells; reduced-motion users can complete every core journey. Large catalogues do not trigger catalogue-wide mounting/animation, and interrupted transitions preserve state and focus.
+11. The approved shared illustrated direction, landing composition and Motion recipes follow the [Design System](../design/DESIGN_SYSTEM.md); reduced-motion users can complete every core journey. Large catalogues do not trigger catalogue-wide mounting/animation, and interrupted transitions preserve state and focus.
 12. All required defects are resolved, actual commands and operating instructions are recorded, production service prerequisites are available, and the owner authorizes publication.
 
 Next Features remain in [PRD](../product/PRD.md); they are not tasks or dependencies of this MVP backlog.
+
+## Public landing follow-up — October 24, 2026
+
+The owner approved the illustrated monochrome/Manrope landing and requested implementation after reviewing its complete Indonesian content. The [decision and verification brief](../design/LANDING_DIRECTION.md) records the implementation, scoped shell/styles, synthetic example and actual checks. This is a presentation follow-up to TASK-013; it does not close that task's prerequisite acceptance, approve the complete documentation package or authorize publication.
+
+The owner then requested extending the accepted direction across the other pages. Shared product tokens/fonts, illustrated authentication, responsive workspace navigation, project/settings cards, billing/admin grouping and client gallery presentation are implemented. The [extension evidence](../design/LANDING_DIRECTION.md#shared-product-extension--october-24-2026) records actual frontend/browser checks and the corrected theme-transition contrast defect. Existing product and launch gates remain unchanged.

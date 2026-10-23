@@ -1,3 +1,4 @@
+import { PageHeader } from '../../components/ui/page-header';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 import { Shell } from '../../layouts/shell';
@@ -59,7 +60,7 @@ export default function VoucherPage({ voucher, usage, versions, reservations, re
     if (voucher) form.put(`/admin/vouchers/${voucher.id}`, options); else form.post('/admin/vouchers', options);
   }
   return <Shell surface="admin"><Head title={voucher?.code ?? 'Buat voucher'} /><div className="stack">
-    <Link href="/admin/vouchers">Semua voucher</Link><h1>{voucher?.code ?? 'Buat voucher'}</h1>
+    <Link href="/admin/vouchers">Semua voucher</Link><PageHeader title={voucher?.code ?? 'Buat voucher'} scene="billing" />
     {voucher && <section className="panel stack" aria-label="Ketentuan saat ini"><h2>Ketentuan saat ini</h2><VoucherTerms terms={voucher.terms} /></section>}
     <form className="panel stack" onSubmit={save} aria-label="Pengaturan voucher">
       <h2>{voucher ? 'Terbitkan versi baru' : 'Ketentuan voucher'}</h2>

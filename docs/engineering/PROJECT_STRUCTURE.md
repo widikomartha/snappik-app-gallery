@@ -67,14 +67,19 @@ app/
 config/             # Service configuration; no secrets committed
 resources/css/
   app.css           # Shared styles and semantic component classes
+  fonts.css         # Shared licensed Manrope heading font declaration
+  landing.css       # Scoped public landing composition and pausable illustration motion
+  product.css       # Shared illustrated product layouts, workspaces and responsive geometry
   tokens.css        # Light/dark token definitions from Design System
+resources/fonts/    # Manrope Latin 700 subset and its SIL OFL license for shared headings
 database/
   migrations/
   factories/
   seeders/          # Synthetic local data; no production admin password
 resources/js/
   components/       # Shared accessible controls and gallery components
-    ui/             # Buttons, fields, dialogs, appearance control, status primitives
+    landing/        # Explicitly synthetic public selection example; no domain writes
+    ui/             # Buttons, fields, dialogs, appearance/status controls, page headings and original illustration scenes
   hooks/            # Shared browser appearance and responsive behavior
   lib/
     appearance.ts   # Validated browser preference and root theme application

@@ -15,7 +15,6 @@ export const stateLabel = (s: string) => labels[s] ?? s;
 export function Operations({ children }: { children: ReactNode }) {
   const { status } = usePage<{ status?: string }>().props;
   return <Shell surface="admin"><div className="stack">
-    <nav className="actions" aria-label="Administrasi"><Link href="/admin">Ringkasan</Link><Link href="/admin/accounts">Akun fotografer</Link><Link href="/admin/plan">Harga Pro</Link><Link href="/admin/orders">Transaksi</Link><Link href="/admin/vouchers">Kelola voucher</Link><Link href="/admin/jobs">Pekerjaan</Link></nav>
     {status && <Status tone="success">{status}</Status>}{children}
   </div></Shell>;
 }

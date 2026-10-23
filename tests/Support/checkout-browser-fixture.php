@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Admin\OperatePlatform;
 use App\Actions\Billing\ManageVoucher;
 use App\Models\Order;
 use App\Models\User;
@@ -26,9 +27,12 @@ if (! preg_match('/\Abrowser-checkout-[a-z0-9-]+@example\.test\z/', $input['emai
 try {
     F::configure();
     if ($input['action'] === 'seed') {
+        // Set a new test-only price version so prior admin suites cannot leak their price here.
+        $admin = V::admin();
+        app(OperatePlatform::class)->price($admin, (int) DB::table('plans')->where('code', 'pro')->value('current_version_id'), 29000, 'Synthetic checkout fixture price');
         $buyer = F::buyer();
         $buyer->update(['email' => $input['email'], 'password' => 'BrowserCheckoutPassword123']);
-        V::create(V::admin(), ['code' => $input['code'], 'per_user_limit' => 1]);
+        V::create($admin, ['code' => $input['code'], 'per_user_limit' => 1]);
     } elseif ($input['action'] === 'deactivate') {
         $voucher = Voucher::where('code', $input['code'])->firstOrFail();
         $admin = User::findOrFail($voucher->currentVersion->created_by);

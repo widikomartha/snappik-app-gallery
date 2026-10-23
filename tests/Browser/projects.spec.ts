@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { spawnSync } from 'node:child_process';
+import { contrastRatios, controlContrast } from './contrast';
 
 function fixture(input: object) {
   const result = spawnSync('php', ['tests/Support/project-browser-fixture.php'], {
@@ -27,10 +28,19 @@ for (const width of [360, 1440]) {
       await page.getByRole('link', { name: 'Kelola proyek' }).click();
       await page.getByRole('link', { name: 'Buat proyek', exact: true }).click();
       await expect(page.getByRole('heading', { name: 'Buat proyek', exact: true })).toBeVisible();
+      await expect(page.getByRole('list', { name: 'Langkah menyiapkan galeri' })).toBeVisible();
+      await expect(page.getByLabel('Kata sandi baru · Pemilihan foto')).not.toBeVisible();
+      for (const pair of await contrastRatios(page)) expect(pair.ratio, pair.selector).toBeGreaterThanOrEqual(4.5);
+      for (const pair of await controlContrast(page)) expect(pair.ratio).toBeGreaterThanOrEqual(3);
+      await page.screenshot({ path: `test-results/project-create-${width}-${theme}.png`, fullPage: true });
+      if (width === 1440 && theme === 'light') await page.screenshot({ path: 'test-results/project-create-preview.png' });
       await page.getByLabel('Nama proyek / klien').fill('Synthetic browser project');
       await page.getByLabel('Folder Google Drive · Pemilihan foto').fill('https://drive.google.com/drive/folders/browser-selection');
+      await page.getByText('Tambahkan galeri hasil akhir (opsional)', { exact: true }).click();
       await page.getByLabel('Folder Google Drive · Hasil akhir').fill('https://drive.google.com/drive/folders/browser-delivery');
+      await page.getByText('Kata sandi & batas waktu · Pemilihan foto', { exact: true }).click();
       await page.getByLabel('Kata sandi baru · Pemilihan foto').fill('BrowserSelect123');
+      await page.getByText('Kata sandi & batas waktu · Hasil akhir', { exact: true }).click();
       await page.getByLabel('Kata sandi baru · Hasil akhir').fill('BrowserDelivery123');
       await page.getByRole('button', { name: /Aktifkan tema/ }).click();
       await expect(page.getByLabel('Nama proyek / klien')).toHaveValue('Synthetic browser project');
@@ -42,6 +52,7 @@ for (const width of [360, 1440]) {
       const selection = page.getByRole('region', { name: 'Status Pemilihan foto' });
       await expect(selection).toContainText('Impor selesai');
       await expect(selection).toContainText('2 foto');
+      await expect(page.getByRole('button', { name: 'Salin tautan klien', exact: true })).toBeDisabled();
       await expect(selection).toContainText('camera.raw');
       await selection.getByRole('link', { name: 'Lihat semua berkas yang dikecualikan' }).click();
       await expect(page.getByRole('heading', { name: 'Berkas tidak didukung dan pintasan' })).toBeVisible();
@@ -56,17 +67,25 @@ for (const width of [360, 1440]) {
       await page.getByRole('button', { name: 'Terbitkan Pemilihan foto', exact: true }).click();
       await expect(selection).toContainText('Diterbitkan');
       await page.getByRole('button', { name: 'Terbitkan Hasil akhir', exact: true }).click();
+      // Copy acknowledgement and manual fallback both preserve the scoped link.
+      await page.evaluate(() => Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async () => undefined } }));
+      await page.getByRole('button', { name: 'Salin tautan klien', exact: true }).click();
+      await expect(page.getByText('Tautan disalin. Tempel dan kirim kepada klien Anda.', { exact: true })).toBeVisible();
+      await page.evaluate(() => Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async () => { throw new DOMException('Denied', 'NotAllowedError'); } } }));
+      await page.getByRole('button', { name: 'Salin tautan klien', exact: true }).click();
+      await expect(page.getByLabel('Tautan klien', { exact: true })).toBeFocused();
       const share = await page.getByLabel('Tautan klien', { exact: true }).inputValue();
       const client = await context.newPage();
       await client.goto(share);
       await client.getByLabel('Kata sandi · Pemilihan foto', { exact: true }).fill('BrowserSelect123');
       await client.getByRole('button', { name: 'Buka Pemilihan foto' }).click();
-      await expect(client.getByText('Galeri diterbitkan · 2 foto.', { exact: false })).toBeVisible();
+      await expect(client.getByText('2 foto tersedia', { exact: true })).toBeVisible();
       await expect(client.getByLabel('Kata sandi · Hasil akhir', { exact: true })).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       // Omit capabilities and private source links from review screenshots.
       await page.screenshot({ path: `test-results/projects-${width}-${theme}.png`, fullPage: true,
         mask: [page.getByLabel('Tautan klien', { exact: true }), page.getByLabel(/Folder Google Drive/)] });
+      await page.getByText('Arsip & penggantian tautan', { exact: true }).click();
       await page.getByRole('button', { name: 'Ganti tautan klien', exact: true }).click();
       await page.getByRole('button', { name: 'Konfirmasi ganti tautan' }).click();
       await expect.poll(async () => page.getByLabel('Tautan klien', { exact: true }).inputValue()).not.toBe(share);
