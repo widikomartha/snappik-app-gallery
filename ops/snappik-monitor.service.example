@@ -1,0 +1,14 @@
+# Collects fixed booleans only. Connect an approved OnFailure target/monitor before launch.
+[Unit]
+Description=SnapPik private operational checks
+
+[Service]
+Type=oneshot
+User=snappik
+Group=snappik
+WorkingDirectory=/srv/snappik/current
+ExecStart=/usr/bin/php artisan snappik:operations-check --json
+UMask=0077
+NoNewPrivileges=true
+StandardOutput=journal
+StandardError=null

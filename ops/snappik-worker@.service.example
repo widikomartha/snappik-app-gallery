@@ -1,0 +1,23 @@
+# Install only on the selected Linux host; instances: catalogues, archives, payments.
+[Unit]
+Description=SnapPik %i worker
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=snappik
+Group=snappik
+WorkingDirectory=/srv/snappik/current
+ExecStart=/usr/bin/php artisan queue:work %i --queue=%i --sleep=3 --timeout=0 --tries=0 --max-time=3600
+Restart=always
+RestartSec=5
+KillSignal=SIGTERM
+TimeoutStopSec=infinity
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+StandardOutput=null
+StandardError=null
+
+[Install]
+WantedBy=multi-user.target

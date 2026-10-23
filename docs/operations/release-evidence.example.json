@@ -1,0 +1,32 @@
+{
+  "commit": "",
+  "origin": "https://snappik.example.invalid",
+  "checked_at": 0,
+  "checks": {
+    "scenario_01_onboarding_trial": { "passed": false, "record": "" },
+    "scenario_02_shared_selection": { "passed": false, "record": "" },
+    "scenario_03_complete_delivery": { "passed": false, "record": "" },
+    "scenario_04_zip_recovery_expiry": { "passed": false, "record": "" },
+    "scenario_05_checkout_renewal": { "passed": false, "record": "" },
+    "scenario_06_subscription_expiry": { "passed": false, "record": "" },
+    "scenario_07_paid_unlimited": { "passed": false, "record": "" },
+    "scenario_08_admin_boundaries": { "passed": false, "record": "" },
+    "scenario_09_environment_recovery": { "passed": false, "record": "" },
+    "scenario_10_appearance": { "passed": false, "record": "" },
+    "scenario_11_motion": { "passed": false, "record": "" },
+    "scenario_12_release_review": { "passed": false, "record": "" },
+    "real_drive_resource_key": { "passed": false, "record": "" },
+    "sandbox_qris_lifecycle": { "passed": false, "record": "" },
+    "private_r2_range_download": { "passed": false, "record": "" },
+    "https_domain": { "passed": false, "record": "" },
+    "smtp_delivery": { "passed": false, "record": "" },
+    "off_host_backup_restore": { "passed": false, "record": "" },
+    "backup_retention_key_custody": { "passed": false, "record": "" },
+    "redacted_monitoring_alert": { "passed": false, "record": "" },
+    "merchant_channel_approval": { "passed": false, "record": "" },
+    "legal_support_approved": { "passed": false, "record": "" },
+    "selected_service_costs": { "passed": false, "record": "" },
+    "final_document_approval": { "passed": false, "record": "" },
+    "publication_authorization": { "passed": false, "record": "" }
+  }
+}

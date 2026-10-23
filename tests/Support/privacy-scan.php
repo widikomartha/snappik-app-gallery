@@ -12,7 +12,8 @@ try {
     }
     $files = array_filter(explode("\0", $process->getOutput()));
     $secrets = [];
-    $names = ['APP_KEY', 'GOOGLE_DRIVE_API_KEY', 'DRIVE_PROOF_FOLDER_URL', 'R2_ACCESS_KEY_ID', 'R2_SECRET_ACCESS_KEY', 'MIDTRANS_SANDBOX_SERVER_KEY'];
+    $names = ['APP_KEY', 'GOOGLE_DRIVE_API_KEY', 'DRIVE_PROOF_FOLDER_URL', 'R2_ACCESS_KEY_ID', 'R2_SECRET_ACCESS_KEY',
+        'R2_BACKUP_ACCESS_KEY_ID', 'R2_BACKUP_SECRET_ACCESS_KEY', 'MIDTRANS_SANDBOX_SERVER_KEY', 'MAIL_PASSWORD', 'MAIL_URL', 'DB_PASSWORD', 'DB_URL'];
     foreach (['.env', '.env.testing'] as $path) {
         if (is_file($path)) {
             $values = Dotenv\Dotenv::parse(file_get_contents($path));

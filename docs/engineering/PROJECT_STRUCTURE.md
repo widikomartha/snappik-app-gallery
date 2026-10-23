@@ -37,6 +37,8 @@ TASK-005 adds `Actions/Selections/ManageSelection.php`, `Services/Access/Selecti
 
 ## Target application layout
 
+TASK-015 adds `Console/Commands/{CheckRelease,CheckOperations,OperationsHeartbeat,BackupDatabase}.php`, `Jobs/OperationsHeartbeat.php`, `Services/Operations/{ReleaseReadiness,OperationsHealth,PublicDocuments,BackupConfiguration,DatabaseBackup}.php`, `Contracts/BackupStorage.php`, `Integrations/ArchiveStorage/R2BackupStorage.php` and `config/{release,backup}.php`. Existing provider bindings and scheduler compose those services; no migration or new package dependency is added. `ops/*.example` contains uninstalled Linux host examples. `docs/operations/` holds the release runbook and an all-false synthetic evidence-manifest example. `tests/Feature/ReleaseOperationsTest.php`, `tests/Integration/{OperationalBackupTest,R2BackupStorageTest}.php`, the updated `BackupRestoreTest`, `tests/Support/BackupTools.php` and `tests/Browser/release.spec.ts` verify local behavior. `playwright.release.config.ts` supplies isolated public-document links; no production fixture route is added. TASK-015 remains local preparation with real environment/provider/approval gates pending.
+
 The application uses Laravel at the workspace root with React/TypeScript through Inertia. Framework-owned files were generated from the official Laravel skeleton. The following remains a placement contract for the complete MVP; compare with the existing-foundation section before assuming a domain path exists. Do not create unused directories or implementations merely to match this tree.
 
 ```text

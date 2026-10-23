@@ -1,0 +1,11 @@
+[Unit]
+Description=Check SnapPik operational freshness each minute
+
+[Timer]
+OnCalendar=*-*-* *:*:30
+AccuracySec=1s
+Persistent=true
+Unit=snappik-monitor.service
+
+[Install]
+WantedBy=timers.target

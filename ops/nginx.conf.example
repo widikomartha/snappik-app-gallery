@@ -1,0 +1,43 @@
+# Uninstalled Linux template. Replace domain, TLS paths and PHP socket after host selection.
+# Include log_format in nginx's http context. Never add request, URI, args, referrer or cookies.
+log_format snappik '$time_iso8601 $status $request_method $body_bytes_sent $request_time';
+
+server {
+    listen 80;
+    server_name snappik.example.invalid;
+    access_log /var/log/nginx/snappik-access.log snappik;
+    error_log /dev/null;
+    return 301 https://snappik.example.invalid$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name snappik.example.invalid;
+    ssl_certificate /etc/snappik/tls/fullchain.pem;
+    ssl_certificate_key /etc/snappik/tls/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    root /srv/snappik/current/public;
+    index index.php;
+    charset utf-8;
+    access_log /var/log/nginx/snappik-access.log snappik;
+    # Stock nginx error entries may include capability/reset paths. Collect safe status/latency
+    # above and application SafeLog instead; require a reviewed scrubber before enabling errors.
+    error_log /dev/null;
+    add_header Strict-Transport-Security "max-age=31536000" always;
+    add_header X-Content-Type-Options nosniff always;
+    # Form/webhook request body protection. Photos are downloaded from Drive, never uploaded here.
+    client_max_body_size 1m;
+
+    location / { try_files $uri $uri/ /index.php?$query_string; }
+    location = /index.php {
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $realpath_root/index.php;
+        fastcgi_param DOCUMENT_ROOT $realpath_root;
+        fastcgi_param HTTPS on;
+        fastcgi_pass unix:/run/php/snappik.sock;
+        fastcgi_buffering off;
+        fastcgi_read_timeout 3600s;
+    }
+    location ~ \.php$ { return 404; }
+    location ~ /\. { deny all; }
+}

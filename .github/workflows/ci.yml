@@ -51,9 +51,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes postgresql-common
           sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
-          sudo apt-get install --yes postgresql-client-18
+          sudo apt-get install --yes postgresql-client-18 gnupg
       - name: Restore an encrypted synthetic backup in isolation
-        run: php vendor/bin/phpunit --filter BackupRestoreTest
+        run: php vendor/bin/phpunit --filter 'BackupRestoreTest|OperationalBackupTest'
         env:
           SNAPPIK_BACKUP_PROOF: '1'
           SNAPPIK_PG_BIN: /usr/lib/postgresql/18/bin
@@ -74,3 +74,4 @@ jobs:
       - run: npm run test:browser:checkout
       - run: npm run test:browser:operations
       - run: npm run test:browser:product
+      - run: npm run test:browser:release

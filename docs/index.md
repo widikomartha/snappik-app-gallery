@@ -6,7 +6,7 @@
 
 **Final document approval: pending.**
 
-**Implementation phase: TASK-001, TASK-003 and TASK-009 complete; TASK-002 full-catalogue ZIP verified, real resource-key fixture pending; TASK-004–TASK-008 implemented with local/synthetic verification, prerequisite acceptance pending; TASK-010–TASK-011 implemented with synthetic verification, real sandbox QRIS/lifecycle acceptance pending; TASK-012–TASK-014 implemented with local/synthetic verification, prerequisite acceptance pending; TASK-015 not started.**
+**Implementation phase: TASK-001, TASK-003 and TASK-009 complete; TASK-002 full-catalogue ZIP verified, real resource-key fixture pending; TASK-004–TASK-008 implemented with local/synthetic verification, prerequisite acceptance pending; TASK-010–TASK-011 implemented with synthetic verification, real sandbox QRIS/lifecycle acceptance pending; TASK-012–TASK-014 implemented with local/synthetic verification, prerequisite acceptance pending; TASK-015 local release preparation implemented, environment/provider/approval gates pending.**
 
 This file owns package status and approval tracking. Baseline approval authorized creation of this English documentation package in `D:\Website\snappik-app-gallery`. It did not approve unseen final documents, authorize deployment, or establish that future software is correct. Change package state to **APPROVED / IMPLEMENTATION READY** only after the owner explicitly approves the final documents and documentation checks pass.
 
@@ -46,6 +46,8 @@ On October 23, 2026, the owner explicitly requested TASK-013, authorizing integr
 
 On October 23, 2026, the owner explicitly requested TASK-014, authorizing targeted security/concurrency/recovery verification, local hardening, synthetic worker interruption, an isolated encrypted database-backup restore and related checks. [TASK-014 evidence](planning/TASK-014_EVIDENCE.md) records the implementation and inspected results. TASK-008/TASK-011/TASK-012/TASK-013 prerequisite acceptance remains open through the existing real resource-key and sandbox-payment gates. This request does not approve the complete documentation package or authorize new live-provider transfers, real messages, live payments, off-host backup provisioning or production publication. Final document approval remains pending.
 
+On October 23, 2026, the owner explicitly requested TASK-015 and confirmed that production host/domain, merchant, SMTP sender, backup destination, monitoring and legal/support details are not selected, choosing local preparation. Release/health checks, queue probes, streaming encrypted backups, safe public-document links, uninstalled Linux templates and an operator handoff are implemented. [TASK-015 evidence](planning/TASK-015_EVIDENCE.md) records local verification; the [release runbook](operations/RELEASE_RUNBOOK.md) records unselected services/costs and outstanding launch gates. TASK-014 prerequisite acceptance, real provider/environment evidence, production payment transport, final document approval and explicit publication approval remain open. This request authorizes local preparation and synthetic verification, not service purchases, credential changes, new provider transfers, real messages, live transactions or deployment.
+
 ## Sources of truth
 
 | Concern | Canonical document |
@@ -58,6 +60,7 @@ On October 23, 2026, the owner explicitly requested TASK-014, authorizing target
 | Reference-site observations and evidence limits | [Fastpik analysis](research/FASTPIK_ANALYSIS.md) |
 | Agent workflow and safeguards | [AGENTS.md](../AGENTS.md) |
 | Repository entry point and verified setup state | [README](../README.md) |
+| Release/operator procedure and unselected service register | [Release runbook](operations/RELEASE_RUNBOOK.md) |
 
 Other documents link to these authorities rather than defining competing versions of their rules. Detailed technical contracts are implementation designs for this review, not claims that the owner specified every database field or retry constant.
 

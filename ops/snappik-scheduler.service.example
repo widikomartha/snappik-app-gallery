@@ -1,0 +1,19 @@
+[Unit]
+Description=SnapPik minute scheduler
+After=network-online.target
+
+[Service]
+User=snappik
+Group=snappik
+WorkingDirectory=/srv/snappik/current
+ExecStart=/usr/bin/php artisan schedule:work --no-interaction
+Restart=always
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+StandardOutput=null
+StandardError=null
+
+[Install]
+WantedBy=multi-user.target

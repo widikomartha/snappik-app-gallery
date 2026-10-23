@@ -15,7 +15,7 @@ const labels: Record<Surface, string> = {
 };
 
 export function Shell({ surface, children }: { surface: Surface; children: ReactNode }) {
-  const { auth } = usePage<{ auth?: { user: { name: string } | null } }>().props;
+  const { auth, publicDocuments } = usePage<{ auth?: { user: { name: string } | null }; publicDocuments?: Partial<Record<'terms' | 'privacy' | 'support', string>> }>().props;
   const logout = useForm({});
   const reduced = useReducedMotion();
   return (
@@ -33,7 +33,13 @@ export function Shell({ surface, children }: { surface: Surface; children: React
         <p className="eyebrow">{labels[surface]}</p>
         {children}
       </motion.main>
-      <footer className="site-footer">SnapPik <span aria-hidden="true">/</span> Pilih. Sampaikan. Selesai.</footer>
+      <footer className="site-footer">SnapPik <span aria-hidden="true">/</span> Pilih. Sampaikan. Selesai.
+        {publicDocuments && Object.keys(publicDocuments).length > 0 && <nav className="actions" aria-label="Informasi dan bantuan">
+          {publicDocuments.terms && <a href={publicDocuments.terms}>Ketentuan layanan</a>}
+          {publicDocuments.privacy && <a href={publicDocuments.privacy}>Privasi</a>}
+          {publicDocuments.support && <a href={publicDocuments.support}>Bantuan</a>}
+        </nav>}
+      </footer>
     </div>
   );
 }

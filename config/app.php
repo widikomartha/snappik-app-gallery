@@ -2,6 +2,8 @@
 
 return [
 
+    'release_commit' => env('SNAPPIK_RELEASE_COMMIT', ''),
+
     /*
     |--------------------------------------------------------------------------
     | Application Name

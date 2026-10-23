@@ -1,6 +1,6 @@
 # SnapPik MVP Backlog
 
-**TASK-001, TASK-003 and TASK-009: COMPLETE. TASK-002: FULL-CATALOGUE ZIP VERIFIED / REAL RESOURCE-KEY FIXTURE PENDING. TASK-004–TASK-008: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING. TASK-010–TASK-011: IMPLEMENTED / REAL SANDBOX QRIS ACCEPTANCE PENDING. TASK-012–TASK-014: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING. TASK-015: NOT STARTED.** Product authority: [PRD](../product/PRD.md). Technical contracts: [Architecture](../engineering/ARCHITECTURE.md). [Package approval state](../index.md).
+**TASK-001, TASK-003 and TASK-009: COMPLETE. TASK-002: FULL-CATALOGUE ZIP VERIFIED / REAL RESOURCE-KEY FIXTURE PENDING. TASK-004–TASK-008: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING. TASK-010–TASK-011: IMPLEMENTED / REAL SANDBOX QRIS ACCEPTANCE PENDING. TASK-012–TASK-014: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING. TASK-015: LOCAL PREPARATION IMPLEMENTED / RELEASE GATES PENDING.** Product authority: [PRD](../product/PRD.md). Technical contracts: [Architecture](../engineering/ARCHITECTURE.md). [Package approval state](../index.md).
 
 These are implementation tasks, not claims that the application exists. Dependencies are hard prerequisites for declaring a task complete; a task may contain a bounded exploratory prototype without advertising it as a finished feature. Technical feasibility proofs precede broad UI work. Production publication remains a separately authorized action.
 
@@ -164,13 +164,14 @@ These are implementation tasks, not claims that the application exists. Dependen
 
 ## TASK-015 — Prepare and authorize public release
 
-- Status: NOT STARTED
+- Status: LOCAL PREPARATION IMPLEMENTED / RELEASE GATES PENDING (explicitly requested October 23, 2026; owner confirmed services unselected and chose local preparation)
 - Requirements: REQ-018, REQ-019, REQ-020
 - Dependencies: TASK-014
 - Scope: production-like configuration, actual host/domain/HTTPS, merchant/channel approval, SMTP, workers/scheduler, private R2, backups, redacted monitoring, legal/support copy and release run instructions derived from implemented commands.
 - Acceptance: all release scenarios below pass; missing merchant approval, credentials, source integration proof, functioning workers, backup recovery, or archive integrity blocks public launch. Use sandbox until the owner explicitly authorizes production publication and any live transaction. Report service costs from actual selected configurations, rather than assuming unlimited plans mean free infrastructure.
 - Out of scope: unauthorized deployment, service purchases, production charges, or declaring the documentation itself a working website.
 - Completion evidence: release checklist with actual environment/commands/results, operator handoff and explicit publication approval.
+- Verification record: [TASK-015 evidence](TASK-015_EVIDENCE.md). Read-only release checks, fresh scheduler/worker probes, private operational alarms, streaming GPG/PostgreSQL backups to independently configured private storage, safe owner-document links and local checks are implemented. The [release runbook](../operations/RELEASE_RUNBOOK.md) supplies uninstalled Linux templates, restore/incident procedures, all twelve scenario gates and an actual-service/cost register with unselected inputs explicitly pending. Real off-host/provider/HTTPS/mail/supervision/retention/alert evidence, production payment transport, TASK-014 prerequisite acceptance and final document/publication approvals remain launch blockers. No public release, purchase, real message or live transaction is claimed.
 
 ## Requirement coverage
 

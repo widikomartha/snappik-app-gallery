@@ -3,12 +3,14 @@
 namespace App\Providers;
 
 use App\Contracts\ArchiveStorage;
+use App\Contracts\BackupStorage;
 use App\Contracts\DeliveryArchiveStorage;
 use App\Contracts\DrivePreviewSource;
 use App\Contracts\DriveRangeSource;
 use App\Contracts\DriveSource;
 use App\Contracts\PaymentGateway;
 use App\Integrations\ArchiveStorage\R2ArchiveStorage;
+use App\Integrations\ArchiveStorage\R2BackupStorage;
 use App\Integrations\GoogleDrive\PublicDriveSource;
 use App\Integrations\Midtrans\SandboxGateway;
 use App\Logging\SafeLogManager;
@@ -37,6 +39,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton('log', fn ($app) => new SafeLogManager($app));
+        $this->app->singleton(BackupStorage::class, fn () => new R2BackupStorage);
         $this->app->singleton(SandboxGateway::class, fn () => new SandboxGateway(new Client, (string) config('billing.server_key'), (string) config('billing.merchant_id')));
         $this->app->singleton(PaymentGateway::class, fn ($app) => $app->make(SandboxGateway::class));
         $this->app->singleton(DriveRequestPacer::class, fn () => new DriveRequestPacer((string) config('drive_proof.api_key'), (int) config('drive_proof.request_interval_ms')));

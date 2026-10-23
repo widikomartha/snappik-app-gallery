@@ -3,10 +3,12 @@
 namespace Tests\Integration;
 
 use App\Actions\Selections\ManageSelection;
+use App\Contracts\BackupStorage;
 use App\Models\Order;
 use App\Models\Project;
 use App\Services\Archives\DeliveryArchives;
 use App\Services\Billing\PaymentProcessing;
+use App\Services\Operations\DatabaseBackup;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Http\Request;
@@ -14,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use Symfony\Component\Process\Process;
+use Tests\Support\BackupTools;
 use Tests\Support\CheckoutFixture as F;
 use Tests\Support\DeliveryFixture;
 use Tests\Support\PaymentFixture as P;
@@ -69,34 +72,35 @@ class BackupRestoreTest extends TestCase
         $dump = tempnam(sys_get_temp_dir(), 'snappik-dump-');
         $encrypted = $dump.'.enc';
         $created = false;
+        $tools = null;
         $env = ['PGHOST' => $db['host'], 'PGPORT' => (string) $db['port'], 'PGUSER' => $db['username'],
             'PGPASSWORD' => $db['password'] ?? '', 'PGDATABASE' => $db['database'], 'PGSSLMODE' => $db['sslmode'] ?? 'prefer'];
         $binary = fn ($tool) => rtrim((string) getenv('SNAPPIK_PG_BIN'), '/\\').DIRECTORY_SEPARATOR.$tool.(PHP_OS_FAMILY === 'Windows' ? '.exe' : '');
         $original = config('database.default');
         try {
             $before = $this->snapshot('pgsql');
-            $process = new Process([$binary('pg_dump'), '--format=custom', '--no-owner', '--no-acl', '--file='.$dump], base_path(), $env, timeout: 60);
-            $this->assertSame(0, $process->run(), 'pg_dump must succeed using the test connection.');
-            $dumpHash = hash_file('sha256', $dump);
-            // This bounded fixture proves authenticated encryption; production backup streaming,
-            // independent key custody, off-host transport and retention are TASK-015 inputs.
-            $key = random_bytes(32);
-            $nonce = random_bytes(12);
-            $ciphertext = openssl_encrypt(file_get_contents($dump), 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $nonce, $tag, 'snappik-backup-v1');
-            $this->assertIsString($ciphertext);
-            file_put_contents($encrypted, $nonce.$tag.$ciphertext);
+            $tools = new BackupTools;
             unlink($dump);
+            app(DatabaseBackup::class)->run(new class($encrypted) implements BackupStorage
+            {
+                public function __construct(private string $target) {}
+
+                public function store(string $key, string $path): void
+                {
+                    if (! copy($path, $this->target)) {
+                        throw new \RuntimeException('Synthetic backup copy failed.');
+                    }
+                }
+            });
             $this->assertFileDoesNotExist($dump);
+            $this->assertFalse($tools->decrypt($encrypted, $tools->root.'/no-key.dump', privateKey: false));
             $bytes = file_get_contents($encrypted);
-            $this->assertFalse(openssl_decrypt(substr($bytes, 28), 'aes-256-gcm', random_bytes(32), OPENSSL_RAW_DATA, substr($bytes, 0, 12), substr($bytes, 12, 16), 'snappik-backup-v1'));
-            $corrupt = $bytes;
-            $corrupt[30] = chr(ord($corrupt[30]) ^ 1);
-            $this->assertFalse(openssl_decrypt(substr($corrupt, 28), 'aes-256-gcm', $key, OPENSSL_RAW_DATA, substr($bytes, 0, 12), substr($bytes, 12, 16), 'snappik-backup-v1'));
-            $plaintext = openssl_decrypt(substr($bytes, 28), 'aes-256-gcm', $key, OPENSSL_RAW_DATA, substr($bytes, 0, 12), substr($bytes, 12, 16), 'snappik-backup-v1');
-            $this->assertIsString($plaintext);
-            file_put_contents($dump, $plaintext);
-            unset($plaintext);
-            $this->assertSame($dumpHash, hash_file('sha256', $dump));
+            $bytes[strlen($bytes) - 5] = chr(ord($bytes[strlen($bytes) - 5]) ^ 1);
+            file_put_contents($tools->root.'/corrupt.gpg', $bytes);
+            $this->assertFalse($tools->decrypt($tools->root.'/corrupt.gpg', $tools->root.'/corrupt.dump'));
+            file_put_contents($tools->root.'/truncated.gpg', substr($bytes, 0, -40));
+            $this->assertFalse($tools->decrypt($tools->root.'/truncated.gpg', $tools->root.'/truncated.dump'));
+            $this->assertTrue($tools->decrypt($encrypted, $dump));
             DB::connection('pgsql')->unprepared('CREATE DATABASE "'.$target.'"');
             $created = true;
             $process = new Process([$binary('pg_restore'), '--exit-on-error', '--single-transaction', '--no-owner', '--no-acl', '--dbname='.$target, $dump], base_path(), $env, timeout: 60);
@@ -141,6 +145,7 @@ class BackupRestoreTest extends TestCase
                     unlink($file);
                 }
             }
+            $tools?->cleanup();
         }
     }
 

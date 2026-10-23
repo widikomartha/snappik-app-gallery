@@ -6,7 +6,7 @@ SnapPik is a subscription application for photographer photo selection and finis
 
 Laravel 13, PHP 8.4+, React 19, TypeScript, Inertia 3, Vite 8, Motion 14 and PostgreSQL are configured at the repository root. Both package managers have real lockfiles. The skeleton was generated from official `laravel/laravel` v13.11.0, with the official Inertia adapter added separately to keep authentication workflows in TASK-003.
 
-The owner requested TASK-001–TASK-007 on October 22, 2026, and configured and authorized the recorded TASK-002 provider smoke testing. TASK-004–TASK-008 acceptance remains dependent on TASK-002's real resource-key fixture. The owner requested TASK-008–TASK-014 on October 23, 2026, and chose synthetic checkout verification because a sandbox merchant is not configured. TASK-013 integrates responsive presentation, appearance, navigation and state feedback across the implemented product flows; TASK-014 verifies and hardens security, concurrency and local recovery. Prerequisite acceptance remains open. Final approval of the entire documentation package remains pending in the [index](docs/index.md). Provider test access does not imply production deployment or complete real-provider product acceptance.
+The owner requested TASK-001–TASK-007 on October 22, 2026, and configured and authorized the recorded TASK-002 provider smoke testing. TASK-004–TASK-008 acceptance remains dependent on TASK-002's real resource-key fixture. The owner requested TASK-008–TASK-015 on October 23, 2026, and chose synthetic checkout verification because a sandbox merchant is not configured. TASK-013 integrates responsive presentation, appearance, navigation and state feedback across the implemented product flows; TASK-014 verifies and hardens security, concurrency and local recovery. TASK-015 prepares release checks, encrypted backups and operator handoff locally; the owner confirmed production services are unselected. Prerequisite acceptance and public-release gates remain open. Final approval of the entire documentation package remains pending in the [index](docs/index.md). Provider test access does not imply production deployment or complete real-provider product acceptance.
 
 ## Prerequisites
 
@@ -67,6 +67,7 @@ npm run test:browser:vouchers
 npm run test:browser:checkout
 npm run test:browser:operations
 npm run test:browser:product
+npm run test:browser:release
 ```
 
 Playwright starts a local Artisan server when needed. It uses the development `.env` database and synthetic preview pages, without creating accounts. Do not run it against a production server. Screenshots are generated under ignored `test-results/`. CI installs locked dependencies, uses an isolated PostgreSQL 18 service with synthetic credentials, and runs the same checks without deployment or external-service secrets.
@@ -79,13 +80,13 @@ The initial Windows verification used portable PHP, Composer, PostgreSQL, and Ch
 
 TASK-014 adds cross-boundary adversarial checks, real process interruption/restart tests and an isolated encrypted PostgreSQL backup-restore proof. It also filters application logs to safe operational identifiers, exception classes and numeric provider statuses, keeps CSP enabled outside local mode even with a Vite development marker, and corrects the immutable-payment trigger with an additive migration. Apply migrations before running the application. [TASK-014 evidence](docs/planning/TASK-014_EVIDENCE.md) records the actual results; prerequisite acceptance remains open.
 
-Run backend/database checks sequentially against the dedicated `_test` database. The opt-in restore needs PostgreSQL 18 `pg_dump`/`pg_restore` and `CREATEDB` permission on the **test** role. It creates a random `snappik_restore_*_test` database, restores only synthetic data, and removes that database and its temporary dump/encrypted files in `finally`. It does not restore over an existing database. Set `SNAPPIK_PG_BIN` to your PostgreSQL binary directory:
+Run backend/database checks sequentially against the dedicated `_test` database. The opt-in restore needs PostgreSQL 18 `pg_dump`/`pg_restore`, Bash, GnuPG 2.2+ and `CREATEDB` permission on the **test** role. TASK-015 uses the implemented streaming encryption pipeline with disposable synthetic keys and a local backup capture. It creates a random `snappik_restore_*_test` database, restores only synthetic data, and removes that database, temporary keys and dump/encrypted files in `finally`. It does not restore over an existing database. Set `SNAPPIK_PG_BIN` to your PostgreSQL binary directory:
 
 ```powershell
 php artisan migrate --env=testing --no-interaction
 $env:SNAPPIK_BACKUP_PROOF='1'
 $env:SNAPPIK_PG_BIN=(Join-Path $PWD '.local-tools/postgresql/pgsql/bin')
-php vendor/bin/phpunit --filter BackupRestoreTest
+php vendor/bin/phpunit --filter 'BackupRestoreTest|OperationalBackupTest'
 Remove-Item Env:\SNAPPIK_BACKUP_PROOF
 php vendor/bin/phpunit
 php tests/Support/privacy-scan.php storage/logs/task014-privacy.log
@@ -93,7 +94,23 @@ php tests/Support/privacy-scan.php storage/logs/task014-privacy.log
 
 The example binary directory is the ignored portable installation used locally; use your actual installation elsewhere. Without opt-in, the ordinary suite explicitly skips the backup proof and the existing above-4-GiB proof. CI includes separate required opt-in steps and the source/log scan; hosted CI has not been run here.
 
-The privacy scan reads nonignored Git source plus explicitly supplied `.log` files, detects configured provider secrets and selected credential/capability signatures, and reports locations/categories without matched values. `LogPrivacyTest` generates the representative log above. This is a bounded check, not certification of all secret formats or historical logs. Application logging drops arbitrary free text, exception messages/traces, nested request/model data and processor extras; use persisted owner diagnostics and retained IDs to investigate domain failures. Reverse-proxy/access logs, external monitoring redaction, scheduled encrypted off-host backups, independent key custody and retention still require TASK-015 environment verification. The local bounded-fixture encryption proof is not a production backup scheduler or storage service.
+The privacy scan reads nonignored Git source plus explicitly supplied `.log` files, detects configured provider/backup/SMTP/database secrets and selected credential/capability/private-key signatures, and reports locations/categories without matched values. `LogPrivacyTest` generates the representative log above. This is a bounded check, not certification of all secret formats or historical logs. Application logging drops arbitrary free text, exception messages/traces, nested request/model data and processor extras; use persisted owner diagnostics and retained IDs to investigate domain failures. TASK-015 implements daily streaming encrypted backups and private health checks; off-host storage, reverse-proxy/access logs, external alerts, independent key custody, retention and intended-environment restore remain unverified.
+
+## Local release preparation
+
+TASK-015 is **locally prepared, not approved for public launch**. Production services, domain, legal/support pages and actual costs are unselected. Follow the [release runbook](docs/operations/RELEASE_RUNBOOK.md) for the checklist, uninstalled Linux Nginx/systemd examples, backup/restore and incident handoff. [TASK-015 evidence](docs/planning/TASK-015_EVIDENCE.md) records the local results.
+
+```powershell
+php artisan snappik:release-check --json
+php artisan snappik:operations-check --json
+php artisan schedule:list
+```
+
+Release checks contact no providers or recipients and do not authorize publication. Exit 1 is expected locally: the current payment adapter is sandbox-only and external acceptance/approval gates are pending. Optional private evidence records must match the build commit and origin and be reviewed within 24 hours. The operations command reports only fixed booleans; five-minute scheduler/worker probes and 26-hour backup freshness detect missing work. No public detailed health endpoint or outbound alert is installed.
+
+Backups are disabled by default. `snappik:backup` requires explicit backup configuration, a pinned GPG public encryption key and a private R2 bucket with independent credentials; the application host must not retain the private decryption key. Its enabled schedule is 02:00 UTC / 10:00 WITA. No backup deletion is implemented; the operator must configure separate retention/orphan policies and prove independent readback/restoration before launch. See `.env.example` and the runbook. The Windows synthetic proof defaults to the installed Git Bash/GPG paths; set `SNAPPIK_BACKUP_BASH` and `SNAPPIK_GPG` if they differ. These tools are operational prerequisites, not new Composer/npm dependencies.
+
+`npm run test:browser:release` starts an isolated loopback server on port 18773 using `snappik_test`, array mail/session/cache and synthetic legal/support URLs. It checks the public/auth footer in both themes at 360px/1440px without opening those external pages. Run it after test migrations and separately from database-refreshing tests.
 
 ## Integrated appearance and interaction
 
