@@ -59,7 +59,9 @@ class PublicDriveSourceTest extends TestCase
             'https://evil.test/image', 'https://lh3.googleusercontent.com.evil.test/image',
             'https://lh3.googleusercontent.com@127.0.0.1/image', 'https://user@lh3.googleusercontent.com/image',
             'https://lh3.googleusercontent.com:443/image', 'https://lh3.googleusercontent.com/image#fragment',
-            'file:///etc/passwd', 'https://127.0.0.1/image']);
+            'file:///etc/passwd', 'https://127.0.0.1/image', 'https://169.254.169.254/latest/meta-data/',
+            'https://[::1]/image', 'https://lh3.googleusercontent.com./image',
+            'https://lh3.googleusercontent.com%2e.evil.test/image', 'https://lh3.googleusercontent.com\\@evil.test/image']);
     }
 
     #[DataProvider('unsafeThumbnails')]
@@ -108,7 +110,10 @@ class PublicDriveSourceTest extends TestCase
             'https://drive.google.com.evil.test/drive/folders/root', 'https://user@drive.google.com/drive/folders/root',
             'https://drive.google.com:443/drive/folders/root', 'https://drive.google.com/file/d/photo/view',
             'https://drive.google.com/drive/folders/root?resourcekey[]=bad', 'file:///etc/passwd',
-            'https://drive.google.com/drive/folders/root%2fother']);
+            'https://drive.google.com/drive/folders/root%2fother', 'https://169.254.169.254/drive/folders/root',
+            'https://[::1]/drive/folders/root', 'https://drive.google.com./drive/folders/root',
+            'https://drive.google.com\\@evil.test/drive/folders/root', 'https://drive.google.com/drive/folders/root#fragment',
+            'https://drive.google.com/drive/folders/root?resourcekey=%0d%0aX-Test:bad']);
     }
 
     #[DataProvider('unsafeUrls')]

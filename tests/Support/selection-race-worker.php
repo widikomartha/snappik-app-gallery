@@ -4,6 +4,7 @@ use App\Actions\Selections\ManageSelection;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 // Test-only process entry point. Capability/payload arrives on stdin and is never printed.
@@ -18,7 +19,7 @@ $input = json_decode(stream_get_contents(STDIN), true, flags: JSON_THROW_ON_ERRO
 try {
     $request = Request::create('/', 'POST');
     $request->setLaravelSession($app->make('session')->driver());
-    echo "ready\n";
+    echo 'ready:'.DB::selectOne('select pg_backend_pid() as pid')->pid."\n";
     flush();
     $app->make(ManageSelection::class)->client($request, $input['capability'], $input['data'], $input['confirm']);
     echo "200\n";

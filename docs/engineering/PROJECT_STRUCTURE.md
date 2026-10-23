@@ -154,6 +154,12 @@ TASK-011 adds `Actions/Billing/ApplyPayment.php`, `Models/PaymentEvent.php`, `Se
 
 `tests/Feature/ProductPresentationTest.php`, `tests/Browser/product.spec.ts`, the extended foundation/selection browser checks and `playwright.product.config.ts` cover local integration. The product server reuses the existing CLI-only synthetic delivery router; no fixture route is added to the application. `test:browser:product` is included in CI. [TASK-013 evidence](../planning/TASK-013_EVIDENCE.md) owns verification and acceptance limits.
 
+## Implemented TASK-014 verification and hardening
+
+`app/Logging/{SafeLog,SafeLogManager}.php` owns application log projection, bound in `AppServiceProvider`; `SecurityHeaders` owns the production CSP safeguard. The additive `database/migrations/2026_10_23_600000_harden_payment_history_trigger.php` corrects shared immutable-ledger trigger field resolution. No new package dependency or production service is introduced.
+
+`tests/Feature/{AdversarialBoundaryTest,LogPrivacyTest,PrivacyScanTest,ProductionHeadersTest}.php` tests cross-boundary attacks, formatted logging/scanner behavior and CSP with a synthetic hot marker. `tests/Integration/{RecoveryBoundaryTest,BackupRestoreTest}.php` and `tests/Support/recovery-process-worker.php` contain guarded synthetic process/restore checks; existing selection, archive and Drive adapter tests extend race/URL/integrity coverage. `tests/Support/{PrivacyScan.php,privacy-scan.php}` provides a source/log scan with category/location-only output. CI adds required scan and isolated-restore steps alongside its existing ZIP64 proof. Opt-in restore tooling stays test-only; no production backup command is claimed.
+
 ## Bootstrap boundary
 
 TASK-001 establishes package manifests/lockfiles, environment examples, local setup and safe CI. [README](../../README.md) owns supported commands; Backlog and its linked evidence own actual verification results. Additional integrated release evidence remains future work.

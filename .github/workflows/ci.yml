@@ -44,6 +44,19 @@ jobs:
       - run: npm run build
       - run: npm test
       - run: composer test
+      - name: Scan source and representative application logs
+        run: php tests/Support/privacy-scan.php storage/logs/task014-privacy.log
+      - name: Install PostgreSQL 18 backup tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install --yes postgresql-client-18
+      - name: Restore an encrypted synthetic backup in isolation
+        run: php vendor/bin/phpunit --filter BackupRestoreTest
+        env:
+          SNAPPIK_BACKUP_PROOF: '1'
+          SNAPPIK_PG_BIN: /usr/lib/postgresql/18/bin
       - name: Stream and extract one ZIP64 archive above 4 GiB
         run: php -d memory_limit=128M vendor/bin/phpunit --filter LargeZipProofTest
         env:

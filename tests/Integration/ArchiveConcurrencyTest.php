@@ -108,6 +108,17 @@ class ArchiveConcurrencyTest extends TestCase
             $this->assertSame(0, $restarted->run(), $restarted->getErrorOutput());
             $this->assertSame('ready', $job->fresh()->state);
             $this->assertNotSame($key, $job->fresh()->object_key);
+            $reader = new \ZipArchive;
+            $this->assertTrue($reader->open($disk->path($job->fresh()->object_key)));
+            try {
+                $this->assertSame(2, $reader->numFiles);
+                for ($index = 0; $index < $reader->numFiles; $index++) {
+                    $this->assertSame('original-one', $reader->getFromIndex($index));
+                    $this->assertSame(hash('crc32b', 'original-one'), sprintf('%08x', $reader->statIndex($index)['crc']));
+                }
+            } finally {
+                $reader->close();
+            }
         } finally {
             if ($child->isRunning()) {
                 $child->stop(0);

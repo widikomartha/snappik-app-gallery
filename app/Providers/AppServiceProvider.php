@@ -11,6 +11,7 @@ use App\Contracts\PaymentGateway;
 use App\Integrations\ArchiveStorage\R2ArchiveStorage;
 use App\Integrations\GoogleDrive\PublicDriveSource;
 use App\Integrations\Midtrans\SandboxGateway;
+use App\Logging\SafeLogManager;
 use App\Models\DriveProofRun;
 use App\Models\Project;
 use App\Models\User;
@@ -35,6 +36,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->singleton('log', fn ($app) => new SafeLogManager($app));
         $this->app->singleton(SandboxGateway::class, fn () => new SandboxGateway(new Client, (string) config('billing.server_key'), (string) config('billing.merchant_id')));
         $this->app->singleton(PaymentGateway::class, fn ($app) => $app->make(SandboxGateway::class));
         $this->app->singleton(DriveRequestPacer::class, fn () => new DriveRequestPacer((string) config('drive_proof.api_key'), (int) config('drive_proof.request_interval_ms')));

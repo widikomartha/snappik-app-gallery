@@ -2,6 +2,8 @@
 
 namespace Tests\Integration;
 
+use App\Actions\Projects\ManageProject;
+use App\Actions\Selections\ManageSelection;
 use App\Models\AccountAccess;
 use App\Models\Project;
 use App\Models\User;
@@ -41,6 +43,17 @@ class SelectionConcurrencyTest extends TestCase
             }
             foreach ($processes as $process) {
                 $this->assertTrue($process->waitUntil(fn ($type, $output) => str_contains($output, 'ready')), 'Independent selection worker started.');
+                preg_match('/ready:(\d+)/', $process->getOutput(), $match);
+                $waiting = false;
+                for ($attempt = 0; $attempt < 200; $attempt++) {
+                    DB::select('select pg_stat_clear_snapshot()');
+                    if (DB::selectOne('select wait_event_type from pg_stat_activity where pid = ?', [$match[1]])?->wait_event_type === 'Lock') {
+                        $waiting = true;
+                        break;
+                    }
+                    usleep(10000);
+                }
+                $this->assertTrue($waiting, 'Selection worker must contend on a real PostgreSQL lock before the gate change.');
             }
             if ($beforeRelease) {
                 $beforeRelease();
@@ -49,7 +62,7 @@ class SelectionConcurrencyTest extends TestCase
             $results = [];
             foreach ($processes as $process) {
                 $this->assertSame(0, $process->wait(), 'Selection worker completed with sanitized output.');
-                $results[] = trim(str_replace("ready\n", '', str_replace("\r", '', $process->getOutput())));
+                $results[] = trim(preg_replace('/ready:\d+\s*/', '', $process->getOutput()));
             }
             sort($results);
 
@@ -139,5 +152,31 @@ class SelectionConcurrencyTest extends TestCase
         $this->assertSame(['404', '404'], $this->race($project, [$operation, $operation],
             fn () => $project->modules()->where('type', 'selection')->update(['deadline' => now()])));
         $this->assertDatabaseCount('choices', 1);
+    }
+
+    public function test_waiting_old_epoch_writes_cannot_modify_a_photographer_reopened_selection(): void
+    {
+        $project = $this->selectionProject();
+        $this->choose($project);
+        $confirm = array_diff_key($this->selectionPayload($project), ['file_id' => true, 'selected' => true]);
+        $this->postJson('/g/'.$project->share_token.'/selection/confirm', $confirm)->assertOk();
+        $operation = ['confirm' => false, 'data' => $this->selectionPayload($project, 'two')];
+        $reopen = ['epoch' => $project->selection_epoch, 'version' => $project->selection_version];
+        $this->assertSame(['409', '409'], $this->race($project, [$operation, $operation],
+            fn () => app(ManageSelection::class)->reopen($project->photographer, $project->id, $reopen)));
+        $this->assertSame(2, $project->fresh()->selection_epoch);
+        $this->assertDatabaseCount('choices', 1);
+        $this->assertDatabaseCount('confirmation_choices', 1);
+        $this->assertDatabaseCount('selection_confirmations', 1);
+    }
+
+    public function test_waiting_requests_revalidate_capability_after_rotation_commits(): void
+    {
+        $project = $this->selectionProject();
+        $operation = ['confirm' => false, 'data' => $this->selectionPayload($project)];
+        $this->assertSame(['404', '404'], $this->race($project, [$operation, $operation],
+            fn () => app(ManageProject::class)->command($project->photographer, $project->id, $project->version, 'rotate')));
+        $this->assertDatabaseCount('choices', 0);
+        $this->assertDatabaseCount('mutation_receipts', 0);
     }
 }

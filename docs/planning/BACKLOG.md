@@ -1,6 +1,6 @@
 # SnapPik MVP Backlog
 
-**TASK-001, TASK-003 and TASK-009: COMPLETE. TASK-002: FULL-CATALOGUE ZIP VERIFIED / REAL RESOURCE-KEY FIXTURE PENDING. TASK-004–TASK-008: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING. TASK-010–TASK-011: IMPLEMENTED / REAL SANDBOX QRIS ACCEPTANCE PENDING. TASK-012–TASK-013: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING. TASK-014–TASK-015: NOT STARTED.** Product authority: [PRD](../product/PRD.md). Technical contracts: [Architecture](../engineering/ARCHITECTURE.md). [Package approval state](../index.md).
+**TASK-001, TASK-003 and TASK-009: COMPLETE. TASK-002: FULL-CATALOGUE ZIP VERIFIED / REAL RESOURCE-KEY FIXTURE PENDING. TASK-004–TASK-008: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING. TASK-010–TASK-011: IMPLEMENTED / REAL SANDBOX QRIS ACCEPTANCE PENDING. TASK-012–TASK-014: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING. TASK-015: NOT STARTED.** Product authority: [PRD](../product/PRD.md). Technical contracts: [Architecture](../engineering/ARCHITECTURE.md). [Package approval state](../index.md).
 
 These are implementation tasks, not claims that the application exists. Dependencies are hard prerequisites for declaring a task complete; a task may contain a bounded exploratory prototype without advertising it as a finished feature. Technical feasibility proofs precede broad UI work. Production publication remains a separately authorized action.
 
@@ -153,13 +153,14 @@ These are implementation tasks, not claims that the application exists. Dependen
 
 ## TASK-014 — Verify security, concurrency and recoverability
 
-- Status: NOT STARTED
+- Status: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING (explicitly requested October 23, 2026; TASK-008/TASK-011/TASK-012/TASK-013 acceptance remains open)
 - Requirements: REQ-002, REQ-003, REQ-005, REQ-007, REQ-008, REQ-011, REQ-012, REQ-013, REQ-014, REQ-017, REQ-019
 - Dependencies: TASK-008, TASK-011, TASK-012, TASK-013
 - Scope: targeted cross-boundary adversarial tests, aggregate races, unsafe-source URL rejection, memory/worker restart behavior, cleanup, log redaction and isolated database-backup restore.
 - Acceptance: attempt cross-tenant project/file/archive/order access, arbitrary fetch destinations, stale epoch reuse, price manipulation, duplicate callbacks and last-slot races. Each preserves its documented invariant. Worker/process restart cannot publish partial content or duplicate money. A restored backup retains coherent choices/grants/voucher accounting; 24-hour cleanup cannot delete backup objects. Secret/capability scans cover source and representative logs.
 - Out of scope: a claim of third-party security certification or unlimited physical provider capacity.
 - Completion evidence: recorded reproducible negative/race/recovery checks, large-catalogue/stream results and an isolated restoration record with defects fixed.
+- Verification record: [TASK-014 evidence](TASK-014_EVIDENCE.md). Cross-boundary identifier/money/source attacks, lock-wait epoch/capability races, actual import/ZIP/payment process interruption, bounded catalogue/ZIP64 checks, formatted application/emergency log redaction, source/log scanning and an authenticated encrypted PostgreSQL dump/isolated restore are verified locally with synthetic providers. The restore retains all 35 application tables, choices/history, grants, held/consumed/released voucher accounting and durable jobs; replay and immutable-ledger checks pass. Logging, production CSP and a shared payment-history trigger were hardened. Existing provider/prerequisite acceptance and TASK-015 deployment/backup operations remain open; no new live-provider transfer, charge, message or publication is claimed.
 
 ## TASK-015 — Prepare and authorize public release
 

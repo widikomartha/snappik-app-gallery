@@ -6,7 +6,7 @@ SnapPik is a subscription application for photographer photo selection and finis
 
 Laravel 13, PHP 8.4+, React 19, TypeScript, Inertia 3, Vite 8, Motion 14 and PostgreSQL are configured at the repository root. Both package managers have real lockfiles. The skeleton was generated from official `laravel/laravel` v13.11.0, with the official Inertia adapter added separately to keep authentication workflows in TASK-003.
 
-The owner requested TASK-001–TASK-007 on October 22, 2026, and configured and authorized the recorded TASK-002 provider smoke testing. TASK-004–TASK-008 acceptance remains dependent on TASK-002's real resource-key fixture. The owner requested TASK-008–TASK-013 on October 23, 2026, and chose synthetic checkout verification because a sandbox merchant is not configured. TASK-013 integrates responsive presentation, appearance, navigation and state feedback across the implemented product flows; prerequisite acceptance remains open. Final approval of the entire documentation package remains pending in the [index](docs/index.md). Provider test access does not imply production deployment or complete real-provider product acceptance.
+The owner requested TASK-001–TASK-007 on October 22, 2026, and configured and authorized the recorded TASK-002 provider smoke testing. TASK-004–TASK-008 acceptance remains dependent on TASK-002's real resource-key fixture. The owner requested TASK-008–TASK-014 on October 23, 2026, and chose synthetic checkout verification because a sandbox merchant is not configured. TASK-013 integrates responsive presentation, appearance, navigation and state feedback across the implemented product flows; TASK-014 verifies and hardens security, concurrency and local recovery. Prerequisite acceptance remains open. Final approval of the entire documentation package remains pending in the [index](docs/index.md). Provider test access does not imply production deployment or complete real-provider product acceptance.
 
 ## Prerequisites
 
@@ -74,6 +74,26 @@ Playwright starts a local Artisan server when needed. It uses the development `.
 The separate `test:browser:auth` command starts a fresh loopback server on port 18763 using `.env.testing`, forces `DB_DATABASE=snappik_test`, database sessions/cache and in-memory mail, and exercises synthetic registration/resend/logout/login. Run it after PHPUnit, not concurrently with database-refreshing tests. It leaves synthetic test accounts in that disposable database until the next test refresh. No existing server is reused. The ordinary browser suite skips that write scenario; it still checks account form layout and invalid-login/recovery feedback. PostgreSQL verification/reset races use separate PHP processes in the backend suite.
 
 The initial Windows verification used portable PHP, Composer, PostgreSQL, and Chromium under ignored `.local-tools/`; these are machine-local tools, not shipped dependencies. See [TASK-001 evidence](docs/planning/TASK-001_EVIDENCE.md) for exact runtime versions, commands, outcomes and limits.
+
+## Security and recovery verification
+
+TASK-014 adds cross-boundary adversarial checks, real process interruption/restart tests and an isolated encrypted PostgreSQL backup-restore proof. It also filters application logs to safe operational identifiers, exception classes and numeric provider statuses, keeps CSP enabled outside local mode even with a Vite development marker, and corrects the immutable-payment trigger with an additive migration. Apply migrations before running the application. [TASK-014 evidence](docs/planning/TASK-014_EVIDENCE.md) records the actual results; prerequisite acceptance remains open.
+
+Run backend/database checks sequentially against the dedicated `_test` database. The opt-in restore needs PostgreSQL 18 `pg_dump`/`pg_restore` and `CREATEDB` permission on the **test** role. It creates a random `snappik_restore_*_test` database, restores only synthetic data, and removes that database and its temporary dump/encrypted files in `finally`. It does not restore over an existing database. Set `SNAPPIK_PG_BIN` to your PostgreSQL binary directory:
+
+```powershell
+php artisan migrate --env=testing --no-interaction
+$env:SNAPPIK_BACKUP_PROOF='1'
+$env:SNAPPIK_PG_BIN=(Join-Path $PWD '.local-tools/postgresql/pgsql/bin')
+php vendor/bin/phpunit --filter BackupRestoreTest
+Remove-Item Env:\SNAPPIK_BACKUP_PROOF
+php vendor/bin/phpunit
+php tests/Support/privacy-scan.php storage/logs/task014-privacy.log
+```
+
+The example binary directory is the ignored portable installation used locally; use your actual installation elsewhere. Without opt-in, the ordinary suite explicitly skips the backup proof and the existing above-4-GiB proof. CI includes separate required opt-in steps and the source/log scan; hosted CI has not been run here.
+
+The privacy scan reads nonignored Git source plus explicitly supplied `.log` files, detects configured provider secrets and selected credential/capability signatures, and reports locations/categories without matched values. `LogPrivacyTest` generates the representative log above. This is a bounded check, not certification of all secret formats or historical logs. Application logging drops arbitrary free text, exception messages/traces, nested request/model data and processor extras; use persisted owner diagnostics and retained IDs to investigate domain failures. Reverse-proxy/access logs, external monitoring redaction, scheduled encrypted off-host backups, independent key custody and retention still require TASK-015 environment verification. The local bounded-fixture encryption proof is not a production backup scheduler or storage service.
 
 ## Integrated appearance and interaction
 

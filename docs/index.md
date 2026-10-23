@@ -6,7 +6,7 @@
 
 **Final document approval: pending.**
 
-**Implementation phase: TASK-001, TASK-003 and TASK-009 complete; TASK-002 full-catalogue ZIP verified, real resource-key fixture pending; TASK-004–TASK-008 implemented with local/synthetic verification, prerequisite acceptance pending; TASK-010–TASK-011 implemented with synthetic verification, real sandbox QRIS/lifecycle acceptance pending; TASK-012–TASK-013 implemented with local/synthetic verification, prerequisite acceptance pending; TASK-014–TASK-015 not started.**
+**Implementation phase: TASK-001, TASK-003 and TASK-009 complete; TASK-002 full-catalogue ZIP verified, real resource-key fixture pending; TASK-004–TASK-008 implemented with local/synthetic verification, prerequisite acceptance pending; TASK-010–TASK-011 implemented with synthetic verification, real sandbox QRIS/lifecycle acceptance pending; TASK-012–TASK-014 implemented with local/synthetic verification, prerequisite acceptance pending; TASK-015 not started.**
 
 This file owns package status and approval tracking. Baseline approval authorized creation of this English documentation package in `D:\Website\snappik-app-gallery`. It did not approve unseen final documents, authorize deployment, or establish that future software is correct. Change package state to **APPROVED / IMPLEMENTATION READY** only after the owner explicitly approves the final documents and documentation checks pass.
 
@@ -43,6 +43,8 @@ On October 23, 2026, the owner explicitly requested TASK-011, authorizing durabl
 On October 23, 2026, the owner explicitly requested TASK-012, authorizing platform overview/account/order/job screens, versioned Pro prices and account suspension, safe retries, audited changes, local migration and checks. [TASK-012 evidence](planning/TASK-012_EVIDENCE.md) records implementation and local/synthetic verification. TASK-006/TASK-008/TASK-011 prerequisite acceptance remains open; this request does not approve the complete document package, authorize new live-provider transfers, real messages, live payments or production publication. Final document approval remains pending.
 
 On October 23, 2026, the owner explicitly requested TASK-013, authorizing integrated responsive product flows, Indonesian copy, shared appearance/motion/accessibility work and local checks. [TASK-013 evidence](planning/TASK-013_EVIDENCE.md) records implementation and local/synthetic verification. TASK-006/TASK-008/TASK-011/TASK-012 prerequisite acceptance remains open through the real resource-key and sandbox payment gates. This request does not approve the complete documentation package or authorize new provider transfers, real messages, live payments or production publication. Final document approval remains pending.
+
+On October 23, 2026, the owner explicitly requested TASK-014, authorizing targeted security/concurrency/recovery verification, local hardening, synthetic worker interruption, an isolated encrypted database-backup restore and related checks. [TASK-014 evidence](planning/TASK-014_EVIDENCE.md) records the implementation and inspected results. TASK-008/TASK-011/TASK-012/TASK-013 prerequisite acceptance remains open through the existing real resource-key and sandbox-payment gates. This request does not approve the complete documentation package or authorize new live-provider transfers, real messages, live payments, off-host backup provisioning or production publication. Final document approval remains pending.
 
 ## Sources of truth
 
