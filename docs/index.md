@@ -6,7 +6,7 @@
 
 **Final document approval: pending.**
 
-**Implementation phase: TASK-001, TASK-003 and TASK-009 complete; TASK-002 full-catalogue ZIP verified, real resource-key fixture pending; TASK-004–TASK-008 implemented with local/synthetic verification, prerequisite acceptance pending; TASK-010–TASK-011 implemented with synthetic verification, real sandbox QRIS/lifecycle acceptance pending; TASK-012–TASK-015 not started.**
+**Implementation phase: TASK-001, TASK-003 and TASK-009 complete; TASK-002 full-catalogue ZIP verified, real resource-key fixture pending; TASK-004–TASK-008 implemented with local/synthetic verification, prerequisite acceptance pending; TASK-010–TASK-011 implemented with synthetic verification, real sandbox QRIS/lifecycle acceptance pending; TASK-012 implemented with local/synthetic verification, prerequisite acceptance pending; TASK-013–TASK-015 not started.**
 
 This file owns package status and approval tracking. Baseline approval authorized creation of this English documentation package in `D:\Website\snappik-app-gallery`. It did not approve unseen final documents, authorize deployment, or establish that future software is correct. Change package state to **APPROVED / IMPLEMENTATION READY** only after the owner explicitly approves the final documents and documentation checks pass.
 
@@ -39,6 +39,8 @@ On October 23, 2026, the owner explicitly requested TASK-009, authorizing owner 
 On October 23, 2026, the owner explicitly requested TASK-010, authorizing server-priced checkout, immutable Pro/order snapshots, atomic voucher holds, the Midtrans sandbox adapter, resume/recovery, local migrations and checks. The owner confirmed that a sandbox merchant is not configured and requested implementation with synthetic provider verification. [TASK-010 evidence](planning/TASK-010_EVIDENCE.md) records the delivered boundary and remaining real sandbox QRIS demonstration. Payment grants, callbacks and verified hold release remain TASK-011. This request does not approve the entire document package or authorize live payments, real messages or production publication. Final document approval remains pending.
 
 On October 23, 2026, the owner explicitly requested TASK-011, authorizing durable sandbox callback intake/outbox, authoritative status verification, grants/redemptions, verified reservation release, reconciliation, local migration and checks. [TASK-011 evidence](planning/TASK-011_EVIDENCE.md) records implementation and local/synthetic verification. The previously confirmed missing sandbox merchant remains the real lifecycle acceptance blocker, alongside TASK-010's prerequisite acceptance. This request does not approve the entire document package or authorize live payments, real messages or production publication. Final document approval remains pending.
+
+On October 23, 2026, the owner explicitly requested TASK-012, authorizing platform overview/account/order/job screens, versioned Pro prices and account suspension, safe retries, audited changes, local migration and checks. [TASK-012 evidence](planning/TASK-012_EVIDENCE.md) records implementation and local/synthetic verification. TASK-006/TASK-008/TASK-011 prerequisite acceptance remains open; this request does not approve the complete document package, authorize new live-provider transfers, real messages, live payments or production publication. Final document approval remains pending.
 
 ## Sources of truth
 

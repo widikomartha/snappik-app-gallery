@@ -59,3 +59,4 @@ jobs:
       - run: npm run test:browser:archives
       - run: npm run test:browser:vouchers
       - run: npm run test:browser:checkout
+      - run: npm run test:browser:operations

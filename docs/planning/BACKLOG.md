@@ -1,6 +1,6 @@
 # SnapPik MVP Backlog
 
-**TASK-001, TASK-003 and TASK-009: COMPLETE. TASK-002: FULL-CATALOGUE ZIP VERIFIED / REAL RESOURCE-KEY FIXTURE PENDING. TASK-004–TASK-008: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING. TASK-010–TASK-011: IMPLEMENTED / REAL SANDBOX QRIS ACCEPTANCE PENDING. TASK-012–TASK-015: NOT STARTED.** Product authority: [PRD](../product/PRD.md). Technical contracts: [Architecture](../engineering/ARCHITECTURE.md). [Package approval state](../index.md).
+**TASK-001, TASK-003 and TASK-009: COMPLETE. TASK-002: FULL-CATALOGUE ZIP VERIFIED / REAL RESOURCE-KEY FIXTURE PENDING. TASK-004–TASK-008: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING. TASK-010–TASK-011: IMPLEMENTED / REAL SANDBOX QRIS ACCEPTANCE PENDING. TASK-012: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING. TASK-013–TASK-015: NOT STARTED.** Product authority: [PRD](../product/PRD.md). Technical contracts: [Architecture](../engineering/ARCHITECTURE.md). [Package approval state](../index.md).
 
 These are implementation tasks, not claims that the application exists. Dependencies are hard prerequisites for declaring a task complete; a task may contain a bounded exploratory prototype without advertising it as a finished feature. Technical feasibility proofs precede broad UI work. Production publication remains a separately authorized action.
 
@@ -129,13 +129,14 @@ These are implementation tasks, not claims that the application exists. Dependen
 
 ## TASK-012 — Deliver platform operations screens
 
-- Status: NOT STARTED
+- Status: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING (explicitly requested October 23, 2026; TASK-006/TASK-008/TASK-011 acceptance remains open)
 - Requirements: REQ-002, REQ-013, REQ-014, REQ-016, REQ-017
 - Dependencies: TASK-006, TASK-008, TASK-009, TASK-011
 - Scope: owner overview, account/suspension screens, plan-price versioning, transaction/voucher history, safe failed-job diagnostics/retry and audited administrative changes.
 - Acceptance: overview separates pending from provider-verified paid revenue; no duplicate callback doubles revenue. A price change affects new orders only; suspension/reactivation affects new gallery requests correctly. Retrying jobs rechecks scope/gates. Admin can investigate failures without secrets/raw photo browsing or database edits. Stale admin forms do not overwrite newer data.
 - Out of scope: paid gallery-size/count caps, impersonation, arbitrary client-choice editing, private source-Drive management.
 - Completion evidence: admin/photographer authorization tests and owner-operated demonstration covering a failed import, ZIP and payment-review record.
+- Verification record: [TASK-012 evidence](TASK-012_EVIDENCE.md). Owner-only overview, paginated accounts/project metadata/access/order history, versioned suspension/reactivation and Pro prices, payment-review/history and safe import/ZIP retries are implemented. Domain state, queue dispatch and actor/reason/before/after audit references commit together. PostgreSQL and synthetic browser checks cover authorization, preserved orders, stale forms, verified revenue deduplication, retry gates and safe diagnostics. TASK-006/TASK-008/TASK-011 prerequisite acceptance remains open; no real owner account, live payment, real message, new provider transfer or deployment is claimed.
 
 ## TASK-013 — Complete responsive integrated product flows
 

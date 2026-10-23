@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Contracts\PhotographerOwned;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model implements PhotographerOwned
 {
@@ -28,5 +29,10 @@ class Order extends Model implements PhotographerOwned
     public function photographer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function paymentEvents(): HasMany
+    {
+        return $this->hasMany(PaymentEvent::class);
     }
 }

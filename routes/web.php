@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\OperationsController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\VoucherController;
 use App\Http\Controllers\Auth\AccountController;
@@ -53,8 +54,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/projects/{project}/selection/reopen', [ProjectController::class, 'reopen']);
     Route::get('/dashboard', [ProgressController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/data', [ProgressController::class, 'index'])->name('dashboard.data');
-    Route::get('/admin', fn () => Inertia::render('admin/dashboard'))
+    Route::get('/admin', [OperationsController::class, 'index'])
         ->middleware('can:access-admin')->name('admin.dashboard');
+    Route::middleware('can:access-admin')->prefix('admin')->group(function () {
+        Route::get('/accounts', [OperationsController::class, 'accounts']);
+        Route::get('/accounts/{user}', [OperationsController::class, 'account'])->whereNumber('user');
+        Route::put('/accounts/{user}/suspension', [OperationsController::class, 'suspend'])->whereNumber('user');
+        Route::get('/plan', [OperationsController::class, 'plan']);
+        Route::put('/plan', [OperationsController::class, 'price']);
+        Route::get('/orders', [OperationsController::class, 'orders']);
+        Route::get('/orders/{order}', [OperationsController::class, 'order'])->whereUuid('order');
+        Route::post('/operations/orders/{order}/recheck', [OperationsController::class, 'recheck'])->whereUuid('order')->middleware('throttle:10,1');
+        Route::get('/jobs', [OperationsController::class, 'jobs']);
+        Route::post('/jobs/{type}/{job}/retry', [OperationsController::class, 'retry'])->whereIn('type', ['import', 'archive'])->whereUuid('job')->middleware('throttle:10,1');
+    });
     Route::post('/admin/orders/{order}/recheck', [PaymentController::class, 'recheck'])
         ->whereUuid('order')->middleware(['can:access-admin', 'throttle:10,1'])->name('admin.orders.recheck');
     Route::middleware('can:access-admin')->prefix('admin/vouchers')->name('admin.vouchers.')->group(function () {
