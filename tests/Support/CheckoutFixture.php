@@ -8,6 +8,7 @@ use App\Contracts\PaymentGateway;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\Billing\GatewayCheckout;
+use App\Services\Billing\GatewayStatus;
 use Illuminate\Support\Str;
 
 final class CheckoutFixture
@@ -49,11 +50,11 @@ final class CheckoutFixture
                 return new GatewayCheckout('synthetic-snap-token', 'https://app.sandbox.midtrans.com/snap/v2/vtweb/synthetic-snap-token');
             }
 
-            public function status(Order $order): string
+            public function status(Order $order): GatewayStatus
             {
                 $this->checks++;
 
-                return $this->nextStatus;
+                return new GatewayStatus($this->nextStatus, 'synthetic-'.$order->id);
             }
         };
         app()->instance(PaymentGateway::class, $gateway);

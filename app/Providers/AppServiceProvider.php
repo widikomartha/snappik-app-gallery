@@ -35,7 +35,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton(PaymentGateway::class, fn () => new SandboxGateway(new Client, (string) config('billing.server_key'), (string) config('billing.merchant_id')));
+        $this->app->singleton(SandboxGateway::class, fn () => new SandboxGateway(new Client, (string) config('billing.server_key'), (string) config('billing.merchant_id')));
+        $this->app->singleton(PaymentGateway::class, fn ($app) => $app->make(SandboxGateway::class));
         $this->app->singleton(DriveRequestPacer::class, fn () => new DriveRequestPacer((string) config('drive_proof.api_key'), (int) config('drive_proof.request_interval_ms')));
         $this->app->singleton(DriveSource::class, fn ($app) => new PublicDriveSource(new Client, (string) config('drive_proof.api_key'),
             beforeRequest: fn () => $app->make(DriveRequestPacer::class)->wait()));

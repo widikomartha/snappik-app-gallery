@@ -6,6 +6,7 @@ use App\Contracts\PaymentGateway;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\Billing\GatewayCheckout;
+use App\Services\Billing\GatewayStatus;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -32,9 +33,9 @@ $gateway = new class implements PaymentGateway
         return new GatewayCheckout('synthetic-race-token', 'https://app.sandbox.midtrans.com/snap/v2/vtweb/synthetic-race-token');
     }
 
-    public function status(Order $order): string
+    public function status(Order $order): GatewayStatus
     {
-        return 'missing';
+        return new GatewayStatus('missing');
     }
 };
 $app->instance(PaymentGateway::class, $gateway);

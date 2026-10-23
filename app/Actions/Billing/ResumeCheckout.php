@@ -6,12 +6,13 @@ use App\Contracts\PaymentGateway;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\Access\AccountAction;
+use App\Services\Billing\PaymentProcessing;
 use App\Services\ProviderFailure;
 use Illuminate\Support\Facades\DB;
 
 class ResumeCheckout
 {
-    public function __construct(private Checkout $checkout, private PaymentGateway $gateway) {}
+    public function __construct(private Checkout $checkout, private PaymentGateway $gateway, private PaymentProcessing $payments) {}
 
     public function handle(User $user, string $id): Order
     {
@@ -25,7 +26,7 @@ class ResumeCheckout
         }
         try {
             $order = DB::transaction(fn () => $this->checkout->owned($user, $id, AccountAction::Checkout));
-            if ($order->state === 'review') {
+            if (in_array($order->state, ['paid', 'failed'], true)) {
                 return $order;
             }
             if ($order->environment !== 'sandbox' || $order->merchant_id !== (string) config('billing.merchant_id')) {
@@ -33,17 +34,14 @@ class ResumeCheckout
             }
             try {
                 if ($order->state !== 'created') {
-                    $status = $this->gateway->status($order);
-                    if ($status !== 'missing') {
-                        $order->update(['provider_state' => $status, 'state' => $status === 'pending' ? 'pending' : 'review',
-                            'last_checked_at' => now(), 'failure' => null]);
-
+                    $event = $this->payments->record($order, 'resume', queue: false);
+                    $status = $this->payments->process($event->id, alreadyLocked: true);
+                    $order->refresh();
+                    if ($status?->state !== 'missing') {
                         return $order;
                     }
                     // A Core 404 is not cancellation. Reuse the saved Snap page when possible.
                     if ($order->snap_token !== null || $order->checkout_expires_at->isPast()) {
-                        $order->update(['state' => $order->snap_token !== null ? 'pending' : 'unknown', 'failure' => null, 'last_checked_at' => now()]);
-
                         return $order;
                     }
                 }

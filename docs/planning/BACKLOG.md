@@ -1,6 +1,6 @@
 # SnapPik MVP Backlog
 
-**TASK-001, TASK-003 and TASK-009: COMPLETE. TASK-002: FULL-CATALOGUE ZIP VERIFIED / REAL RESOURCE-KEY FIXTURE PENDING. TASK-004–TASK-008: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING. TASK-010: IMPLEMENTED / REAL SANDBOX QRIS ACCEPTANCE PENDING. TASK-011–TASK-015: NOT STARTED.** Product authority: [PRD](../product/PRD.md). Technical contracts: [Architecture](../engineering/ARCHITECTURE.md). [Package approval state](../index.md).
+**TASK-001, TASK-003 and TASK-009: COMPLETE. TASK-002: FULL-CATALOGUE ZIP VERIFIED / REAL RESOURCE-KEY FIXTURE PENDING. TASK-004–TASK-008: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING. TASK-010–TASK-011: IMPLEMENTED / REAL SANDBOX QRIS ACCEPTANCE PENDING. TASK-012–TASK-015: NOT STARTED.** Product authority: [PRD](../product/PRD.md). Technical contracts: [Architecture](../engineering/ARCHITECTURE.md). [Package approval state](../index.md).
 
 These are implementation tasks, not claims that the application exists. Dependencies are hard prerequisites for declaring a task complete; a task may contain a bounded exploratory prototype without advertising it as a finished feature. Technical feasibility proofs precede broad UI work. Production publication remains a separately authorized action.
 
@@ -118,13 +118,14 @@ These are implementation tasks, not claims that the application exists. Dependen
 
 ## TASK-011 — Deliver verified payment grants and reconciliation
 
-- Status: NOT STARTED
+- Status: IMPLEMENTED / REAL SANDBOX LIFECYCLE AND PREREQUISITE ACCEPTANCE PENDING (October 23, 2026; not complete)
 - Requirements: REQ-003, REQ-012, REQ-013, REQ-014, REQ-015, REQ-017
 - Dependencies: TASK-010
 - Scope: durable callback intake/outbox, signature and authoritative status verification, amount/currency/identity checks, unique entitlement/redemption application, safe terminal reservation release, scheduler reconciliation and review flags.
 - Acceptance: invalid signature or mismatched amount grants nothing; duplicates extend/redeem once; two distinct simultaneous settlements extend twice with no lost days. Failed/expired provider-confirmed orders release holds, while uncertain ones retain them. Late legitimate payments honor their original contract. A crash between event receipt and grant recovers safely. Pending/old failure cannot regress success; refund/unknown states are surfaced for operator review without new grants.
 - Out of scope: manual mark-paid, refund execution, automatic entitlement clawback, treating redirects as payment proof.
 - Completion evidence: real PostgreSQL financial-race tests, complete Midtrans sandbox lifecycle evidence and a reconciled missed-notification case.
+- Verification record: [TASK-011 evidence](TASK-011_EVIDENCE.md). Durable signature-checked callback receipts and transactional database outbox, authoritative QRIS verification, atomic immutable grants/redemptions, safe terminal release, same-order recovery coordination, bounded retries, scheduled reconciliation and review flags are implemented. Synthetic lifecycle/queue/crash/browser checks and real PostgreSQL process races are recorded there. TASK-010's real sandbox QRIS gate and TASK-011's real sandbox lifecycle/missed-notification acceptance remain open because no merchant is configured. No live payment, real message or production publication is claimed.
 
 ## TASK-012 — Deliver platform operations screens
 

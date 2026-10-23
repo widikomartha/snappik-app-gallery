@@ -3,6 +3,7 @@
 // CLI-only synthetic transport behind the real sandbox adapter. No provider network.
 use App\Contracts\PaymentGateway;
 use App\Integrations\Midtrans\SandboxGateway;
+use App\Models\Order;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Promise\Create;
@@ -29,6 +30,12 @@ $app->booted(function () use ($app) {
     F::configure();
     $http = new Client(['handler' => function ($request) {
         if ($request->getMethod() === 'GET') {
+            $id = rawurldecode(explode('/', $request->getUri()->getPath())[2] ?? '');
+            $body = Cache::get('synthetic-provider-status-'.$id);
+            if ($body !== null && Order::where('provider_order_id', $id)->exists()) {
+                return Create::promiseFor(new Response(200, [], json_encode($body)));
+            }
+
             return Create::promiseFor(new Response(404, [], '{"status_code":"404"}'));
         }
         $body = json_decode((string) $request->getBody(), true);

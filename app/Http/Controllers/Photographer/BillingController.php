@@ -90,7 +90,8 @@ class BillingController extends Controller
 
     private function snapshot(Order $order, bool $allowed): array
     {
-        return [...$order->only(['id', 'state', 'provider_state', 'base_idr', 'discount_idr', 'payable_idr', 'currency', 'duration_days', 'voucher_code', 'created_at', 'checkout_expires_at', 'last_checked_at']),
+        return [...$order->only(['id', 'state', 'provider_state', 'base_idr', 'discount_idr', 'payable_idr', 'currency', 'duration_days', 'voucher_code', 'created_at', 'checkout_expires_at', 'last_checked_at', 'paid_at', 'applied_at']),
+            'needsReview' => $order->review_reason !== null,
             'canOpen' => $allowed && $order->state === 'pending' && $order->checkout_url !== null && $order->checkout_expires_at->isFuture(),
             'windowElapsed' => $order->checkout_expires_at->lte(now())];
     }

@@ -49,6 +49,7 @@ class MidtransCheckoutTest extends TestCase
     {
         return new Response(200, [], json_encode([...['status_code' => '200', 'order_id' => $order->provider_order_id,
             'merchant_id' => $order->merchant_id, 'currency' => 'IDR', 'gross_amount' => $order->payable_idr.'.00',
+            'transaction_id' => 'synthetic-'.$order->id, 'settlement_time' => now('Asia/Jakarta')->format('Y-m-d H:i:s'),
             'payment_type' => 'qris', 'transaction_status' => 'pending'], ...$overrides]));
     }
 
@@ -125,8 +126,8 @@ class MidtransCheckoutTest extends TestCase
             ['merchant_id' => 'another-merchant'], ['payment_type' => 'credit_card'], ['transaction_status' => 'surprise']];
         $responses = [new Response(503, [], 'not-json'), ...array_map(fn ($data) => $this->statusResponse($order, $data), $bad)];
         $this->gateway($responses);
-        foreach ($responses as $_) {
-            $this->assertSame('unknown', app(ResumeCheckout::class)->handle($buyer, $order->id)->state);
+        foreach ($responses as $index => $_) {
+            $this->assertSame($index === 0 ? 'unknown' : 'review', app(ResumeCheckout::class)->handle($buyer, $order->id)->state);
             $this->assertDatabaseHas('voucher_reservations', ['order_id' => $order->id, 'state' => 'held']);
         }
         $this->assertSame(['GET'], array_values(array_unique(array_map(fn ($h) => $h['request']->getMethod(), $this->history))));
@@ -134,15 +135,15 @@ class MidtransCheckoutTest extends TestCase
         $this->assertFalse($buyer->accountAccess->has_paid_access);
     }
 
-    public function test_local_expiry_and_terminal_provider_observations_keep_reservations_for_task011(): void
+    public function test_terminal_status_uses_payment_writer_while_local_expiry_retains_hold(): void
     {
         $buyer = F::buyer();
         foreach (['settlement', 'expire', 'cancel', 'deny', 'refund'] as $status) {
             $order = F::reserve($buyer, V::create(V::admin(), ['code' => 'SYNTHETIC-'.strtoupper($status)])->code);
             $order->update(['state' => 'unknown']);
             $this->gateway([$this->statusResponse($order, ['transaction_status' => $status])]);
-            $this->assertSame('review', app(ResumeCheckout::class)->handle($buyer, $order->id)->state);
-            $this->assertDatabaseHas('voucher_reservations', ['order_id' => $order->id, 'state' => 'held']);
+            $this->assertSame($status === 'settlement' ? 'paid' : ($status === 'refund' ? 'review' : 'failed'), app(ResumeCheckout::class)->handle($buyer, $order->id)->state);
+            $this->assertDatabaseHas('voucher_reservations', ['order_id' => $order->id, 'state' => $status === 'settlement' ? 'consumed' : ($status === 'refund' ? 'held' : 'released')]);
         }
         $order = F::reserve($buyer);
         $order->update(['state' => 'unknown']);
@@ -150,8 +151,8 @@ class MidtransCheckoutTest extends TestCase
         $this->gateway([new Response(404, [], '{"status_code":"404"}')]);
         $this->assertSame('unknown', app(ResumeCheckout::class)->handle($buyer, $order->id)->state);
         $this->assertSame('GET', $this->history[array_key_last($this->history)]['request']->getMethod());
-        $this->assertDatabaseCount('voucher_redemptions', 0);
-        $this->assertFalse($buyer->accountAccess->has_paid_access);
+        $this->assertDatabaseCount('voucher_redemptions', 1);
+        $this->assertTrue($buyer->accountAccess->has_paid_access);
     }
 
     public function test_untrusted_redirects_malformed_responses_and_duplicate_errors_remain_unknown(): void

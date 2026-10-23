@@ -1,5 +1,5 @@
 export type Quote = { base_idr: number; discount_idr: number; payable_idr: number; currency: string; duration_days: number; voucher_code: string | null; quote_token: string };
-export type Purchase = Omit<Quote, 'quote_token'> & { id: string; state: string; provider_state: string | null; created_at: string; checkout_expires_at: string; last_checked_at: string | null; canOpen: boolean; windowElapsed: boolean };
+export type Purchase = Omit<Quote, 'quote_token'> & { id: string; state: string; provider_state: string | null; created_at: string; checkout_expires_at: string; last_checked_at: string | null; paid_at: string | null; applied_at: string | null; needsReview: boolean; canOpen: boolean; windowElapsed: boolean };
 export const idr = (value: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value);
 
 export async function billingRequest(url: string, data: object) {

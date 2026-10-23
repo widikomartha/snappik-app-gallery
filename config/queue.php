@@ -31,6 +31,15 @@ return [
 
     'connections' => [
 
+        'payments' => [
+            'driver' => 'database',
+            'connection' => 'pgsql',
+            'table' => 'jobs',
+            'queue' => 'payments',
+            'retry_after' => 120,
+            'after_commit' => false,
+        ],
+
         'archives' => [
             'driver' => 'database',
             'connection' => 'pgsql',

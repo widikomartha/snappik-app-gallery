@@ -56,7 +56,7 @@ export default function Billing({ ownerId, canCheckout, configured, base, orders
     </section>
     <section className="panel stack" aria-label="Riwayat pesanan"><h2>Riwayat pesanan</h2>
       {orders.data.length === 0 && <p>Belum ada pesanan.</p>}
-      {orders.data.map(order => <article key={order.id} className="voucher-record"><p>Pro · {idr(order.payable_idr)} · {order.state === 'review' ? 'Menunggu pemeriksaan' : 'Belum terverifikasi'}</p><Link href={`/billing/orders/${order.id}`}>Buka pesanan {order.id}</Link></article>)}
+      {orders.data.map(order => <article key={order.id} className="voucher-record"><p>Pro · {idr(order.payable_idr)} · {order.state === 'paid' ? 'Pembayaran terverifikasi' : order.state === 'failed' ? 'Pembayaran tidak berhasil' : order.state === 'review' ? 'Menunggu pemeriksaan' : 'Belum terverifikasi'}{order.needsReview && order.state !== 'review' ? ' · Perlu pemeriksaan pengelola' : ''}</p><Link href={`/billing/orders/${order.id}`}>Buka pesanan {order.id}</Link></article>)}
       <div className="actions">{orders.prev_page_url && <Link href={orders.prev_page_url}>Sebelumnya</Link>}{orders.next_page_url && <Link href={orders.next_page_url}>Berikutnya</Link>}</div>
     </section>
   </div></Shell>;

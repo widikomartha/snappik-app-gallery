@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\VoucherController;
 use App\Http\Controllers\Auth\AccountController;
 use App\Http\Controllers\Client\ArchiveController;
@@ -54,6 +55,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard/data', [ProgressController::class, 'index'])->name('dashboard.data');
     Route::get('/admin', fn () => Inertia::render('admin/dashboard'))
         ->middleware('can:access-admin')->name('admin.dashboard');
+    Route::post('/admin/orders/{order}/recheck', [PaymentController::class, 'recheck'])
+        ->whereUuid('order')->middleware(['can:access-admin', 'throttle:10,1'])->name('admin.orders.recheck');
     Route::middleware('can:access-admin')->prefix('admin/vouchers')->name('admin.vouchers.')->group(function () {
         Route::get('/', [VoucherController::class, 'index'])->name('index');
         Route::get('/create', [VoucherController::class, 'create'])->name('create');

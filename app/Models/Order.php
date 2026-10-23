@@ -21,7 +21,8 @@ class Order extends Model implements PhotographerOwned
         return ['base_idr' => 'integer', 'discount_idr' => 'integer', 'payable_idr' => 'integer',
             'duration_days' => 'integer', 'channel_minimum' => 'integer', 'plan_version_id' => 'integer',
             'voucher_id' => 'integer', 'voucher_version_id' => 'integer', 'snap_token' => 'encrypted', 'checkout_url' => 'encrypted',
-            'checkout_expires_at' => 'immutable_datetime', 'last_checked_at' => 'immutable_datetime'];
+            'checkout_expires_at' => 'immutable_datetime', 'last_checked_at' => 'immutable_datetime',
+            'paid_at' => 'immutable_datetime', 'applied_at' => 'immutable_datetime'];
     }
 
     public function photographer(): BelongsTo

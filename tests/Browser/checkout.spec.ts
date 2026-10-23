@@ -7,12 +7,13 @@ function fixture(input: object) {
     env: { ...process.env, APP_ENV: 'testing', DB_CONNECTION: 'pgsql', DB_DATABASE: 'snappik_test', DB_URL: '', CACHE_STORE: 'array', AUTH_MAILER: 'array' },
   });
   expect(result.status, 'Isolated checkout fixture').toBe(0);
+  return result.stdout.trim().startsWith('{') ? JSON.parse(result.stdout) : null;
 }
 
 for (const width of [360, 1440]) for (const theme of ['light', 'dark'] as const) {
-  test(`checkout survives timeout, lost reply, reload and voucher deactivation ${width}px ${theme}`, async ({ page }, info) => {
+  test(`checkout and verified payment recovery ${width}px ${theme}`, async ({ page }, info) => {
     test.skip(info.project.name !== 'checkout-flow', 'Dedicated synthetic test transport only.');
-    test.setTimeout(60000);
+    test.setTimeout(90000);
     await page.setViewportSize({ width, height: 1000 });
     await page.emulateMedia({ colorScheme: theme, reducedMotion: width === 360 ? 'reduce' : 'no-preference' });
     const errors: string[] = [];
@@ -72,6 +73,29 @@ for (const width of [360, 1440]) for (const theme of ['light', 'dark'] as const)
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.screenshot({ path: `test-results/checkout-pending-${width}-${theme}.png`, fullPage: true });
     fixture({ action: 'verify', email });
+    for (const state of ['expire', 'settlement', 'pending', 'refund']) {
+      const payload = fixture({ action: 'provider', email, state });
+      const received = await page.request.post('/webhooks/midtrans', { data: payload });
+      expect(received.status()).toBe(200);
+      expect((await page.request.post('/webhooks/midtrans', { data: payload })).status()).toBe(200);
+      fixture({ action: 'work-payment', email });
+      await page.reload();
+      if (state === 'expire') {
+        await expect(page.getByRole('status').filter({ hasText: 'Penyedia mengonfirmasi' })).toContainText('Reservasi voucher telah dilepas');
+      } else {
+        await expect(page.getByRole('status').filter({ hasText: 'Pembayaran telah diverifikasi' })).toContainText('30 hari');
+        fixture({ action: 'verify-paid', email });
+      }
+      await expect(page.getByRole('link', { name: 'Buka checkout QRIS sandbox' })).toHaveCount(0);
+      await expect(page.getByRole('button', { name: 'Periksa atau pulihkan pesanan' })).toHaveCount(0);
+      if (state === 'refund') {
+        await expect(page.getByRole('status').filter({ hasText: 'Status penyedia' })).toContainText('Catatan akses yang telah diberikan tetap tersimpan');
+      }
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      if (state !== 'pending') await page.screenshot({ path: `test-results/payment-${state}-${width}-${theme}.png`, fullPage: true });
+    }
+    await page.getByRole('link', { name: 'Semua tagihan' }).click();
+    await expect(page.getByRole('region', { name: 'Riwayat pesanan' })).toContainText('Pembayaran terverifikasi');
     expect(errors).toEqual([]);
   });
 }
