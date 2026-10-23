@@ -4,6 +4,7 @@ import { Shell } from '../../layouts/shell';
 import { Field } from '../../components/ui/field';
 import { Button } from '../../components/ui/button';
 import { Status } from '../../components/ui/status';
+import { useUnsavedChanges } from '../../hooks/use-unsaved-changes';
 
 export type Terms = { id: number; number: number; discount_type: 'percentage' | 'fixed'; discount_value: number; starts_at: string; ends_at: string; total_limit: number | null; per_user_limit: number | null; enabled: boolean; created_at: string };
 export type Page<T> = { data: T[]; current_page: number; last_page: number; prev_page_url: string | null; next_page_url: string | null; total: number };
@@ -44,6 +45,7 @@ function initial(voucher: Voucher | null) {
 
 export default function VoucherPage({ voucher, usage, versions, reservations, redemptions, audit }: Props) {
   const form = useForm(initial(voucher));
+  useUnsavedChanges(form.isDirty && !form.processing);
   function save(event: FormEvent) {
     event.preventDefault();
     form.transform(data => ({ ...data, code: voucher ? undefined : data.code, expected_version: voucher ? data.expected_version : undefined,

@@ -5,7 +5,7 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     services:
       postgres:
         image: postgres:18
@@ -60,3 +60,4 @@ jobs:
       - run: npm run test:browser:vouchers
       - run: npm run test:browser:checkout
       - run: npm run test:browser:operations
+      - run: npm run test:browser:product

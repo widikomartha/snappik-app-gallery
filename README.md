@@ -6,7 +6,7 @@ SnapPik is a subscription application for photographer photo selection and finis
 
 Laravel 13, PHP 8.4+, React 19, TypeScript, Inertia 3, Vite 8, Motion 14 and PostgreSQL are configured at the repository root. Both package managers have real lockfiles. The skeleton was generated from official `laravel/laravel` v13.11.0, with the official Inertia adapter added separately to keep authentication workflows in TASK-003.
 
-The owner requested TASK-001–TASK-007 on October 22, 2026, and configured and authorized the recorded TASK-002 provider smoke testing. TASK-004–TASK-008 acceptance remains dependent on TASK-002's real resource-key fixture. The owner requested TASK-008–TASK-012 on October 23, 2026, and chose synthetic checkout verification because a sandbox merchant is not configured. Final approval of the entire documentation package remains pending in the [index](docs/index.md). Provider test access does not imply production deployment or complete real-provider product acceptance.
+The owner requested TASK-001–TASK-007 on October 22, 2026, and configured and authorized the recorded TASK-002 provider smoke testing. TASK-004–TASK-008 acceptance remains dependent on TASK-002's real resource-key fixture. The owner requested TASK-008–TASK-013 on October 23, 2026, and chose synthetic checkout verification because a sandbox merchant is not configured. TASK-013 integrates responsive presentation, appearance, navigation and state feedback across the implemented product flows; prerequisite acceptance remains open. Final approval of the entire documentation package remains pending in the [index](docs/index.md). Provider test access does not imply production deployment or complete real-provider product acceptance.
 
 ## Prerequisites
 
@@ -66,6 +66,7 @@ npm run test:browser:archives
 npm run test:browser:vouchers
 npm run test:browser:checkout
 npm run test:browser:operations
+npm run test:browser:product
 ```
 
 Playwright starts a local Artisan server when needed. It uses the development `.env` database and synthetic preview pages, without creating accounts. Do not run it against a production server. Screenshots are generated under ignored `test-results/`. CI installs locked dependencies, uses an isolated PostgreSQL 18 service with synthetic credentials, and runs the same checks without deployment or external-service secrets.
@@ -73,6 +74,14 @@ Playwright starts a local Artisan server when needed. It uses the development `.
 The separate `test:browser:auth` command starts a fresh loopback server on port 18763 using `.env.testing`, forces `DB_DATABASE=snappik_test`, database sessions/cache and in-memory mail, and exercises synthetic registration/resend/logout/login. Run it after PHPUnit, not concurrently with database-refreshing tests. It leaves synthetic test accounts in that disposable database until the next test refresh. No existing server is reused. The ordinary browser suite skips that write scenario; it still checks account form layout and invalid-login/recovery feedback. PostgreSQL verification/reset races use separate PHP processes in the backend suite.
 
 The initial Windows verification used portable PHP, Composer, PostgreSQL, and Chromium under ignored `.local-tools/`; these are machine-local tools, not shipped dependencies. See [TASK-001 evidence](docs/planning/TASK-001_EVIDENCE.md) for exact runtime versions, commands, outcomes and limits.
+
+## Integrated appearance and interaction
+
+The public page explains the trial, current persisted Pro price, public Drive source/privacy and delivery flow. All SnapPik shells expose the shared light/dark control. It follows system preference until an explicit browser choice, initializes before paint, and retains the current choice in memory when storage is blocked. Switching theme preserves forms, selections, quotes and ZIP jobs. Native provider checkout keeps its own appearance.
+
+Photographer navigation connects project results and billing, including expired accounts. Project/voucher/price drafts warn before leaving; same-page refreshes retain the mounted draft. Shared page/dialog/visible-gallery transitions respect reduced motion and never determine saved, paid or ready state. Client selection and delivery retain their 36-photo page windows; only the first six visible candidates receive an entrance recipe. Shared error pages expose safe Indonesian guidance and preserve JSON/media response boundaries.
+
+`npm run test:browser:product` starts a separate loopback server on port 18772 against `snappik_test` using the existing CLI-only synthetic delivery transport. Run it after PHPUnit migrations and sequentially with the other database-writing browser suites. It exercises both widths/themes and normal/reduced motion across public onboarding, unsaved drafts, independent passwords, uncertain saves, expired selection/results and valid ZIP delivery. [TASK-013 evidence](docs/planning/TASK-013_EVIDENCE.md) records results and remaining acceptance gates. No new environment setting, dependency or migration is needed.
 
 ## Project configuration and catalogue imports
 

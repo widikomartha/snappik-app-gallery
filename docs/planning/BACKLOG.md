@@ -1,6 +1,6 @@
 # SnapPik MVP Backlog
 
-**TASK-001, TASK-003 and TASK-009: COMPLETE. TASK-002: FULL-CATALOGUE ZIP VERIFIED / REAL RESOURCE-KEY FIXTURE PENDING. TASK-004–TASK-008: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING. TASK-010–TASK-011: IMPLEMENTED / REAL SANDBOX QRIS ACCEPTANCE PENDING. TASK-012: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING. TASK-013–TASK-015: NOT STARTED.** Product authority: [PRD](../product/PRD.md). Technical contracts: [Architecture](../engineering/ARCHITECTURE.md). [Package approval state](../index.md).
+**TASK-001, TASK-003 and TASK-009: COMPLETE. TASK-002: FULL-CATALOGUE ZIP VERIFIED / REAL RESOURCE-KEY FIXTURE PENDING. TASK-004–TASK-008: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING. TASK-010–TASK-011: IMPLEMENTED / REAL SANDBOX QRIS ACCEPTANCE PENDING. TASK-012–TASK-013: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING. TASK-014–TASK-015: NOT STARTED.** Product authority: [PRD](../product/PRD.md). Technical contracts: [Architecture](../engineering/ARCHITECTURE.md). [Package approval state](../index.md).
 
 These are implementation tasks, not claims that the application exists. Dependencies are hard prerequisites for declaring a task complete; a task may contain a bounded exploratory prototype without advertising it as a finished feature. Technical feasibility proofs precede broad UI work. Production publication remains a separately authorized action.
 
@@ -140,7 +140,7 @@ These are implementation tasks, not claims that the application exists. Dependen
 
 ## TASK-013 — Complete responsive integrated product flows
 
-- Status: NOT STARTED
+- Status: IMPLEMENTED / PREREQUISITE ACCEPTANCE PENDING (explicitly requested October 23, 2026; TASK-006/TASK-008/TASK-011/TASK-012 acceptance remains open)
 - Requirements: REQ-001, REQ-006, REQ-009, REQ-010, REQ-011, REQ-012, REQ-015, REQ-018, REQ-021, REQ-022
 - Dependencies: TASK-006, TASK-008, TASK-011, TASK-012
 - Scope: compose complete public/photographer/client/admin journeys; Indonesian launch copy, readable error/freeze states, accessible focus/controls, mobile layouts and truthful job/payment/save feedback. Add the shared light/dark appearance control and browser-preference handling defined in REQ-021 across all SnapPik layouts.
@@ -149,6 +149,7 @@ These are implementation tasks, not claims that the application exists. Dependen
 - Acceptance for design and motion: apply [Design System](../design/DESIGN_SYSTEM.md) components/recipes across every SnapPik shell, including empty/error/locked/frozen states. Verify normal/reduced-motion operation, focus during interrupted transitions, no timer-driven success states, and bounded mounted/animated tiles for a large synthetic gallery. Theme switching must preserve forms, pending saves and jobs.
 - Out of scope: multi-language UI, native apps, marketing automation, cross-device appearance synchronization.
 - Completion evidence: browser suite results and screenshots in both themes at both target widths, with failure/empty/frozen states inspected, contrast measurements, appearance-preference checks, reduced-motion/focus checks and large-gallery rendering evidence.
+- Verification record: [TASK-013 evidence](TASK-013_EVIDENCE.md). Integrated public/pricing/onboarding, photographer navigation/results/billing, client password/selection/delivery and owner operations use shared appearance, state, focus and responsive components. Shared finite Motion recipes, unsaved-configuration warnings, safe themed error pages and Indonesian validation are implemented. A browser-discovered password redirect defect after media/data requests is corrected with explicit project-gate redirects. Local backend and synthetic browser checks are recorded in the evidence; real resource-key and sandbox payment prerequisite acceptance remains open. No additional provider transfer, real message, live payment or deployment is claimed.
 
 ## TASK-014 — Verify security, concurrency and recoverability
 

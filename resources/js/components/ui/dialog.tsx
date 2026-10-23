@@ -1,9 +1,12 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { Button } from './button';
+import { motion, useReducedMotion } from 'motion/react';
+import { timing } from '../../lib/motion';
 
 export function Dialog({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: ReactNode }) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
+  const reduced = useReducedMotion();
   useEffect(() => {
     const dialog = ref.current;
     if (!open || !dialog) return;
@@ -11,11 +14,14 @@ export function Dialog({ open, onClose, title, children }: { open: boolean; onCl
     dialog.showModal();
     return () => {
       dialog.close();
-      if (invoker instanceof HTMLElement && invoker.isConnected) invoker.focus();
+      if (invoker instanceof HTMLElement && invoker.isConnected && !invoker.matches(':disabled')) invoker.focus();
+      else document.getElementById('main')?.focus({ preventScroll: true });
     };
   }, [open]);
   return (
-    <dialog ref={ref} tabIndex={-1} aria-labelledby={titleId}
+    <motion.dialog ref={ref} tabIndex={-1} aria-labelledby={titleId}
+      initial={false} animate={open ? { opacity: 1, y: 0 } : { opacity: 0.96, y: reduced ? 0 : 12 }}
+      transition={{ duration: reduced ? 0 : timing.dialog }}
       onCancel={(event) => { event.preventDefault(); onClose(); }}
       onKeyDown={(event) => {
         if (event.key !== 'Tab') return;
@@ -40,6 +46,6 @@ export function Dialog({ open, onClose, title, children }: { open: boolean; onCl
         <Button variant="ghost" onClick={onClose} autoFocus>Tutup</Button>
       </div>
       {children}
-    </dialog>
+    </motion.dialog>
   );
 }

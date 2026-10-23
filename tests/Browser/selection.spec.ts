@@ -46,7 +46,8 @@ for (const width of [360, 1440]) {
       await first.getByRole('button', { name: 'Buka Pemilihan foto' }).click();
       await first.getByRole('link', { name: 'Buka pemilihan foto' }).click();
       await expect(first.getByRole('heading', { name: '0 / 2 foto dipilih' })).toBeVisible();
-      await first.getByRole('button', { name: 'Tinjau pilihan', exact: true }).click();
+      await first.getByRole('button', { name: 'Tinjau pilihan', exact: true }).focus();
+      await first.keyboard.press('Enter');
       await expect(first.getByRole('button', { name: 'Konfirmasi pilihan', exact: true })).toBeDisabled();
       await first.getByRole('button', { name: 'Semua foto', exact: true }).click();
       await first.getByRole('button', { name: 'browser-nested', exact: true }).click();
@@ -90,7 +91,8 @@ for (const width of [360, 1440]) {
       release();
       await expect(second.getByRole('heading', { name: '2 / 2 foto dipilih' })).toBeVisible();
       await first.getByRole('button', { name: 'Konfirmasi pilihan', exact: true }).click();
-      await first.getByRole('button', { name: 'Ya, konfirmasi dan kunci' }).click();
+      await first.getByRole('button', { name: 'Ya, konfirmasi dan kunci' }).focus();
+      await first.keyboard.press('Enter');
       await expect(first.getByText('Pilihan atau katalog berubah di sesi lain.', { exact: false })).toBeVisible();
       await first.getByRole('button', { name: 'Periksa pilihan di server' }).click();
       await expect(first.locator('.photo-tile')).toHaveCount(2);
@@ -118,6 +120,7 @@ for (const width of [360, 1440]) {
         fixture({ action: 'grow-selection', email });
         await first.getByRole('button', { name: 'Semua foto', exact: true }).click();
         await expect(first.locator('.photo-tile')).toHaveCount(36);
+        expect(await first.locator('.photo-tile').evaluateAll(tiles => tiles.filter(tile => tile.getAnimations().length > 0).length)).toBeLessThanOrEqual(6);
         await expect(first.getByRole('navigation', { name: 'Halaman foto' })).toContainText('2001 foto');
         await first.getByRole('button', { name: 'Foto berikutnya', exact: true }).click();
         await expect(first.getByRole('navigation', { name: 'Halaman foto' })).toContainText('Halaman 2 / 56');

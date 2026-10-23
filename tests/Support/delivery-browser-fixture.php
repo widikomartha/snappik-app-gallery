@@ -6,7 +6,9 @@ use App\Models\CatalogueEntry;
 use App\Models\Project;
 use App\Models\User;
 use App\Services\Archives\ArchiveRecovery;
+use Illuminate\Cache\RateLimiter;
 use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Queue;
 use Tests\Support\DeliveryFixture;
@@ -26,6 +28,13 @@ if (! preg_match('/\Abrowser-delivery-[a-z0-9-]+@example\.test\z/', $input['emai
 }
 try {
     if ($input['action'] === 'seed') {
+        if (str_starts_with($input['email'], 'browser-delivery-product-')) {
+            // Each product scenario has a fresh account but shares loopback IP.
+            // Reset only its aggregate test-IP counters between scenarios.
+            $limiter = new RateLimiter(Cache::store('database'));
+            $limiter->clear(md5('gallery-password'.'gallery-ip:127.0.0.1'));
+            $limiter->clear(md5('login'.'login-ip:127.0.0.1'));
+        }
         Queue::fake();
         $builder = new class
         {
@@ -65,6 +74,8 @@ try {
             DeliveryTransport::bind($app);
             ArchiveJob::where('module_id', $module->id)->where('state', 'ready')->update(['expires_at' => now()]);
             $app->make(ArchiveRecovery::class)->sweep();
+        } elseif ($input['action'] === 'freeze-account') {
+            AccountAccess::whereKey($owner->id)->update(['access_ends_at' => now()]);
         } elseif ($input['action'] === 'expire-account') {
             AccountAccess::whereKey($owner->id)->update(['access_ends_at' => now()]);
             $project->modules()->where('type', 'selection')->update(['deadline' => now()]);

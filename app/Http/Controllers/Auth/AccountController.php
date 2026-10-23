@@ -105,7 +105,7 @@ class AccountController extends Controller
             // The broker's one-minute retry window still applies after mail failure.
         }
 
-        return back()->with('status', 'Jika akun tersedia, tautan pemulihan akan dikirim. Anda dapat mencoba lagi setelah satu menit.');
+        return redirect('/forgot-password')->with('status', 'Jika akun tersedia, tautan pemulihan akan dikirim. Anda dapat mencoba lagi setelah satu menit.');
     }
 
     public function reset(Request $request, ResetAccountPassword $reset)

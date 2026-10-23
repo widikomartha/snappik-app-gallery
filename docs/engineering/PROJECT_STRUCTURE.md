@@ -1,6 +1,6 @@
 # SnapPik Project Structure
 
-**Classification:** TASK-001 foundation, TASK-003 authentication/access policy, TASK-002 local/test provider prototype, TASK-004 project/catalogue, TASK-005 client selection/preview, TASK-006 progress/history/export, TASK-007 finished-gallery/individual-download, TASK-008 complete delivery ZIP, TASK-009 owner vouchers, TASK-010 checkout/reservations and TASK-011 verified payments/reconciliation implementations exist. TASK-004–TASK-008 acceptance awaits TASK-002's real resource-key fixture; TASK-010 awaits a real sandbox QRIS demonstration. TASK-011 also awaits real sandbox lifecycle acceptance. [Package state](../index.md).
+**Classification:** TASK-001 foundation, TASK-003 authentication/access policy, TASK-002 local/test provider prototype, TASK-004 project/catalogue, TASK-005 client selection/preview, TASK-006 progress/history/export, TASK-007 finished-gallery/individual-download, TASK-008 complete delivery ZIP, TASK-009 owner vouchers, TASK-010 checkout/reservations, TASK-011 verified payments/reconciliation, TASK-012 operations and TASK-013 integrated presentation implementations exist. TASK-004–TASK-008 acceptance awaits TASK-002's real resource-key fixture; TASK-010 awaits a real sandbox QRIS demonstration. TASK-011 also awaits real sandbox lifecycle acceptance. TASK-012/TASK-013 inherit those prerequisite gates. [Package state](../index.md).
 
 ## Existing documentation
 
@@ -145,6 +145,14 @@ TASK-011 adds `Actions/Billing/ApplyPayment.php`, `Models/PaymentEvent.php`, `Se
 `Actions/Admin/OperatePlatform.php` owns transactional price versioning, scoped import/ZIP retries and deduplicated payment rechecks. `Actions/Auth/SetAccountSuspension.php` also compares an expected suspension version for operator forms. The additive operations migration adds monotonic account/job versions and safe audit subject/before/after references. `Services/Admin/OperationsRead.php` owns bounded metadata projections, aggregate accounting and diagnostic remedies; `Http/Controllers/Admin/OperationsController.php` translates validated owner requests and explicit form redirects. Existing domain services/workers retain authorization, provider and financial ownership.
 
 `pages/admin/{dashboard,accounts,account,plan,orders,order,jobs,operations}.tsx` compose the existing shell, theme, fields, status and pagination components. Existing voucher screens remain authoritative for versioned voucher administration and usage history. `tests/Feature/PlatformOperationsTest.php`, `tests/Support/operations-browser-fixture.php`, `tests/Browser/operations.spec.ts` and `playwright.operations.config.ts` cover authorization, stale forms, immutable contracts, ledger totals, retry atomicity/gates and isolated synthetic owner browser flows. CI includes the new browser command. No dependency, production fixture route, arbitrary queue-payload executor or original-photo admin console is added.
+
+## Implemented TASK-013 integrated presentation
+
+`Http/Controllers/Public/WelcomeController.php` projects the current persisted Pro price into `pages/public/welcome.tsx`. `pages/public/error.tsx` and the exception responder in `bootstrap/app.php` expose safe status-only themed error pages while retaining JSON/media boundaries. `lang/id/validation.php` adds Indonesian validation copy. Gallery passwords, account forms and project validation return explicitly to their known gate/form routes rather than relying on session previous URLs changed by Inertia/background/media requests. Password-recovery success also returns to its own form.
+
+`components/ui/{reveal,gallery-tile}.tsx` add finite public/visible-gallery recipes; shared shell/dialog/status components and `app.tsx` own page feedback, symbols, navigation and focus. `hooks/use-unsaved-changes.ts` protects project, voucher and price configuration drafts across browser exit and GET navigation. The original shared before-paint appearance controller remains the sole theme owner; no preference API, account column, new dependency or schema is added.
+
+`tests/Feature/ProductPresentationTest.php`, `tests/Browser/product.spec.ts`, the extended foundation/selection browser checks and `playwright.product.config.ts` cover local integration. The product server reuses the existing CLI-only synthetic delivery router; no fixture route is added to the application. `test:browser:product` is included in CI. [TASK-013 evidence](../planning/TASK-013_EVIDENCE.md) owns verification and acceptance limits.
 
 ## Bootstrap boundary
 

@@ -11,10 +11,11 @@ use App\Http\Controllers\Client\SelectionController;
 use App\Http\Controllers\Photographer\BillingController;
 use App\Http\Controllers\Photographer\ProgressController;
 use App\Http\Controllers\Photographer\ProjectController;
+use App\Http\Controllers\Public\WelcomeController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', fn () => Inertia::render('public/welcome'))->name('home');
+Route::get('/', WelcomeController::class)->name('home');
 Route::middleware('guest')->group(function () {
     Route::get('/login', fn () => Inertia::render('auth/login'))->name('login');
     Route::post('/login', [AccountController::class, 'login'])->middleware('throttle:login');

@@ -4,6 +4,7 @@ import { Shell } from '../../layouts/shell';
 import { Button } from '../../components/ui/button';
 import { Dialog } from '../../components/ui/dialog';
 import { Status } from '../../components/ui/status';
+import { GalleryTile } from '../../components/ui/gallery-tile';
 
 type State = { epoch: number; version: number; revision: string; allowance: number; count: number; locked: boolean; confirmedAt: string | null; accountState: string; canWrite: boolean };
 type Photo = { file_id: string; name: string; path: string; entry_id: number | null; selected: boolean };
@@ -96,12 +97,12 @@ export default function Selection() {
     </nav>}
     {query.review && <section className="panel stack"><h2>Tinjau sebelum konfirmasi</h2><p>Periksa pilihan tersimpan di semua halaman. Konfirmasi mengunci satu set bersama untuk proyek ini.</p><Button disabled={!writable || state.count < 1} onClick={() => setConfirmation(operation('confirm'))}>Konfirmasi pilihan</Button></section>}
     {gallery!.photos.data.length === 0 && <Status>{query.review ? 'Belum ada foto dipilih.' : 'Tidak ada foto di folder atau halaman ini.'}</Status>}
-    <div className="client-photo-grid" aria-label={query.review ? 'Foto pilihan' : 'Foto galeri'} aria-busy={busy}>{gallery!.photos.data.map((item, index) => <article className="panel photo-tile stack" key={item.file_id}>
+    <div className="client-photo-grid" aria-label={query.review ? 'Foto pilihan' : 'Foto galeri'} aria-busy={busy}>{gallery!.photos.data.map((item, index) => <GalleryTile className="panel photo-tile stack" index={index} key={item.file_id}>
       <Preview key={`${state.revision}-${item.file_id}`} photo={item} base={base} />
       <div className="stack"><strong>{item.name}</strong><span className="muted photo-path">{item.path}</span>{!item.entry_id && <Status tone="warning">Foto tidak tersedia di katalog terbaru. Pilihan tetap tersimpan; hapus sebelum konfirmasi.</Status>}
         <Button variant="secondary" disabled={!item.entry_id || disabled} onClick={() => setZoom(index)} aria-label={`Perbesar ${item.path}`}>Perbesar</Button>
         <Button disabled={!writable} variant={item.selected ? 'primary' : 'secondary'} aria-pressed={item.selected} aria-label={`${item.selected ? 'Hapus pilihan' : 'Pilih'} ${item.path}`} onClick={() => void send(operation('choices', item))}>{item.selected ? '✓ Dipilih · hapus pilihan' : 'Pilih foto'}</Button>
-      </div></article>)}</div>
+      </div></GalleryTile>)}</div>
     <nav className="actions" aria-label="Halaman foto"><Button disabled={disabled || query.page <= 1} onClick={() => { setZoom(null); setQuery(q => ({ ...q, page: q.page - 1 })); }}>Foto sebelumnya</Button><span>Halaman {gallery!.photos.current_page} / {gallery!.photos.last_page} · {gallery!.photos.total} foto</span><Button disabled={disabled || query.page >= gallery!.photos.last_page} onClick={() => { setZoom(null); setQuery(q => ({ ...q, page: q.page + 1 })); }}>Foto berikutnya</Button></nav>
     </>}
     <Dialog open={photo !== null && photo !== undefined} onClose={() => setZoom(null)} title={photo?.name ?? 'Pratinjau foto'}>{photo && <div className="stack"><Preview key={photo.file_id} photo={photo} base={base} original /><p>{photo.path} · Foto {zoom! + 1} pada halaman ini</p><div className="actions"><Button variant="secondary" disabled={zoom === 0} onClick={() => setZoom(n => n! - 1)}>Sebelumnya</Button><Button variant="secondary" disabled={zoom === gallery!.photos.data.length - 1} onClick={() => setZoom(n => n! + 1)}>Berikutnya</Button></div></div>}</Dialog>

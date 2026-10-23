@@ -1,6 +1,6 @@
 # SnapPik Design System
 
-**Status: READY FOR REVIEW; TASK-001 foundation implemented.** The owner approved documenting the ZenGrid direction, Motion animation and light/dark appearance on October 22, 2026 and subsequently requested TASK-001 implementation. Tokens, shared controls/shells, appearance initialization and root Motion policy now exist. Complete product components/journeys remain planned; this does not record final package sign-off. [Package state](../index.md).
+**Status: READY FOR REVIEW; TASK-001 foundation and TASK-013 integrated presentation implemented.** The owner approved documenting the ZenGrid direction, Motion animation and light/dark appearance on October 22, 2026 and subsequently requested their implementation. Tokens, shared controls/shells, appearance initialization, finite Motion recipes and integrated product presentation now exist. TASK-013 prerequisite acceptance and final package sign-off remain pending. [Package state](../index.md).
 
 ## Authority and reference
 
@@ -114,7 +114,7 @@ Apply `MotionConfig reducedMotion="user"` globally and use `useReducedMotion` fo
 
 ## Implementation review evidence
 
-Delivery is covered by [TASK-001 and TASK-013](../planning/BACKLOG.md). [Project structure](../engineering/PROJECT_STRUCTURE.md) distinguishes the existing foundation from future product components; no component catalogue tool is required as a separate service. TASK-001 verifies synthetic component states and shells. Real selections, jobs, photos, large-gallery performance and integrated product-flow checks below remain TASK-013 evidence.
+Delivery is covered by [TASK-001 and TASK-013](../planning/BACKLOG.md). [Project structure](../engineering/PROJECT_STRUCTURE.md) records implemented components; no component catalogue tool is required as a separate service. TASK-001 verifies synthetic component states and shells. [TASK-013 evidence](../planning/TASK-013_EVIDENCE.md) records local integrated journeys, actual browser appearance/focus/contrast checks and synthetic gallery/job/provider fixtures. Real-provider prerequisite acceptance remains open.
 
 Before task completion, inspect public/auth, photographer, client and admin layouts at 360px and 1440px in both themes. Include pending, selected, locked, frozen, empty, error, success and disabled states; keyboard/lightbox focus; stored/system/blocked-storage appearance; and reduced-motion sessions. Measure rendered text/control contrast, verify no theme flash, and demonstrate a theme switch during an unsaved form, selection save and ZIP job without losing state.
 

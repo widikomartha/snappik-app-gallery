@@ -22,8 +22,8 @@ export function ProgressOverview({ initial, dashboard = false }: { initial: Over
   const messages: Record<string, string> = {
     trial: 'Uji coba aktif. Maksimal 3 proyek aktif, termasuk draf.',
     pro: 'Pro aktif. Tanpa kuota jumlah proyek, foto atau ukuran galeri.',
-    expired: 'Akses berakhir. Metadata dan hasil tetap tersimpan dan dapat dibaca. Perubahan proyek dinonaktifkan. Perpanjangan sedang disiapkan.',
-    suspended: 'Akun ditangguhkan. Galeri publik, perubahan proyek, dan pembayaran baru dinonaktifkan. Riwayat pembayaran tetap dapat dibaca saat fitur tersedia. Hubungi pengelola SnapPik.',
+    expired: 'Akses berakhir. Metadata dan hasil tetap tersimpan dan dapat dibaca. Perubahan proyek dinonaktifkan. Buka langganan dan tagihan untuk memperpanjang.',
+    suspended: 'Akun ditangguhkan. Galeri publik, perubahan proyek, dan pembayaran baru dinonaktifkan. Riwayat pembayaran tetap dapat dibaca. Hubungi pengelola SnapPik.',
   };
   return <section className="stack" aria-label="Progres proyek">
     {!denied && <>

@@ -4,6 +4,7 @@ import { Shell } from '../../layouts/shell';
 import { Field } from '../../components/ui/field';
 import { Button } from '../../components/ui/button';
 import { Status } from '../../components/ui/status';
+import { useUnsavedChanges } from '../../hooks/use-unsaved-changes';
 
 type Module = { type: 'selection' | 'delivery'; source: string; passwordRequired: boolean; deadline: string | null; published: boolean; state: string; failure: string | null; stale: boolean; photos: number; unsupported: number; unsupportedNames: string[]; missingChoices: number; missingNames: string[]; canPublish: boolean };
 type Project = { id: string; name: string; contact: string | null; allowance: number; version: number; selection_epoch: number; selection_version: number; archived_at: string | null; selectionLocked: boolean; choiceCount: number; choicePreview: { file_id: string; name: string; path: string }[]; sharePath: string; modules: Module[] };
@@ -34,6 +35,7 @@ export default function ProjectPage({ project, canMutate }: { project: Project |
   const { start, stop } = usePoll(3000, { only: ['project', 'canMutate'], onSuccess: () => { /* Canonical job state only; form values stay mounted. */ } }, { autoStart: false });
   useEffect(() => { if (busy) start(); else stop(); }, [busy, start, stop]);
   const editable = canMutate && !project?.archived_at;
+  useUnsavedChanges(form.isDirty && !form.processing);
   function save(e: FormEvent) {
     e.preventDefault();
     form.transform(data => ({ ...data,

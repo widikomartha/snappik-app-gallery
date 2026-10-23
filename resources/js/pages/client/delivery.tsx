@@ -4,6 +4,7 @@ import { Shell } from '../../layouts/shell';
 import { Button } from '../../components/ui/button';
 import { Dialog } from '../../components/ui/dialog';
 import { Status } from '../../components/ui/status';
+import { GalleryTile } from '../../components/ui/gallery-tile';
 import { DeliveryArchive } from '../../components/delivery-archive';
 
 type Photo = { id: number; name: string; path: string };
@@ -58,7 +59,7 @@ export default function Delivery() {
       {gallery.folders.last_page > 1 && <div className="actions"><Button disabled={disabled || query.folder_page <= 1} onClick={() => setQuery(q => ({ ...q, folder_page: q.folder_page - 1 }))}>Folder sebelumnya</Button><span>Halaman folder {gallery.folders.current_page} / {gallery.folders.last_page}</span><Button disabled={disabled || query.folder_page >= gallery.folders.last_page} onClick={() => setQuery(q => ({ ...q, folder_page: q.folder_page + 1 }))}>Folder berikutnya</Button></div>}
     </nav>
       {gallery.photos.data.length === 0 && <Status>Tidak ada foto di folder atau halaman ini.</Status>}
-      <div className="client-photo-grid" aria-label="Foto hasil akhir" aria-busy={busy}>{gallery.photos.data.map((item, index) => <article className="panel photo-tile stack" key={item.id}><Preview photo={item} base={base} /><strong>{item.name}</strong><span className="muted photo-path">{item.path}</span><Button variant="secondary" disabled={disabled} onClick={() => setZoom(index)} aria-label={`Perbesar ${item.path}`}>Perbesar</Button>{!disabled && <Download photo={item} base={base} />}</article>)}</div>
+      <div className="client-photo-grid" aria-label="Foto hasil akhir" aria-busy={busy}>{gallery.photos.data.map((item, index) => <GalleryTile className="panel photo-tile stack" index={index} key={item.id}><Preview photo={item} base={base} /><strong>{item.name}</strong><span className="muted photo-path">{item.path}</span><Button variant="secondary" disabled={disabled} onClick={() => setZoom(index)} aria-label={`Perbesar ${item.path}`}>Perbesar</Button>{!disabled && <Download photo={item} base={base} />}</GalleryTile>)}</div>
       <nav className="actions" aria-label="Halaman foto"><Button disabled={disabled || query.page <= 1} onClick={() => setQuery(q => ({ ...q, page: q.page - 1 }))}>Foto sebelumnya</Button><span>Halaman {gallery.photos.current_page} / {gallery.photos.last_page} · {gallery.photos.total} foto</span><Button disabled={disabled || query.page >= gallery.photos.last_page} onClick={() => setQuery(q => ({ ...q, page: q.page + 1 }))}>Foto berikutnya</Button></nav>
     </>}
     <Dialog open={!!photo} onClose={() => setZoom(null)} title={photo?.name ?? 'Pratinjau hasil akhir'}>{photo && <div className="stack"><Preview key={photo.id} photo={photo} base={base} original /><p>{photo.path} · Foto {zoom! + 1} pada halaman ini</p><Download photo={photo} base={base} /><div className="actions"><Button variant="secondary" disabled={zoom === 0} onClick={() => setZoom(n => n! - 1)}>Sebelumnya</Button><Button variant="secondary" disabled={zoom === gallery!.photos.data.length - 1} onClick={() => setZoom(n => n! + 1)}>Berikutnya</Button></div></div>}</Dialog>
